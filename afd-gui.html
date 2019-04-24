@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9">
+<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+<title>AFD - Test</title>
+
+<!--[if IE]>
+<script type="text/javascript" src="js/excanvas.js"></script>
+<![endif]-->
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap-submenu.css" rel="stylesheet">
+<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-submenu.js"></script>
+
+<script type="text/javascript" src="dummy.js"></script>
+
+<link rel="stylesheet" type="text/css" href="afd-gui.css">
+<script type="text/javascript" src="afd-gui.js"></script>
+
+</head>
+<body>
+   <nav class="navbar navbar-default navbar-static-top">
+      <div class="container-fluid">
+         <!-- Brand and toggle get grouped for better mobile display -->
+         <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+               data-target="#bs-navbar-collapse-1" aria-expanded="false">
+               <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span
+                  class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+            </button>
+         </div>
+
+         <!-- Collect the nav links, forms, and other content for toggling -->
+         <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Host</a>
+                  <ul class="dropdown-menu">
+                     <li><a href="#">Handle Event</a></li>
+                     <li><a href="#">Start/Stop input queue</a></li>
+                     <li><a href="#">Start/Stop transfer</a></li>
+                     <li><a href="#">Start/Stop host</a></li>
+                     <li><a href="#">Enable/Disable host</a></li>
+                     <li><a href="#">Switch host</a></li>
+                     <li><a href="#">Retry</a></li>
+                     <li class="dropdown dropdown-submenu"><a href="#" class="dropdown-toggle"
+                        data-toggle="dropdown">Debug</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="#">Debug</a></li>
+                           <li><a href="#">Trace</a></li>
+                           <li><a href="#">Full trace</a></li>
+                        </ul></li>
+                     <li><a href="#">Simulate mode</a></li>
+                     <li><a href="#">Search + (De)Select</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li class="dropdown dropdown-submenu"><a href="#" class="dropdown-toggle"
+                        data-toggle="dropdown">Test</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="#">Ping</a></li>
+                           <li><a href="#">Traceroute</a></li>
+                        </ul></li>
+                     <li class="dropdown dropdown-submenu"><a href="#" class="dropdown-toggle"
+                        data-toggle="dropdown">Load</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="#">Files</a></li>
+                           <li><a href="#">KBytes</a></li>
+                           <li><a href="#">Connections</a></li>
+                           <li><a href="#">Active-transfers</a></li>
+                        </ul></li>
+                  </ul></li>
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">View</a>
+                  <ul class="dropdown-menu">
+                     <li><a href="#">System Log</a></li>
+                     <li><a href="#">Event Log</a></li>
+                     <li><a href="#">Receive Log</a></li>
+                     <li><a href="#">Transfer Log</a></li>
+                     <li><a href="#">Transfer Debug Log</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Input Log</a></li>
+                     <li><a href="#">Output Log</a></li>
+                     <li><a href="#">Delete Log</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Queue</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Info</a></li>
+                     <li><a href="#">Configuration</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Job details</a></li>
+                  </ul></li>
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Control</a>
+                  <ul class="dropdown-menu">
+                     <li><a href="#">Start/Stop AMG</a></li>
+                     <li><a href="#">Start/Stop FD</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Reread DIR_CONFIG</a></li>
+                     <li><a href="#">Reread HOST_CONFIG</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Edit HOST_CONFIG</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Directory Control</a></li>
+                     <li role="separator" class="divider"></li>
+                     <li><a href="#">Startup AFD</a></li>
+                     <li><a href="#">Shutdown AFD</a></li>
+                  </ul></li>
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup</a>
+                  <ul class="dropdown-menu">
+                     <li><a href="#">Number of rows</a></li>
+                  </ul></li>
+            </ul>
+         </div>
+         <!-- /.navbar-collapse -->
+      </div>
+      <!-- /.container-fluid -->
+   </nav>
+   <div id="tab_area" style="background-color: #d0f4ff; font-family: sans-serif; margin:10px">
+      <table id="tabcol1" class="tabcol">
+         <thead>
+            <tr>
+               <th>Host</th>
+               <th />
+               <th />
+               <th />
+               <th />
+               <th />
+               <th>fc</th>
+               <th>fs</th>
+               <th>tr</th>
+               <th>ec</th>
+            </tr>
+         </thead>
+         <tbody id="tbdy1">
+            <tr id="template_row" class="tabrow" style="display: none;">
+               <td class="alias status_run" />
+               <td class="mrkbl debug_mode">
+                  <canvas class="debug_canvas" width="7" height="7" style="background: black;"></canvas>
+               </td>
+               <td class="status_led status_queue" />
+               <td class="status_led status_send" />
+               <td class="status_led status_retrieve" />
+               <td class="jobs mrkbl" />
+               <td class="file_count numval" />
+               <td class="file_size numval" />
+               <td class="transfers numval" />
+               <td class="error_count numval" />
+            </tr>
+         </tbody>
+      </table>
+   </div>
+</body>

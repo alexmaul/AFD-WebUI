@@ -1,0 +1,174 @@
+table.tabcol {
+	font-size: 8pt;
+	border-collapse: separate; /* separate collapse */
+	border-spacing: 0px;
+}
+
+.tabcol thead {
+	background: beige;
+}
+
+tr * {
+	
+}
+
+tr.tabrow * {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #d0f4ff;
+}
+
+tr.tabrow_mark * {
+	/*
+   padding-left:2px;
+   padding-right:2px;
+   */
+	border-width: 1px;
+	border-style: solid;
+	border-color: black;
+}
+
+.marked {
+	color: white;
+	background: black;
+}
+
+td.alias {
+	width: 10ex;
+	/*color: black;*/
+}
+
+td.status_led {
+	width: 2px;
+}
+
+.numval {
+	width: 5ex;
+	text-align: right;
+	background: lightblue;
+}
+
+.numval_mark {
+	width: 5ex;
+	text-align: right;
+	color: white;
+	background: black;
+}
+
+.debug {
+	color: gold;
+}
+
+.trace {
+	color: darkorange;
+}
+
+.full_trace {
+	color: red;
+}
+
+/*
+alias-feld
+*/
+.TRANSFER_ACTIVE {
+	color: white;
+	background: darkgreen;
+}
+
+.TRANSFER_NORMAL {
+	background: limegreen;
+}
+
+.TRANSFER_DISABLED {
+	background: lightblue;
+}
+
+.TRANSFER_STOP {
+	background: orange;
+}
+
+.STOP_TRANSFER {
+	background: orange;
+}
+
+.NORMAL_STATUS {
+	background: limegreen;
+}
+
+.DISABLED {
+	background: white;
+}
+
+.HOST_NOT_IN_DIR_CONFIG {
+	background: #d0f4ff;
+}
+
+.HOST_CONFIG_HOST_DISABLED {
+	background: white;
+}
+
+.HOST_ERROR_OFFLINE {
+	background: red;
+}
+
+.HOST_ERROR_ACKNOWLEDGED {
+	background: orange;
+}
+
+.DANGER_PAUSE_QUEUE_STAT {
+	background: black;
+}
+
+.HOST_ERROR_OFFLINE_STATIC {
+	background: yellow;
+}
+
+.HOST_ACTION_SUCCESS {
+	background: blue;
+}
+
+/* 
+job status 
+*/
+.jobs {
+	font-size: 8pt;
+	font-stretch: condensed;
+}
+
+.DISCONNECT {
+	color: black;
+	background: white;
+}
+
+.CONNECTING {
+	color: black;
+	background: lightblue;
+}
+
+.LOC_active {
+	color: black;
+	background: blue;
+}
+
+.FTP_burst_active {
+	color: black;
+	background: lightgreen;
+}
+
+.FTP_active {
+	color: white;
+	background: green;
+}
+
+/* 
+queue status 
+*/
+.PAUSE_QUEUE {
+	background: saddlebrown;
+}
+
+.AUTO_PAUSE_QUEUE {
+	background: darkorange;
+}
+
+/* ende */

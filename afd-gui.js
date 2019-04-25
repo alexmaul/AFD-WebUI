@@ -49,20 +49,39 @@ var GUI = function() {
             rowNum : 0,
             urlBase : "http://localhost:4080/",
             urlCmd : {
-                "state" : "fsa_view_json",
+                "state" : "fsa", // "fsa_view_json",
                 "olog" : "show_olog"
             },
             loadData : function() {
-                $.getJSON(GUI.helper.urlBase + GUI.helper.urlCmd["state"], function(data) {
-                    data = dummy_data;
-                    $.each(data, function(i, v) {
-                        if (GUI.helper.tableModel[v.alias] == undefined) {
-                            GUI.helper.tableModel[v.alias] = v;
-                            GUI.helper.addRow(GUI.helper.rowNum, v.alias);
-                            GUI.helper.rowNum += 1;
-                        }
-                        GUI.helper.setRowData(v.alias);
-                    });
+                // $.getJSON(GUI.helper.urlBase + GUI.helper.urlCmd["state"],
+                // function(data) {
+                // data = dummy_data;
+                // $.each(data, function(i, v) {
+                // if (GUI.helper.tableModel[v.alias] == undefined) {
+                // GUI.helper.tableModel[v.alias] = v;
+                // GUI.helper.addRow(GUI.helper.rowNum, v.alias);
+                // GUI.helper.rowNum += 1;
+                // }
+                // GUI.helper.setRowData(v.alias);
+                // });
+                // });
+                $.ajax({
+                    dataType : "jsonp",
+                    jsonp : "overwriteCallback",
+                    url : GUI.helper.urlBase + GUI.helper.urlCmd["state"],
+                    success : function(data) {
+                        return;
+                    }
+                });
+            },
+            updateState : function(data) {
+                $.each(data, function(i, v) {
+                    if (GUI.helper.tableModel[v.alias] == undefined) {
+                        GUI.helper.tableModel[v.alias] = v;
+                        GUI.helper.addRow(GUI.helper.rowNum, v.alias);
+                        GUI.helper.rowNum += 1;
+                    }
+                    GUI.helper.setRowData(v.alias);
                 });
             },
             addRow : function(rowNum, rowAlias) {

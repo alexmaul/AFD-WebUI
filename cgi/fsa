@@ -1,0 +1,20 @@
+#!/usr/bin/perl -w
+use CGI qw/:standard :html3/;
+use CGI::Carp qw(fatalsToBrowser);
+
+$cgi=new CGI;
+print $cgi->header("application/javascript");
+$cmd = `dirname $0`;
+chomp $cmd;
+$cmd .= "/fsa_view_json -w /home/amaul/afd";
+open EX, "$cmd |" or print STDERR "Fehler '$cmd'".$@;
+print "GUI.helper.updateState( ";
+if (!eof(EX))
+{
+    @t = <EX>;
+    close EX;
+    print join "", @t;
+}
+print " );\n\n";
+
+exit 0;

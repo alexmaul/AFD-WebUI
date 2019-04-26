@@ -65,6 +65,16 @@ var GUI = function() {
                         GUI.helper.setRowData(v.alias);
                     });
                 });
+                // setInterval(function() {
+                //
+                // $.ajax({
+                // url: "mydata/get",
+                // success: function(){
+                // // update content.
+                // }
+                // });
+                //
+                // }, 5000);
             },
             addRow : function(rowNum, rowAlias) {
                 var row, val;
@@ -211,7 +221,7 @@ var GUI = function() {
                 }
             }, /* setRowData */
             initEvents : function(selectedRows) {
-                selectedRows.click(function(event) {
+                selectedRows.on("click", function(event) {
                     console.log("alias-click1:", event);
                     GUI.controller.toggleMark($(this));
                 });

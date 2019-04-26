@@ -3,18 +3,29 @@ use CGI qw/:standard :html3/;
 use CGI::Carp qw(fatalsToBrowser);
 
 $cgi=new CGI;
+print $cgi->header("application/json");
+print '{"data":[{"ord":0,"alias":"local","real1":"local","real2":"","display":"local","direction":"S","debug_mode":"none","host_status":["NORMAL_STATUS","HOST_IN_DIR_CONFIG",0],"error_count":0,"file_count":0,"file_size":0,"transfers":0,"jobs":[{"job_num":0,"connect_status":"DISCONNECT","number_of_files":0},{"job_num":1,"connect_status":"DISCONNECT","number_of_files":0}]}
+,{"ord":1,"alias":"assemble","real1":"assemble","real2":"","display":"assemble","direction":"S","debug_mode":"none","host_status":["NORMAL_STATUS","HOST_IN_DIR_CONFIG",0],"error_count":0,"file_count":0,"file_size":0,"transfers":0,"jobs":[{"job_num":0,"connect_status":"DISCONNECT","number_of_files":0},{"job_num":1,"connect_status":"DISCONNECT","number_of_files":0}]}
+,{"ord":2,"alias":"localhost","real1":"localhost","real2":"","display":"localhost","direction":"S","debug_mode":"none","host_status":["NORMAL_STATUS","HOST_IN_DIR_CONFIG",0],"error_count":0,"file_count":0,"file_size":0,"transfers":0,"jobs":[{"job_num":0,"connect_status":"DISCONNECT","number_of_files":0},{"job_num":1,"connect_status":"DISCONNECT","number_of_files":0}]}
+]}';
+
+exit 0;
+
+
+
+$cgi=new CGI;
 print $cgi->header("application/javascript");
 $cmd = `dirname $0`;
 chomp $cmd;
 $cmd .= "/fsa_view_json -w /home/amaul/afd";
 open EX, "$cmd |" or print STDERR "Fehler '$cmd'".$@;
-print "GUI.helper.updateState( ";
+print '{"data":';
 if (!eof(EX))
 {
     @t = <EX>;
     close EX;
     print join "", @t;
 }
-print " );\n\n";
+print "}\n\n";
 
 exit 0;

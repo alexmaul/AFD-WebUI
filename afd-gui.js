@@ -3,6 +3,7 @@ var GUI = function() {
         controller : {
             markedRows : {},
             toggleMark : function(row) {
+                console.log("alias-click:", Object.keys(row));
                 if (this.markedRows[row.attr("id")]) {
                     row.addClass("tabrow");
                     row.removeClass("tabrow_mark");
@@ -53,35 +54,16 @@ var GUI = function() {
                 "olog" : "show_olog"
             },
             loadData : function() {
-                // $.getJSON(GUI.helper.urlBase + GUI.helper.urlCmd["state"],
-                // function(data) {
-                // data = dummy_data;
-                // $.each(data, function(i, v) {
-                // if (GUI.helper.tableModel[v.alias] == undefined) {
-                // GUI.helper.tableModel[v.alias] = v;
-                // GUI.helper.addRow(GUI.helper.rowNum, v.alias);
-                // GUI.helper.rowNum += 1;
-                // }
-                // GUI.helper.setRowData(v.alias);
-                // });
-                // });
-                $.ajax({
-                    dataType : "jsonp",
-                    jsonp : "overwriteCallback",
-                    url : GUI.helper.urlBase + GUI.helper.urlCmd["state"],
-                    success : function(data) {
-                        return;
-                    }
-                });
-            },
-            updateState : function(data) {
-                $.each(data, function(i, v) {
-                    if (GUI.helper.tableModel[v.alias] == undefined) {
-                        GUI.helper.tableModel[v.alias] = v;
-                        GUI.helper.addRow(GUI.helper.rowNum, v.alias);
-                        GUI.helper.rowNum += 1;
-                    }
-                    GUI.helper.setRowData(v.alias);
+                $.getJSON(GUI.helper.urlBase + GUI.helper.urlCmd["state"], function(data) {
+                    this_data = data["data"];
+                    $.each(this_data, function(i, v) {
+                        if (GUI.helper.tableModel[v.alias] == undefined) {
+                            GUI.helper.tableModel[v.alias] = v;
+                            GUI.helper.addRow(GUI.helper.rowNum, v.alias);
+                            GUI.helper.rowNum += 1;
+                        }
+                        GUI.helper.setRowData(v.alias);
+                    });
                 });
             },
             addRow : function(rowNum, rowAlias) {
@@ -230,6 +212,7 @@ var GUI = function() {
             }, /* setRowData */
             initEvents : function(selectedRows) {
                 selectedRows.click(function(event) {
+                    console.log("alias-click1:", event);
                     GUI.controller.toggleMark($(this));
                 });
             } /* initEvents */

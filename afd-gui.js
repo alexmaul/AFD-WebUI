@@ -3,8 +3,8 @@ var GUI = function() {
         controller : {
             markedRows : {},
             toggleMark : function(row) {
-                console.log("alias-click:", Object.keys(row));
                 if (this.markedRows[row.attr("id")]) {
+                    console.log("alias-click-select:", row.attr("id"));
                     row.addClass("tabrow");
                     row.removeClass("tabrow_mark");
                     row.children(".mrkbl").removeClass("marked");
@@ -12,6 +12,7 @@ var GUI = function() {
                     row.children(".numval_mark").removeClass("numval_mark");
                     delete this.markedRows[row.attr("id")];
                 } else {
+                    console.log("alias-click-deselect:", row.attr("id"));
                     row.addClass("tabrow_mark");
                     row.removeClass("tabrow");
                     row.children(".mrkbl").addClass("marked");
@@ -56,25 +57,18 @@ var GUI = function() {
             loadData : function() {
                 $.getJSON(GUI.helper.urlBase + GUI.helper.urlCmd["state"], function(data) {
                     this_data = data["data"];
+                    tableModel = [];
                     $.each(this_data, function(i, v) {
                         if (GUI.helper.tableModel[v.alias] == undefined) {
                             GUI.helper.tableModel[v.alias] = v;
                             GUI.helper.addRow(GUI.helper.rowNum, v.alias);
                             GUI.helper.rowNum += 1;
+                        } else {
+                            GUI.helper.tableModel[v.alias] = v;
                         }
                         GUI.helper.setRowData(v.alias);
                     });
                 });
-                // setInterval(function() {
-                //
-                // $.ajax({
-                // url: "mydata/get",
-                // success: function(){
-                // // update content.
-                // }
-                // });
-                //
-                // }, 5000);
             },
             addRow : function(rowNum, rowAlias) {
                 var row, val;
@@ -84,8 +78,11 @@ var GUI = function() {
                 row.attr("rowNum", rowNum);
                 row.attr("id", "row_" + val.alias);
                 row.children(".alias").html(val.alias);
-                row.removeClass("template_row").show();
+                row.show();
                 row.removeAttr("style");
+                row.on("click", function(event) {
+                    GUI.controller.toggleMark($(this));
+                });
             },
             removeRow : function(rowAlias) {
 
@@ -101,26 +98,30 @@ var GUI = function() {
                     if (typ == "host_status") {
                         if (val.host_status.indexOf("HOST_IN_DIR_CONFIG") >= 0) {
                             if (val.host_status.indexOf("HOST_CONFIG_HOST_DISABLED") >= 0) {
-                                row.children(".status_run").addClass('HOST_CONFIG_HOST_DISABLED');
+                                row.children(".status_run").removeClass().addClass(
+                                        'status_run HOST_CONFIG_HOST_DISABLED');
                             } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE") >= 0) {
-                                row.children(".status_run").addClass('HOST_ERROR_OFFLINE');
+                                row.children(".status_run").removeClass().addClass('status_run HOST_ERROR_OFFLINE');
                             } else if (val.host_status.indexOf("HOST_ERROR_ACKNOWLEDGED") >= 0) {
-                                row.children(".status_run").addClass('HOST_ERROR_ACKNOWLEDGED');
+                                row.children(".status_run").removeClass()
+                                        .addClass('status_run HOST_ERROR_ACKNOWLEDGED');
                             } else if (val.host_status.indexOf("DANGER_PAUSE_QUEUE_STAT") >= 0) {
-                                row.children(".status_run").addClass('DANGER_PAUSE_QUEUE_STAT');
+                                row.children(".status_run").removeClass()
+                                        .addClass('status_run DANGER_PAUSE_QUEUE_STAT');
                             } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE_STATIC") >= 0) {
-                                row.children(".status_run").addClass('HOST_ERROR_OFFLINE_STATIC');
+                                row.children(".status_run").removeClass().addClass(
+                                        'status_run HOST_ERROR_OFFLINE_STATIC');
                             } else if (val.host_status.indexOf("HOST_ACTION_SUCCESS") >= 0) {
-                                row.children(".status_run").addClass('HOST_ACTION_SUCCESS');
+                                row.children(".status_run").removeClass().addClass('status_run HOST_ACTION_SUCCESS');
                             } else if (val.host_status.indexOf("TRANSFER_ACTIVE") >= 0) {
-                                row.children(".status_run").addClass('TRANSFER_ACTIVE');
-                            } else if (val.host_status.indexOf("NORMAL_STATUS") >= 0) {
-                                row.children(".status_run").addClass('NORMAL_STATUS');
+                                row.children(".status_run").removeClass().addClass('status_run TRANSFER_ACTIVE');
                             } else if (val.host_status.indexOf("HOST_DISABLED") >= 0) {
-                                row.children(".status_run").addClass('HOST_DISABLED');
+                                row.children(".status_run").removeClass().addClass('status_run HOST_DISABLED');
+                            } else if (val.host_status.indexOf("NORMAL_STATUS") >= 0) {
+                                row.children(".status_run").removeClass().addClass('status_run NORMAL_STATUS');
                             }
                         } else { /* HOST_NOT_IN_DIR_CONFIG */
-                            row.children(".status_run").addClass('HOST_NOT_IN_DIR_CONFIG');
+                            row.children(".status_run").removeClass().addClass('HOST_NOT_IN_DIR_CONFIG');
                         }
                         if (val.host_status.indexOf("PAUSE_QUEUE") >= 0) {
                             row.children(".status_queue").removeClass().addClass("status_led status_queue PAUSE_QUEUE");
@@ -141,7 +142,6 @@ var GUI = function() {
                                         "status_led status_retrieve STOP_TRANSFER");
                             }
                         } else {
-
                             if (val.direction.indexOf("S") >= 0) {
                                 row.children(".status_send").removeClass().addClass(
                                         "status_led status_send TRANSFER_NORMAL");
@@ -207,22 +207,30 @@ var GUI = function() {
                     } else if (typ == "jobs") {
                         j = -1;
                         for (j in val.jobs) {
+                            jid = row.attr("id") + "_job_" + val.jobs[j].job_num;
+                            if ($("#" + jid).length == 0) {
+                                radd = $("#template_job").clone();
+                                radd.attr("id", jid);
+                                row.children(".jobs").append(radd);
+                                radd.show();
+                            }
                             x = val.jobs[j].number_of_files;
                             if (x < 10) {
                                 x = "0" + x;
                             }
                             y = val.jobs[j].connect_status.replace(/ /g, "_");
-                            row.children(".jobs:first").append("<span class='" + y + "'>" + x + "</span>");
+                            rmod = $("#" + jid);
+                            rmod.removeClass().addClass(y);
+                            rmod.html(x);
                         }
                     } else {
                         row.children("." + typ).html(eval("val." + typ));
                     }
-
                 }
+                row.hide().show();
             }, /* setRowData */
             initEvents : function(selectedRows) {
                 selectedRows.on("click", function(event) {
-                    console.log("alias-click1:", event);
                     GUI.controller.toggleMark($(this));
                 });
             } /* initEvents */
@@ -237,6 +245,10 @@ var GUI = function() {
             GUI.controller.evalMenu(event.target.text);
         });
         GUI.helper.loadData();
-        GUI.helper.initEvents($(".tabrow"));
+        // GUI.helper.initEvents($(".tabrow"));
+
+        setInterval(function() {
+            GUI.helper.loadData();
+        }, 5000);
     });
 })();

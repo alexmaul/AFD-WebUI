@@ -3,13 +3,15 @@ var AFDGUI = function() {
         rowNum : 0,
         urlBase : "http://localhost:4080/",
         urlCmd : {
-            "state" : "fsa", // "fsa_view_json",
-            "olog" : "show_olog"
+            "state" : "fsa_view_json",
+            "Enable/Disable host" : "afdcmd -X",
+            "Info" : "get_hostname -h",
+            "Configuration" : "get_dc_data -h",
         },
         markedRows : {},
         toggleMark : function(row) {
             if (this.markedRows[row.attr("id")]) {
-                console.log("alias-click-select:", row.attr("id"));
+                console.log("alias-click-deselect:", row.attr("id"));
                 row.addClass("tabrow");
                 row.removeClass("tabrow_mark");
                 row.children(".mrkbl").removeClass("marked");
@@ -17,7 +19,7 @@ var AFDGUI = function() {
                 row.children(".numval_mark").removeClass("numval_mark");
                 delete this.markedRows[row.attr("id")];
             } else {
-                console.log("alias-click-deselect:", row.attr("id"));
+                console.log("alias-click-select:", row.attr("id"));
                 row.addClass("tabrow_mark");
                 row.removeClass("tabrow");
                 row.children(".mrkbl").addClass("marked");
@@ -31,9 +33,18 @@ var AFDGUI = function() {
             console.log("menu-click:", menuItem, Object.keys(this.markedRows));
             switch (menuItem) {
                 case "Handle Event":
-                case "Start/Stop input queue":
-                case "Start/Stop transfer":
-                    this.callAliasCtrl(menuItem, Object.keys(this.markedRows));
+                    this.callAfdCtrl("event");
+                    break;
+                case "Start/Stop host":
+                    this.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
+                            "PAUSE_QUEUE", "STOP_TRANSFER", "STOP_TRANSFER" ], "-t -q", "-T -Q", Object
+                            .keys(this.markedRows));
+                    break;
+                case "Enable/Disable host":
+                case "Debug: Debug":
+                case "Info":
+                case "Configuration":
+                    this.callAliasCmd(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
                     break;
                 case "System Log":
                 case "Transfer Log":
@@ -41,33 +52,64 @@ var AFDGUI = function() {
                 case "Output Log":
                     window.open("afd-log.html");
                     break;
-                case "Info":
-                    break;
-                case "Configuration":
-                    this.callAliasCtrl("get_dc_data", Object.keys(this.markedRows));
-                    break;
                 // case "":
                 // break;
                 default:
                     ;
             }
         },
+
         callAfdCtrl : function(cmd) {
-            // TODO kommandos an afd_ctrl geben.
-            console.log("menu-afd-call:", cmd, paramList);
-            window.open(AFDGUI.urlBase + cmd + v);
+            console.log("callAfdCtrl:", cmd);
+            // $.post(AFDGUI.urlBase + "cmd", "cmd="+cmd, function(a, b, c) {
+            // return true;
+            // });
+            $.ajax({
+                type : "GET",
+                url : AFDGUI.urlBase + "cmd",
+                data : cmd,
+                complete : function(a, b) {
+                    console.log(b);
+                }
+            });
         },
-        callAliasCtrl : function(cmd, paramList) {
-            if (paramList.length == 0) {
+        callAliasToggle : function(cmd, lookFor, testFor, swon, swoff, aliasList) {
+            console.log("callAliasToggle:", cmd, aliasList);
+            var sw = "";
+            $.each(aliasList, function(i, alias) {
+                var testResult = false;
+                for (var i = 0; i < lookFor.length; i++) {
+                    testResult = testResult || $("#" + alias + " ." + lookFor[i]).hasClass(testFor[i]);
+                }
+                if (testResult == false) {
+                    sw = swoff;
+                } else {
+                    sw = swon;
+                }
+                AFDGUI.callAfdCtrl(cmd + " " + sw + " " + alias.replace(/row_/, ""));
+            });
+        },
+        callAliasCmd : function(cmd, aliasList) {
+            if (aliasList.length == 0) {
                 alert("erst markieren");
                 return false;
             }
-            // TODO kommandos an afd_ctrl geben.
-            console.log("menu-alias-call:", cmd, paramList);
-            $.each(paramList, function(i, v) {
-                window.open(AFDGUI.urlBase + cmd + " -h " + v);
+            console.log("callAliasCmd:", cmd, aliasList);
+            $.each(aliasList, function(i, v) {
+                this.callAfdCtrl(cmd + " " + v.replace(/row_/, ""));
             });
         },
+        callAliasWindow : function(cmd, aliasList) {
+            if (aliasList.length == 0) {
+                alert("erst markieren");
+                return false;
+            }
+            console.log("callAliasWindow:", cmd, aliasList);
+            $.each(aliasList, function(i, v) {
+                window.open(AFDGUI.urlBase + cmd + " " + v.replace(/row_/, ""));
+            });
+        },
+
         loadData : function() {
             $.getJSON(AFDGUI.urlBase + AFDGUI.urlCmd["state"], function(data) {
                 this_data = data["data"];
@@ -229,7 +271,7 @@ var AFDGUI = function() {
                     row.children("." + typ).html(eval("val." + typ));
                 }
             }
-            row.hide().show();
+            // row.hide().show();
         } /* setRowData */
     };
 }();

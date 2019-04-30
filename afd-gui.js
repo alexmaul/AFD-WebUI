@@ -5,6 +5,10 @@ var AFDGUI = function() {
         urlCmd : {
             "state" : "fsa_view_json",
             "Enable/Disable host" : "afdcmd -X",
+            "Debug: Debug" : "afdcmd -d",
+            "Debug: Trace" : "afdcmd -c",
+            "Debug: Full trace" : "afdcmd -C",
+            "Switch host" : "afdcmd -s",
             "Info" : "get_hostname -h",
             "Configuration" : "get_dc_data -h",
         },
@@ -33,18 +37,23 @@ var AFDGUI = function() {
             console.log("menu-click:", menuItem, Object.keys(this.markedRows));
             switch (menuItem) {
                 case "Handle Event":
-                    this.callAfdCtrl("event");
+                    AFDGUI.callAfdCtrl("event");
                     break;
                 case "Start/Stop host":
-                    this.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
+                    AFDGUI.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
                             "PAUSE_QUEUE", "STOP_TRANSFER", "STOP_TRANSFER" ], "-t -q", "-T -Q", Object
                             .keys(this.markedRows));
                     break;
                 case "Enable/Disable host":
                 case "Debug: Debug":
+                case "Debug: Trace":
+                case "Debug: Full trace":
+                case "Switch host":
+                    AFDGUI.callAliasCmd(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
+                    break;
                 case "Info":
                 case "Configuration":
-                    this.callAliasCmd(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
+                    AFDGUI.callAliasWindow(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
                     break;
                 case "System Log":
                 case "Transfer Log":
@@ -55,15 +64,12 @@ var AFDGUI = function() {
                 // case "":
                 // break;
                 default:
-                    ;
+                    break;
             }
         },
 
         callAfdCtrl : function(cmd) {
             console.log("callAfdCtrl:", cmd);
-            // $.post(AFDGUI.urlBase + "cmd", "cmd="+cmd, function(a, b, c) {
-            // return true;
-            // });
             $.ajax({
                 type : "GET",
                 url : AFDGUI.urlBase + "cmd",
@@ -74,6 +80,9 @@ var AFDGUI = function() {
             });
         },
         callAliasToggle : function(cmd, lookFor, testFor, swon, swoff, aliasList) {
+            if (!AFDGUI.isAliasSelected(aliasList)) {
+                return;
+            }
             console.log("callAliasToggle:", cmd, aliasList);
             var sw = "";
             $.each(aliasList, function(i, alias) {
@@ -90,24 +99,29 @@ var AFDGUI = function() {
             });
         },
         callAliasCmd : function(cmd, aliasList) {
-            if (aliasList.length == 0) {
-                alert("erst markieren");
-                return false;
+            if (!AFDGUI.isAliasSelected(aliasList)) {
+                return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
-                this.callAfdCtrl(cmd + " " + v.replace(/row_/, ""));
+                AFDGUI.callAfdCtrl(cmd + " " + v.replace(/row_/, ""));
             });
         },
         callAliasWindow : function(cmd, aliasList) {
-            if (aliasList.length == 0) {
-                alert("erst markieren");
-                return false;
+            if (!AFDGUI.isAliasSelected(aliasList)) {
+                return;
             }
             console.log("callAliasWindow:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
                 window.open(AFDGUI.urlBase + cmd + " " + v.replace(/row_/, ""));
             });
+        },
+        isAliasSelected : function(aliasList) {
+            if (aliasList.length == 0) {
+                alert("You must first select a host!");
+                return false;
+            }
+            return true;
         },
 
         loadData : function() {

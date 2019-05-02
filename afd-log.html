@@ -19,7 +19,7 @@
 <h1>AFD log window</h1>
 <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item">
-        <a class="nav-link active" id="system-tab" data-toggle="tab" href="#system" role="tab" aria-controls="system" aria-selected="true">System</a>
+        <a class="nav-link active" id="system-tab" data-toggle="tab" href="#system" role="tab" aria-controls="system" aria-selected="false">System</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" id="event-tab" data-toggle="tab" href="#event" role="tab" aria-controls="event" aria-selected="false">Event</a>
@@ -55,16 +55,21 @@
         <td><input type="checkbox" class="system_level" value="error" checked /> Error  </td>
         <td><input type="checkbox" class="system_level" value="offline" /> Offline  </td>
         <td><input type="checkbox" class="system_level" value="debug" /> Debug  </td>
+        <td> &nbsp; </td>
         <td> Log-file: </td>
         <td><select id="system_logfile">
             <option selected>0</option>
             <option>1</option>
             <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
             <option>all</option>
         </select>  </td>
         <td><button type="submit" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system')">Update</button>
         </tr></table>
-        <textarea id="system_area" style="width:80%;" rows="30" readonly></textarea>
+        <textarea id="system_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
     </div>
     <!--
     EVENT-LOG
@@ -73,15 +78,81 @@
     <!--
     RECEIVE-LOG
     //-->
-    <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">...receive</div>
+    <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">        
+        <table><tr>
+        <td><input type="checkbox" class="receive_level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="receive_level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="receive_level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="receive_level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="receive_level" value="debug" /> Debug  </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td><select id="receive_logfile">
+            <option selected>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>all</option>
+        </select>  </td>
+        <td><button type="submit" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive')">Update</button>
+        </tr></table>
+        <textarea id="receive_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+    </div>
     <!--
     TRANSFER-LOG
     //-->
-    <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">...tranfer</div>
+    <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">        
+        <table><tr>
+        <td><input type="checkbox" class="transfer_level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="transfer_level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="transfer_level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="transfer_level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="transfer_level" value="debug" /> Debug  </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td><select id="transfer_logfile">
+            <option selected>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>all</option>
+        </select>  </td>
+        <td><button type="submit" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer')">Update</button>
+        </tr></table>
+        <textarea id="transfer_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+    </div>
     <!--
     TRANSFER-DEBUG-LOG
     //-->
-    <div class="tab-pane fade" id="transfer-debug" role="tabpanel" aria-labelledby="transfer-debug-tab">...transfer debug</div>
+    <div class="tab-pane fade" id="transfer-debug" role="tabpanel" aria-labelledby="transfer-debug-tab">        
+        <table><tr>
+        <td><input type="checkbox" class="transfer-debug_level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="transfer-debug_level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="transfer-debug_level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="transfer-debug_level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="transfer-debug_level" value="debug" /> Debug  </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td><select id="transfer-debug_logfile">
+            <option selected>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>all</option>
+        </select>  </td>
+        <td><button type="submit" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer-debug')">Update</button>
+        </tr></table>
+        <textarea id="transfer-debug_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+    </div>
     <!--
     INPUT-LOG
     //-->

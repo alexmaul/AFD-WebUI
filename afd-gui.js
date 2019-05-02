@@ -1,19 +1,12 @@
-var AFDGUI = function() {
+var AFDCTRL = function() {
     return {
-        rowNum : 0,
         urlBase : "http://localhost:4080/",
-        urlCmd : {
-            "state" : "fsa_view_json",
-            "Enable/Disable host" : "afdcmd -X",
-            "Debug: Debug" : "afdcmd -d",
-            "Debug: Trace" : "afdcmd -c",
-            "Debug: Full trace" : "afdcmd -C",
-            "Switch host" : "afdcmd -s",
-            "Info" : "get_hostname -h",
-            "Configuration" : "get_dc_data -h",
-        },
-        markedRows : {},
+        rowNum : 0, // Initial nomber of alias rows.
+        markedRows : {}, // Set of selected alias rows.
         toggleMark : function(row) {
+            /*
+             * Select/deselect alias row.
+             */
             if (this.markedRows[row.attr("id")]) {
                 console.log("alias-click-deselect:", row.attr("id"));
                 row.addClass("tabrow");
@@ -33,27 +26,48 @@ var AFDGUI = function() {
             }
         },
         evalMenu : function(menuItem) {
-            // TODO auswerten, ob und wie menu-klick an afd_ctrl geht ...
+            /*
+             * Evaluate and deferr actions from menu selection.
+             */
             console.log("menu-click:", menuItem, Object.keys(this.markedRows));
             switch (menuItem) {
+                /*
+                 * Menu: Host
+                 */
                 case "Handle Event":
-                    AFDGUI.callAfdCtrl("event");
+                    AFDCTRL.callAfdCmd("event");
                     break;
                 case "Start/Stop host":
-                    AFDGUI.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
+                    AFDCTRL.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
                             "PAUSE_QUEUE", "STOP_TRANSFER", "STOP_TRANSFER" ], "-t -q", "-T -Q", Object
                             .keys(this.markedRows));
                     break;
                 case "Enable/Disable host":
-                case "Debug: Debug":
-                case "Debug: Trace":
-                case "Debug: Full trace":
-                case "Switch host":
-                    AFDGUI.callAliasCmd(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("afdcmd -X", Object.keys(this.markedRows));
                     break;
+                case "Debug: Debug":
+                    AFDCTRL.callAliasCmd("afdcmd - d", Object.keys(this.markedRows));
+                    break;
+                case "Debug: Trace":
+                    AFDCTRL.callAliasCmd("afdcmd -c", Object.keys(this.markedRows));
+                    break;
+                case "Debug: Full trace":
+                    AFDCTRL.callAliasCmd("afdcmd -C", Object.keys(this.markedRows));
+                    break;
+                case "Switch host":
+                    AFDCTRL.callAliasCmd("afdcmd -s", Object.keys(this.markedRows));
+                    break;
+                case "Retry":
+                    AFDCTRL.callAliasCmd("afdcmd -r", Object.keys(this.markedRows));
+                    break;
+                /*
+                 * Menu: View
+                 */
                 case "Info":
+                    AFDCTRL.callAliasWindow("get_hostname -h", Object.keys(this.markedRows));
+                    break;
                 case "Configuration":
-                    AFDGUI.callAliasWindow(AFDGUI.urlCmd[menuItem], Object.keys(this.markedRows));
+                    AFDCTRL.callAliasWindow("get_dc_data -h", Object.keys(this.markedRows));
                     break;
                 case "System Log":
                 case "Transfer Log":
@@ -61,18 +75,50 @@ var AFDGUI = function() {
                 case "Output Log":
                     window.open("afd-log.html");
                     break;
+                /*
+                 * Menu: Control
+                 */
+                case "Start/Stop AMG":
+                    AFDCTRL.callAfdCmd("afdcmd -Y");
+                    break;
+                case "Start/Stop FD":
+                    AFDCTRL.callAfdCmd("afdcmd -Z");
+                    break;
+                case "Reread DIR_CONFIG":
+                    AFDCTRL.callAfdCmd("udc");
+                    break;
+                case "Reread HOST_CONFIG":
+                    AFDCTRL.callAfdCmd("udh");
+                    break;
+                case "Edit HOST_CONFIG":
+                    window.open("afd-hcedit.html");
+                    break;
+                case "Startup AFD":
+                    AFDCTRL.callAfdCmd("afd -a");
+                    break;
+                case "Shutdown AFD":
+                    AFDCTRL.callAfdCmd("afd -s");
+                    break;
+                /*
+                 * Menu: Setup
+                 */
                 // case "":
                 // break;
                 default:
                     break;
             }
         },
-
-        callAfdCtrl : function(cmd) {
-            console.log("callAfdCtrl:", cmd);
+        /***********************************************************************
+         * Methods building and sending commands to AFD.
+         */
+        callAfdCmd : function(cmd) {
+            /*
+             * Exec general AFD command, handle ajax call.
+             */
+            console.log("callAfdCmd:", cmd);
             $.ajax({
                 type : "GET",
-                url : AFDGUI.urlBase + "cmd",
+                url : AFDCTRL.urlBase + "cmd",
                 data : cmd,
                 complete : function(a, b) {
                     console.log(b);
@@ -80,7 +126,13 @@ var AFDGUI = function() {
             });
         },
         callAliasToggle : function(cmd, lookFor, testFor, swon, swoff, aliasList) {
-            if (!AFDGUI.isAliasSelected(aliasList)) {
+            /*
+             * Decide and exec command for selected alias.
+             * 
+             * Decission is made by testing if any of the nodes with ID from
+             * lookFor has the corresponding class from testFor.
+             */
+            if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
             console.log("callAliasToggle:", cmd, aliasList);
@@ -95,48 +147,69 @@ var AFDGUI = function() {
                 } else {
                     sw = swon;
                 }
-                AFDGUI.callAfdCtrl(cmd + " " + sw + " " + alias.replace(/row_/, ""));
+                AFDCTRL.callAfdCmd(cmd + " " + sw + " " + alias.replace(/row_/, ""));
             });
         },
         callAliasCmd : function(cmd, aliasList) {
-            if (!AFDGUI.isAliasSelected(aliasList)) {
+            /*
+             * Exec command for selected alias.
+             * 
+             * Expects empty response (http 204).
+             */
+            if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
-                AFDGUI.callAfdCtrl(cmd + " " + v.replace(/row_/, ""));
+                AFDCTRL.callAfdCmd(cmd + " " + v.replace(/row_/, ""));
             });
         },
         callAliasWindow : function(cmd, aliasList) {
-            if (!AFDGUI.isAliasSelected(aliasList)) {
+            /*
+             * Open new window with command response.
+             * 
+             * Best suited for e.g. alias configuration.
+             */
+            if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
             console.log("callAliasWindow:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
-                window.open(AFDGUI.urlBase + cmd + " " + v.replace(/row_/, ""));
+                window.open(AFDCTRL.urlBase + cmd + " " + v.replace(/row_/, ""));
             });
         },
         isAliasSelected : function(aliasList) {
+            /*
+             * Test if any alias is selected, popup alert if not.
+             */
             if (aliasList.length == 0) {
                 alert("You must first select a host!");
                 return false;
             }
             return true;
         },
-
+        /***********************************************************************
+         * Methods to load data and update display.
+         */
         loadData : function() {
-            $.getJSON(AFDGUI.urlBase + AFDGUI.urlCmd["state"], function(data) {
+            /*
+             * 
+             */
+            $.getJSON(AFDCTRL.urlBase + "fsa_view_json", function(data) {
                 this_data = data["data"];
                 $.each(this_data, function(i, v) {
                     if ($("#row_" + v.alias).length == 0) {
-                        AFDGUI.addRow(AFDGUI.rowNum, v);
-                        AFDGUI.rowNum += 1;
+                        AFDCTRL.addRow(AFDCTRL.rowNum, v);
+                        AFDCTRL.rowNum += 1;
                     }
-                    AFDGUI.setRowData(v);
+                    AFDCTRL.setRowData(v);
                 });
             });
         },
         addRow : function(rowNum, val) {
+            /*
+             * 
+             */
             var row, val;
             row = $("#template_row").clone();
             $("#tbdy1").append(row);
@@ -146,13 +219,16 @@ var AFDGUI = function() {
             row.show();
             row.removeAttr("style");
             row.on("click", function(event) {
-                AFDGUI.toggleMark($(this));
+                AFDCTRL.toggleMark($(this));
             });
         },
         removeRow : function(rowAlias) {
 
         },
         setRowData : function(val) {
+            /*
+             * 
+             */
             var row, typ = null, j, x, y;
             row = $("#row_" + val.alias);
             for (typ in val) {
@@ -285,20 +361,21 @@ var AFDGUI = function() {
                     row.children("." + typ).html(eval("val." + typ));
                 }
             }
-            // row.hide().show();
         } /* setRowData */
     };
 }();
 
 (function() {
     $(document).ready(function() {
+        // Set event-handler for Menu.
         $("nav").find("a").not(".dropdown-toggle").click(function(event) {
-            AFDGUI.evalMenu(event.target.text);
+            AFDCTRL.evalMenu(event.target.text);
         });
-        AFDGUI.loadData();
-
+        // Initial load data.
+        AFDCTRL.loadData();
+        // Set interval-handler to regularly load data and update display.
         setInterval(function() {
-            AFDGUI.loadData();
+            AFDCTRL.loadData();
         }, 5000);
     });
 })();

@@ -16,6 +16,84 @@
 <title>AFD - Test</title>
 </head>
 <body>
-<h1>DUMMY</h1>
+<h1>AFD log window</h1>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="system-tab" data-toggle="tab" href="#system" role="tab" aria-controls="system" aria-selected="true">System</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="event-tab" data-toggle="tab" href="#event" role="tab" aria-controls="event" aria-selected="false">Event</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="receive-tab" data-toggle="tab" href="#receive" role="tab" aria-controls="receive" aria-selected="false">Receive</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">Transfer</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="transfer-debug-tab" data-toggle="tab" href="#transfer-debug" role="tab" aria-controls="transfer-debug" aria-selected="false">Transfer Debug</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="false">Input</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="delete-tab" data-toggle="tab" href="#delete" role="tab" aria-controls="delete" aria-selected="false">Delete</a>
+    </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <!--
+    SYSTEM-LOG
+    //-->
+    <div class="tab-pane fade show active" id="system" role="tabpanel" aria-labelledby="system-tab">
+        <table><tr>
+        <td><input type="checkbox" class="system_level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="system_level" value="config" checked /> Config  </td>
+        <td><input type="checkbox" class="system_level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="system_level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="system_level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="system_level" value="debug" /> Debug  </td>
+        <td> Log-file: </td>
+        <td><select id="system_logfile">
+            <option selected>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>all</option>
+        </select>  </td>
+        <td><button type="submit" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system')">Update</button>
+        </tr></table>
+        <textarea id="system_area" style="width:80%;" rows="30" readonly></textarea>
+    </div>
+    <!--
+    EVENT-LOG
+    //-->
+    <div class="tab-pane fade" id="event" role="tabpanel" aria-labelledby="event-tab">...event</div>
+    <!--
+    RECEIVE-LOG
+    //-->
+    <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">...receive</div>
+    <!--
+    TRANSFER-LOG
+    //-->
+    <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">...tranfer</div>
+    <!--
+    TRANSFER-DEBUG-LOG
+    //-->
+    <div class="tab-pane fade" id="transfer-debug" role="tabpanel" aria-labelledby="transfer-debug-tab">...transfer debug</div>
+    <!--
+    INPUT-LOG
+    //-->
+    <div class="tab-pane fade" id="input" role="tabpanel" aria-labelledby="input-tab">...input</div>
+    <!--
+    OUTPUT-LOG
+    //-->
+    <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">...output</div>
+    <!--
+    DELETE-LOG
+    //-->
+    <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">...delete</div>
+</div>
 </body>
 </html>

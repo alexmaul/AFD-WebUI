@@ -123,8 +123,8 @@ var AFDCTRL = function() {
              */
             console.log("callAfdCmd:", cmd);
             $.ajax({
-                type : "GET",
-                url : AFDCTRL.urlBase + "cmd",
+                type : "POST",
+                url : AFDCTRL.urlBase + "afd",
                 data : cmd,
                 complete : function(a, b) {
                     console.log(b);
@@ -201,7 +201,7 @@ var AFDCTRL = function() {
             /*
              * 
              */
-            $.getJSON(AFDCTRL.urlBase + "fsa_view_json", function(data) {
+            $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
                 this_data = data["data"];
                 $.each(this_data, function(i, v) {
                     if ($("#row_" + v.alias).length == 0) {

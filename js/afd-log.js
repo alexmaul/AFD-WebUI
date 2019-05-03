@@ -8,8 +8,8 @@ var AFDLOG = function() {
              */
             console.log("callAldaCmd: " + ctx + ": " + paramSet);
             $.ajax({
-                type : "GET",
-                url : AFDLOG.urlBase + "alda",
+                type : "POST",
+                url : AFDLOG.urlBase + "alda/" + ctx,
                 data : paramSet,
                 success : function(data, status, jqxhr) {
                     console.log(status);
@@ -20,7 +20,7 @@ var AFDLOG = function() {
                 error : function(status, jqxhr) {
                     console.log(status, jqxhr);
                 },
-                context : $("#" + ctx)
+                context : $("#" + ctx + "_area")
             });
         },
 
@@ -48,8 +48,7 @@ var AFDLOG = function() {
                 return false;
             }
             var file_number = $("#" + log_name + "_logfile").get(0).value;
-            AFDLOG.callAldaCmd(log_name + "_area", {
-                type : log_name,
+            AFDLOG.callAldaCmd(log_name, {
                 file : file_number,
                 filter : filter.join("|")
             });
@@ -60,9 +59,7 @@ var AFDLOG = function() {
              * 
              */
             console.log("callAldaFilter " + log_name);
-            var paramSet = {
-                type : log_name
-            };
+            var paramSet = {};
             switch (log_name) {
                 case "input":
                 case "output":

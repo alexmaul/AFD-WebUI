@@ -70,10 +70,16 @@ var AFDCTRL = function() {
                     AFDCTRL.callAliasWindow("get_dc_data -h", Object.keys(this.markedRows));
                     break;
                 case "System Log":
+                    window.open("afd-log.html#system");
+                    break;
                 case "Transfer Log":
+                    window.open("afd-log.html#transfer");
+                    break;
                 case "Input Log":
+                    window.open("afd-log.html#input");
+                    break;
                 case "Output Log":
-                    window.open("afd-log.html");
+                    window.open("afd-log.html#output");
                     break;
                 /*
                  * Menu: Control

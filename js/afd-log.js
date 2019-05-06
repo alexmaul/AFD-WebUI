@@ -26,7 +26,7 @@ var AFDLOG = function() {
 
         callAldaLevel : function(log_name) {
             /*
-             * 
+             * Retrieve full log-file content (e.g. system-log, transfer-log).
              */
             console.log("callAldaLevel " + log_name);
             var transl = {
@@ -56,18 +56,10 @@ var AFDLOG = function() {
 
         callAldaFilter : function(log_name) {
             /*
-             * 
+             * Retrieve log information with ALDA.
              */
             console.log("callAldaFilter " + log_name);
             var paramSet = {};
-            switch (log_name) {
-                case "input":
-                case "output":
-                case "delete":
-                    break;
-                default:
-                    break;
-            }
             console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
                 for (var j = 0; j < obj.classList.length; j++) {

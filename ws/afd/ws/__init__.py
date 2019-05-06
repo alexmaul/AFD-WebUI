@@ -2,7 +2,7 @@ import os.path
 from os import environ
 from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
-                   redirect, Markup, json, make_response)
+                   redirect, Markup, json, make_response, abort)
 from subprocess import Popen, PIPE, CalledProcessError
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ app.logger.setLevel(DEBUG)
 
 @app.route("/")
 def index():
-    return redirect(url_for("static", filename="html/afd-gui.html"), code=302)
+    return redirect(url_for("static", filename="html/afd-gui.html"), code=303)
 
 
 @app.route("/fsa/json", methods=["GET"])
@@ -59,7 +59,7 @@ def alias(action=None):
         data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
         return make_response(data, {"Content-type": "text/plain"})
     else:
-        return ""
+        return abort(405)
 
 
 @app.route("/afd/<command>/<action>", methods=["GET", "POST"])
@@ -97,11 +97,11 @@ def afd(command=None, action=None):
     elif request.method == "POST" and command == "hc" and action == "change":
         r = save_hc(request.form)
         if r:
-            make_response(r, 500, {"Content-type": "text/plain"})
+            return make_response(r, 500, {"Content-type": "text/plain"})
         else:
-            make_response("", 204, {"Content-type": "text/plain"})
+            return make_response("", 204, {"Content-type": "text/plain"})
     else:
-        return None
+        return abort(400)
 
 
 @app.route("/alda/<typ>", methods=["POST"])

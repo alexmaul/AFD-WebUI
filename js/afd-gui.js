@@ -38,72 +38,71 @@ var AFDCTRL = function() {
                     AFDCTRL.callAfdCmd("event");
                     break;
                 case "Start/Stop host":
-                    AFDCTRL.callAliasToggle("afdcmd", [ "status_queue", "status_send", "status_retrieve" ], [
-                            "PAUSE_QUEUE", "STOP_TRANSFER", "STOP_TRANSFER" ], "-t -q", "-T -Q", Object
-                            .keys(this.markedRows));
+                    AFDCTRL.callAliasToggle([ "status_queue", "status_send", "status_retrieve" ], [ "PAUSE_QUEUE",
+                            "STOP_TRANSFER", "STOP_TRANSFER" ], "start", "stop", Object.keys(this.markedRows));
                     break;
                 case "Enable/Disable host":
-                    AFDCTRL.callAliasCmd("afdcmd -X", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("able", Object.keys(this.markedRows));
                     break;
                 case "Debug: Debug":
-                    AFDCTRL.callAliasCmd("afdcmd - d", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("debug", Object.keys(this.markedRows));
                     break;
                 case "Debug: Trace":
-                    AFDCTRL.callAliasCmd("afdcmd -c", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("trace", Object.keys(this.markedRows));
                     break;
                 case "Debug: Full trace":
-                    AFDCTRL.callAliasCmd("afdcmd -C", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("fulltrace", Object.keys(this.markedRows));
                     break;
                 case "Switch host":
-                    AFDCTRL.callAliasCmd("afdcmd -s", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("switch", Object.keys(this.markedRows));
                     break;
                 case "Retry":
-                    AFDCTRL.callAliasCmd("afdcmd -r", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasCmd("retry", Object.keys(this.markedRows));
                     break;
                 /*
                  * Menu: View
                  */
                 case "Info":
-                    AFDCTRL.callAliasWindow("get_hostname -h", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasWindow("info", Object.keys(this.markedRows));
                     break;
                 case "Configuration":
-                    AFDCTRL.callAliasWindow("get_dc_data -h", Object.keys(this.markedRows));
+                    AFDCTRL.callAliasWindow("config", Object.keys(this.markedRows));
                     break;
                 case "System Log":
-                    window.open("afd-log.html#system");
+                    window.open("/static/html/afd-log.html#system");
                     break;
                 case "Transfer Log":
-                    window.open("afd-log.html#transfer");
+                    window.open("/static/html/afd-log.html#transfer");
                     break;
                 case "Input Log":
-                    window.open("afd-log.html#input");
+                    window.open("/static/html/afd-log.html#input");
                     break;
                 case "Output Log":
-                    window.open("afd-log.html#output");
+                    window.open("/static/html/afd-log.html#output");
                     break;
                 /*
                  * Menu: Control
                  */
                 case "Start/Stop AMG":
-                    AFDCTRL.callAfdCmd("afdcmd -Y");
+                    AFDCTRL.callAfdCmd("amg/toggle");
                     break;
                 case "Start/Stop FD":
-                    AFDCTRL.callAfdCmd("afdcmd -Z");
+                    AFDCTRL.callAfdCmd("fd/toggle");
                     break;
                 case "Reread DIR_CONFIG":
-                    AFDCTRL.callAfdCmd("udc");
+                    AFDCTRL.callAfdCmd("dc/update");
                     break;
                 case "Reread HOST_CONFIG":
-                    AFDCTRL.callAfdCmd("udh");
+                    AFDCTRL.callAfdCmd("hc/update");
                     break;
                 case "Edit HOST_CONFIG":
-                    window.open("afd-hcedit.html");
+                    window.open("/static/html/afd-hcedit.html");
                     break;
                 case "Startup AFD":
-                    AFDCTRL.callAfdCmd("afd -a");
+                    AFDCTRL.callAfdCmd("afd/start");
                     break;
                 case "Shutdown AFD":
-                    AFDCTRL.callAfdCmd("afd -s");
+                    AFDCTRL.callAfdCmd("afd/stop");
                     break;
                 /*
                  * Menu: Setup
@@ -123,15 +122,14 @@ var AFDCTRL = function() {
              */
             console.log("callAfdCmd:", cmd);
             $.ajax({
-                type : "POST",
-                url : AFDCTRL.urlBase + "afd",
-                data : cmd,
+                type : "GET",
+                url : AFDCTRL.urlBase + "afd/" + cmd,
                 complete : function(a, b) {
                     console.log(b);
                 }
             });
         },
-        callAliasToggle : function(cmd, lookFor, testFor, swon, swoff, aliasList) {
+        callAliasToggle : function(lookFor, testFor, swon, swoff, aliasList) {
             /*
              * Decide and exec command for selected alias.
              * 
@@ -141,7 +139,7 @@ var AFDCTRL = function() {
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
-            console.log("callAliasToggle:", cmd, aliasList);
+            console.log("callAliasToggle:", swon, swoff, aliasList);
             var sw = "";
             $.each(aliasList, function(i, alias) {
                 var testResult = false;
@@ -153,7 +151,7 @@ var AFDCTRL = function() {
                 } else {
                     sw = swon;
                 }
-                AFDCTRL.callAfdCmd(cmd + " " + sw + " " + alias.replace(/row_/, ""));
+                AFDCTRL.callAliasCmd(sw, [ alias ]);
             });
         },
         callAliasCmd : function(cmd, aliasList) {
@@ -166,8 +164,23 @@ var AFDCTRL = function() {
                 return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
+            alias_cl = ""
             $.each(aliasList, function(i, v) {
-                AFDCTRL.callAfdCmd(cmd + " " + v.replace(/row_/, ""));
+                if (i > 0) {
+                    alias_cl += "," + v.replace(/row_/, "")
+                } else {
+                    alias_cl = v.replace(/row_/, "")
+                }
+            });
+            $.ajax({
+                type : "POST",
+                url : AFDCTRL.urlBase + "alias/" + cmd,
+                data : {
+                    alias : alias_cl
+                },
+                complete : function(a, b) {
+                    console.log(b);
+                }
             });
         },
         callAliasWindow : function(cmd, aliasList) {
@@ -181,7 +194,7 @@ var AFDCTRL = function() {
             }
             console.log("callAliasWindow:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
-                window.open(AFDCTRL.urlBase + cmd + " " + v.replace(/row_/, ""));
+                window.open(AFDCTRL.urlBase + "alias/" + cmd + "/" + v.replace(/row_/, ""));
             });
         },
         isAliasSelected : function(aliasList) {

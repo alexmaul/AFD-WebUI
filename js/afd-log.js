@@ -13,7 +13,6 @@ var AFDLOG = function() {
                 data : paramSet,
                 success : function(data, status, jqxhr) {
                     console.log(status);
-                    console.log(this);
                     $(this).text(data);
                     $(this).scrollTop($(this)[0].scrollHeight);
                 },
@@ -63,10 +62,14 @@ var AFDLOG = function() {
             console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
                 for (let j = 0; j < obj.classList.length; j++) {
-                    if (obj.classList[j] != "filter" && obj.value != "" && obj.classList[j].indexOf("form-") < 0) {
-                        console.log("#" + log_name + ": " + j + ": " + obj.classList[j] + " -- "
-                                + obj.classList[j].indexOf("form-"));
-                        paramSet[obj.classList[j]] = obj.value;
+                    if (obj.classList[j] != "filter" && obj.value != "") {
+                        if (obj.type == "checkbox") {
+                            if (obj.checked == true) {
+                                paramSet[obj.classList[j]] = obj.value;
+                            }
+                        } else {
+                            paramSet[obj.classList[j]] = obj.value;
+                        }
                     }
                 }
             });
@@ -75,7 +78,13 @@ var AFDLOG = function() {
         },
 
         toggleModal : function(modal) {
-            
+            $.each($("#" + modal + " input.form-check-input"), function(i, obj) {
+                if (obj.checked == true) {
+                    obj.checked = false;
+                } else {
+                    obj.checked = true;
+                }
+            });
         },
 
         setDate : function(log_name, time_range) {
@@ -130,6 +139,16 @@ var AFDLOG = function() {
             $("#" + log_name + " .start").val(val_start);
             $("#" + log_name + " .end").val(val_end);
             console.log(val_start, val_end);
+        },
+
+        updateModal : function(modal_id) {
+            let checkedList = [];
+            $.each($("#" + modal_id + " .form-check-input"), function(i, obj) {
+                if (obj.checked) {
+                    checkedList.push(obj.value);
+                }
+            });
+            $("#" + modal_id + "Value").attr("value", checkedList.join(","));
         }
     };
 }();
@@ -142,14 +161,13 @@ var AFDLOG = function() {
             console.log("found anchor: " + window.location.hash);
             $(window.location.hash + "-tab").tab("show");
         }
-        $("#modalProtocol").on("hide.bs.modal", function(e) {
-            let protoList = [];
-            $.each($("#modalProtocol .form-control"), function(i, obj) {
-                if (obj.checked) {
-                    protoList.push(obj.value);
-                }
+        // Set update function for modal events.
+        let modalList = [ "modalProtocol" ];
+        for (let i = 0; i < modalList.length; i++) {
+            $("#" + modalList[i]).on("hide.bs.modal", function(event) {
+                AFDLOG.updateModal(event.target.id);
             });
-            $("#modalProtocolValue").attr("value", protoList.join(","));
-        });
+            AFDLOG.updateModal(modalList[i]);
+        }
     });
 })();

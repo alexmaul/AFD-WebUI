@@ -225,8 +225,8 @@
             </tr>
             <tr>
                 <td>
-                    <button type="button" id="modalProtocolButton" class="btn btn-primary" data-toggle="modal" data-target="#modalProtocol" class="filter protocol">Protocol</button>
-                    <input type="hidden" class="" value="" />
+                    <button type="button" id="modalProtocolButton" class="btn btn-primary" data-toggle="modal" data-target="#modalProtocol">Protocol</button>
+                    <input type="hidden" id="modalProtocolValue" class="filter protocol" value="" />
                     <div class="modal fade" id="modalProtocol" tabindex="-1" role="dialog" aria-labelledby="modalProtocolLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
@@ -240,45 +240,46 @@
                                     <form>
                                         <div class="row"><!--form-check form-check-inline-->
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_ftp" value="ftp">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_ftp" value="ftp" checked>
                                                 <label for="protocol_select_ftp" class="form-check-label">FTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_sftp" value="sftp">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_sftp" value="sftp" checked>
                                                 <label for="protocol_select_sftp" class="form-check-label">SFTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_scp" value="scp">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_scp" value="scp" checked>
                                                 <label for="protocol_select_scp" class="form-check-label">SCP</label>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_http" value="http">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_http" value="http" checked>
                                                 <label for="protocol_select_http" class="form-check-label">HTTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_smtp" value="smtp">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_smtp" value="mailto" checked>
                                                 <label for="protocol_select_smtp" class="form-check-label">SMTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_file" value="file">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_file" value="file" checked>
                                                 <label for="protocol_select_file" class="form-check-label">FILE</label>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_wmo" value="wmo">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_wmo" value="wmo" checked>
                                                 <label for="protocol_select_wmo" class="form-check-label">WMO</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_exec" value="exec">
+                                                <input type="checkbox" class="form-check-input" id="protocol_select_exec" value="exec" checked>
                                                 <label for="protocol_select_exec" class="form-check-label">EXEC</label>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
                                 <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.toggleModal('modalProtocol')">Toggle all</button>
                                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                                 </div>
                             </div>

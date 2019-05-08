@@ -5,4 +5,4 @@ Created on Jun 20, 2018
 '''
 import afd.ws
 if __name__ == "__main__":
-    afd.ws.app.run(host="0.0.0.0", port=4080)
+    afd.ws.app.run(host="0.0.0.0", port=8040)

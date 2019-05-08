@@ -99,6 +99,10 @@ Alias-field:
 	background: white;
 }
 
+.HOST_DISABLED {
+    background: white;
+}
+
 .HOST_NOT_IN_DIR_CONFIG {
 	background: #d0f4ff;
 }

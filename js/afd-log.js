@@ -37,7 +37,7 @@ var AFDLOG = function() {
                 offline : "O",
                 debug : "D",
             };
-            var filter = [];
+            let filter = [];
             $.each($("#" + log_name + " ." + log_name + "_level"), function(i, v) {
                 if (v.checked) {
                     filter.push(transl[v.value]);
@@ -47,7 +47,7 @@ var AFDLOG = function() {
                 alert("Check at least one log-level!");
                 return false;
             }
-            var file_number = $("#" + log_name + "_logfile").get(0).value;
+            let file_number = $("#" + log_name + "_logfile").get(0).value;
             AFDLOG.callAldaCmd(log_name, {
                 file : file_number,
                 filter : filter.join("|")
@@ -59,10 +59,10 @@ var AFDLOG = function() {
              * Retrieve log information with ALDA.
              */
             console.log("callAldaFilter " + log_name);
-            var paramSet = {};
+            let paramSet = {};
             console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
-                for (var j = 0; j < obj.classList.length; j++) {
+                for (let j = 0; j < obj.classList.length; j++) {
                     if (obj.classList[j] != "filter" && obj.value != "" && obj.classList[j].indexOf("form-") < 0) {
                         console.log("#" + log_name + ": " + j + ": " + obj.classList[j] + " -- "
                                 + obj.classList[j].indexOf("form-"));
@@ -74,24 +74,28 @@ var AFDLOG = function() {
             AFDLOG.callAldaCmd(log_name, paramSet);
         },
 
+        toggleModal : function(modal) {
+            
+        },
+
         setDate : function(log_name, time_range) {
             /*
              * Set input fields for start- and end-time according to range.
              */
             console.log("setDate " + log_name);
-            var val_start = "";
-            var val_end = "";
-            var now = new Date(Date.now());
-            var ta_mo = now.getMonth() + 1;
-            var ta_dd = now.getDate();
-            var ta_hh = now.getHours();
-            var ta_mi = now.getMinutes();
-            var yday = new Date(Date.now());
+            let val_start = "";
+            let val_end = "";
+            let now = new Date(Date.now());
+            let ta_mo = now.getMonth() + 1;
+            let ta_dd = now.getDate();
+            let ta_hh = now.getHours();
+            let ta_mi = now.getMinutes();
+            let yday = new Date(Date.now());
             yday.setDate(now.getDate() - 1);
-            var tb_mo = yday.getMonth() + 1;
-            var tb_dd = yday.getDate();
-            var tb_hh = yday.getHours();
-            var tb_mi = yday.getMinutes();
+            let tb_mo = yday.getMonth() + 1;
+            let tb_dd = yday.getDate();
+            let tb_hh = yday.getHours();
+            let tb_mi = yday.getMinutes();
             if (ta_mo < 10) {
                 ta_mo = '0' + ta_mo;
             }

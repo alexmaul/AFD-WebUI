@@ -140,10 +140,10 @@ var AFDCTRL = function() {
                 return;
             }
             console.log("callAliasToggle:", swon, swoff, aliasList);
-            var sw = "";
+            let sw = "";
             $.each(aliasList, function(i, alias) {
-                var testResult = false;
-                for (var i = 0; i < lookFor.length; i++) {
+                let testResult = false;
+                for (let i = 0; i < lookFor.length; i++) {
                     testResult = testResult || $("#" + alias + " ." + lookFor[i]).hasClass(testFor[i]);
                 }
                 if (testResult == false) {
@@ -229,8 +229,7 @@ var AFDCTRL = function() {
             /*
              * 
              */
-            var row, val;
-            row = $("#template_row").clone();
+            let row = $("#template_row").clone();
             $("#tbdy1").append(row);
             row.attr("rowNum", rowNum);
             row.attr("id", "row_" + val.alias);
@@ -248,8 +247,8 @@ var AFDCTRL = function() {
             /*
              * 
              */
-            var row, typ = null, j, x, y;
-            row = $("#row_" + val.alias);
+            let typ = null, j, x, y;
+            let row = $("#row_" + val.alias);
             for (typ in val) {
                 if (!val.hasOwnProperty(typ)) {
                     next;
@@ -305,7 +304,7 @@ var AFDCTRL = function() {
                         }
                     }
                 } else if (typ == "debug_mode") {
-                    var ctx = row.find(".debug_canvas").get(0).getContext("2d");
+                    let ctx = row.find(".debug_canvas").get(0).getContext("2d");
                     switch (val.debug_mode) {
                         case "debug":
                             ctx.fillStyle = "gold";

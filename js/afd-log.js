@@ -1,6 +1,6 @@
 var AFDLOG = function() {
     return {
-        urlBase : "http://localhost:4080/",
+        urlBase : "http://localhost:8040/",
 
         callAldaCmd : function(ctx, paramSet) {
             /*

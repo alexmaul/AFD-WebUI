@@ -1,6 +1,6 @@
 var AFDCTRL = function() {
     return {
-        urlBase : "http://localhost:4080/",
+        urlBase : "http://localhost:8040/",
         rowNum : 0, // Initial nomber of alias rows.
         markedRows : {}, // Set of selected alias rows.
         toggleMark : function(row) {

@@ -63,8 +63,9 @@ var AFDLOG = function() {
             console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
                 for (var j = 0; j < obj.classList.length; j++) {
-                    if (obj.classList[j] != "filter" && obj.value != "") {
-                        console.log("#" + log_name + ": " + j + ": " + obj.classList[j]);
+                    if (obj.classList[j] != "filter" && obj.value != "" && obj.classList[j].indexOf("form-") < 0) {
+                        console.log("#" + log_name + ": " + j + ": " + obj.classList[j] + " -- "
+                                + obj.classList[j].indexOf("form-"));
                         paramSet[obj.classList[j]] = obj.value;
                     }
                 }
@@ -137,5 +138,14 @@ var AFDLOG = function() {
             console.log("found anchor: " + window.location.hash);
             $(window.location.hash + "-tab").tab("show");
         }
+        $("#modalProtocol").on("hide.bs.modal", function(e) {
+            let protoList = [];
+            $.each($("#modalProtocol .form-control"), function(i, obj) {
+                if (obj.checked) {
+                    protoList.push(obj.value);
+                }
+            });
+            $("#modalProtocolValue").attr("value", protoList.join(","));
+        });
     });
 })();

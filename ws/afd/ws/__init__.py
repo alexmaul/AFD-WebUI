@@ -129,7 +129,7 @@ def alda(typ=None):
                 "directory":    "-d ",
                 "recipient":    "-h ",
                 "filesize":     "-S ",
-                "jobid":        "-j ",
+                "job_id":        "-j ",
                 "protocol":     "-p ",
                 "only_archived": "",
                 "trans_time":   "-D ",
@@ -148,6 +148,8 @@ def alda(typ=None):
             elif key == "recipient":
                 rl = ",".join("%" + v for v in val.split(","))
                 par_lst.append("{}'{}'".format(par_tr[key], rl))
+            elif key in par_tr and val == "true":
+                par_lst.append(par_tr[key])
             elif key in par_tr:
                 par_lst.append(par_tr[key] + val)
         cmd = "alda -f -L {} {} {}".format(logtype,

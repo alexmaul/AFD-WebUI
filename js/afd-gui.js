@@ -2,7 +2,7 @@ var AFDCTRL = function() {
     return {
         urlBase : "http://localhost:8040/",
         rowNum : 0, // Initial nomber of alias rows.
-        maxRowsPerCol : 2, // Max. number of alias rows.
+        maxRowsPerCol : 40, // Max. number of alias rows.
         markedRows : {}, // Set of selected alias rows.
         toggleMark : function(row) {
             /*
@@ -25,6 +25,12 @@ var AFDCTRL = function() {
                 row.children(".numval").removeClass("numval");
                 this.markedRows[row.attr("id")] = true;
             }
+        },
+        setMaxRows : function(rows) {
+            AFDCTRL.maxRowsPerCol = rows;
+            AFDCTRL.rowNum = 0;
+            console.log("new max rows:", AFDCTRL.maxRowsPerCol);
+            $('.tabcol').remove();
         },
         evalMenu : function(menuItem) {
             /*

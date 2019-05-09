@@ -107,8 +107,8 @@
     </nav>
 
     <div id="tab_area" style="background-color: #d0f4ff; font-family: sans-serif; margin:10px">
-        <table id="tabcol1" class="tabcol">
-            <thead>
+        <table id="template_tabcol" style="display: none;">
+            <thead class="tabcol-head">
                 <tr>
                     <th>Host</th>
                     <th />
@@ -122,8 +122,12 @@
                     <th>ec</th>
                 </tr>
             </thead>
-            <tbody id="tbdy1">
-                <tr id="template_row" class="tabrow" style="display: none;">
+            <tbody class="tabcol-body">
+            </tbody>
+        </table>
+        <table style="display: none;">
+            <tbody>
+                <tr id="template_row" class="tabrow">
                     <td class="alias status_run" />
                     <td class="mrkbl debug_mode">
                        <canvas class="debug_canvas" width="7" height="7" style="background: black;"></canvas>

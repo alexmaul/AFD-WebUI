@@ -34,8 +34,7 @@ tr.tabrow_mark * {
 }
 
 td.alias {
-	width: 10ex;
-	/* color: black; */
+	width: 12ex;
 }
 
 td.status_led {

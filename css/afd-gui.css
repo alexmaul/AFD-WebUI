@@ -1,7 +1,16 @@
+
+#tab_area {
+    background-color: #d0f4ff;
+    font-family: monospace;
+}
+
 table.tabcol {
+    float: left;
 	font-size: 8pt;
-	border-collapse: separate; /* separate collapse */
+	border-collapse: separate;
 	border-spacing: 0px;
+	padding-top: 5px;
+	padding-right: 5px;
 }
 
 .tabcol thead {

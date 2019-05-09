@@ -254,8 +254,6 @@ var AFDCTRL = function() {
                 col.find("tbody").attr("id", "tbdy-" + lastCol);
                 $("#tab_area").append(col);
             }
-            console.log("tabarea", $("#tab_area"));
-
             let row = $("#template_row").clone();
             row.attr("rowNum", rowNum);
             row.attr("id", "row_" + val.alias);
@@ -283,15 +281,19 @@ var AFDCTRL = function() {
                 if (typ == "host_status") {
                     if (val.host_status.indexOf("HOST_IN_DIR_CONFIG") >= 0) {
                         if (val.host_status.indexOf("HOST_CONFIG_HOST_DISABLED") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_CONFIG_HOST_DISABLED");
+                            row.children(".status_run").removeClass().addClass(
+                                    "alias status_run HOST_CONFIG_HOST_DISABLED");
                         } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE") >= 0) {
                             row.children(".status_run").removeClass().addClass("alias status_run HOST_ERROR_OFFLINE");
                         } else if (val.host_status.indexOf("HOST_ERROR_ACKNOWLEDGED") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_ERROR_ACKNOWLEDGED");
+                            row.children(".status_run").removeClass().addClass(
+                                    "alias status_run HOST_ERROR_ACKNOWLEDGED");
                         } else if (val.host_status.indexOf("DANGER_PAUSE_QUEUE_STAT") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run DANGER_PAUSE_QUEUE_STAT");
+                            row.children(".status_run").removeClass().addClass(
+                                    "alias status_run DANGER_PAUSE_QUEUE_STAT");
                         } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE_STATIC") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_ERROR_OFFLINE_STATIC");
+                            row.children(".status_run").removeClass().addClass(
+                                    "alias status_run HOST_ERROR_OFFLINE_STATIC");
                         } else if (val.host_status.indexOf("HOST_ACTION_SUCCESS") >= 0) {
                             row.children(".status_run").removeClass().addClass("alias status_run HOST_ACTION_SUCCESS");
                         } else if (val.host_status.indexOf("TRANSFER_ACTIVE") >= 0) {

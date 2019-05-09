@@ -61,16 +61,12 @@ var AFDLOG = function() {
             let paramSet = {};
             console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
-                for (let j = 0; j < obj.classList.length; j++) {
-                    if (obj.classList[j] != "filter" && obj.value != "") {
-                        if (obj.type == "checkbox") {
-                            if (obj.checked == true) {
-                                paramSet[obj.classList[j]] = obj.value;
-                            }
-                        } else {
-                            paramSet[obj.classList[j]] = obj.value;
-                        }
+                if (obj.type == "checkbox") {
+                    if (obj.checked == true) {
+                        paramSet[obj.name] = obj.value;
                     }
+                } else if (obj.value != "") {
+                    paramSet[obj.name] = obj.value;
                 }
             });
             console.log(paramSet);
@@ -149,6 +145,11 @@ var AFDLOG = function() {
                 }
             });
             $("#" + modal_id + "Value").attr("value", checkedList.join(","));
+        },
+
+        callView : function(log_name) {
+            console.log("callView " + log_name);
+            $("#" + log_name + "-view-mode").text("View " + mode);
         }
     };
 }();

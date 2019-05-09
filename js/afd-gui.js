@@ -71,14 +71,26 @@ var AFDCTRL = function() {
                 case "System Log":
                     window.open("/static/html/afd-log.html#system");
                     break;
+                case "Receive Log":
+                    window.open("/static/html/afd-log.html#receive");
+                    break;
                 case "Transfer Log":
                     window.open("/static/html/afd-log.html#transfer");
+                    break;
+                case "Transfer Debug Log":
+                    window.open("/static/html/afd-log.html#transfer-debug");
                     break;
                 case "Input Log":
                     window.open("/static/html/afd-log.html#input");
                     break;
                 case "Output Log":
                     window.open("/static/html/afd-log.html#output");
+                    break;
+                case "Delete Log":
+                    window.open("/static/html/afd-log.html#delete");
+                    break;
+                case "Queue":
+                    window.open("/static/html/afd-log.html#queue");
                     break;
                 /*
                  * Menu: Control

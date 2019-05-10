@@ -155,6 +155,19 @@ def alda(typ=None):
     return make_response(data, {"Content-type": "text/plain"})
 
 
+@app.route("/view/<mode>/<file>", methods=["GET"])
+def view(mode="auto", file=None):
+    content = ""
+    if mode == "auto":
+        # determin file/content type
+        pass
+    elif mode == "od":
+        content = exec_cmd("bash -c \"hexdump -C {}\"".format(file), True)
+    elif mode == "bufr":
+        pass
+    return make_response(content, 200 if len(content) else 204, {"Content-type": "text/plain"})
+
+
 def exec_cmd(cmd, read=False):
     result = ""
     try:

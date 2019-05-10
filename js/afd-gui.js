@@ -420,13 +420,16 @@ var AFDCTRL = function() {
 
 (function() {
     $(document).ready(function() {
-        // Set event-handler for Menu.
+        /* Set height for host area. */
+        let tab_area_height = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
+        $("#tab_area").attr("style", "height:" + tab_area_height + "px;");
+        /* Set event-handler for navbar menu. */
         $("nav").find("a").not(".dropdown-toggle").click(function(event) {
             AFDCTRL.evalMenu(event.target.text);
         });
-        // Initial load data.
+        /* Initial load data. */
         AFDCTRL.loadData();
-        // Set interval-handler to regularly load data and update display.
+        /* Set interval-handler to regularly load data and update display. */
         setInterval(function() {
             AFDCTRL.loadData();
         }, 5000);

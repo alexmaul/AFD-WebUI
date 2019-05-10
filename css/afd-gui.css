@@ -1,3 +1,6 @@
+body {
+    padding:10px;
+}
 
 #tab_area {
     background-color: #d0f4ff;
@@ -10,7 +13,7 @@ table.tabcol {
 	border-collapse: separate;
 	border-spacing: 0px;
 	padding-top: 5px;
-	padding-right: 5px;
+	padding-left: 5px;
 }
 
 .tabcol thead {

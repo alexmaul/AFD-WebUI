@@ -1,15 +1,11 @@
 import os.path
-from os import environ
 from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
                    redirect, Markup, json, make_response, abort)
 from subprocess import Popen, PIPE, CalledProcessError
 
 app = Flask(__name__)
-AFD_WORK_DIR = environ["AFD_WORK_DIR"]
-
-from logging import DEBUG
-app.logger.setLevel(DEBUG)
+afd_work_dir = None
 
 
 @app.route("/")
@@ -118,7 +114,7 @@ def alda(typ=None):
             fnum = "*"
         data = exec_cmd(
             "bash -c \"grep -shP '<({})>' {}/log/{}{}\"".format(
-                filt, AFD_WORK_DIR, fnam, fnum
+                filt, afd_work_dir, fnam, fnum
                 ),
             True
             )

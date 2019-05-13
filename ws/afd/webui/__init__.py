@@ -159,20 +159,20 @@ def alda(typ=None):
 @app.route("/view/<mode>/<path:file>", methods=["GET"])
 def view(mode="auto", file=None):
     content = ""
-    content_type="text/plain"
+    content_type = "text/plain"
     if mode == "auto":
         # TODO: determine action from file type.
         pass
     if mode == "bufr":
-        content_type="text/html"
-        with open(os.environ["HOME"] + "/" + file, "rb") as fh_in:
+        content_type = "text/html"
+        with open(afd_work_dir + "/" + file, "rb") as fh_in:
             decode_url = "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
-            r = requests.post(decode_url, files={"file":fh_in})
-            app.logger.debug("ask webservice %s - %d", decode_url, r.status_code)
+            r = requests.post(decode_url, files={"file": fh_in})
+            app.logger.debug("forward-to: %s - %d", decode_url, r.status_code)
             if r.status_code == 200:
                 content = r.content
     else:  # "od"
-        content = exec_cmd("bash -c \"hexdump -C {}\"".format(os.environ["HOME"] + "/" + file), True)
+        content = exec_cmd("bash -c \"hexdump -C {}\"".format(afd_work_dir + "/" + file), True)
     return make_response(content, 200 if len(content) else 204, {"Content-type": content_type})
 
 

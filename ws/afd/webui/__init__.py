@@ -1,4 +1,5 @@
 import os.path
+import requests
 from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
                    redirect, Markup, json, make_response, abort)
@@ -155,17 +156,24 @@ def alda(typ=None):
     return make_response(data, {"Content-type": "text/plain"})
 
 
-@app.route("/view/<mode>/<file>", methods=["GET"])
+@app.route("/view/<mode>/<path:file>", methods=["GET"])
 def view(mode="auto", file=None):
     content = ""
+    content_type="text/plain"
     if mode == "auto":
-        # determin file/content type
+        # TODO: determine action from file type.
         pass
-    elif mode == "od":
-        content = exec_cmd("bash -c \"hexdump -C {}\"".format(file), True)
-    elif mode == "bufr":
-        pass
-    return make_response(content, 200 if len(content) else 204, {"Content-type": "text/plain"})
+    if mode == "bufr":
+        content_type="text/html"
+        with open(os.environ["HOME"] + "/" + file, "rb") as fh_in:
+            decode_url = "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
+            r = requests.post(decode_url, files={"file":fh_in})
+            app.logger.debug("ask webservice %s - %d", decode_url, r.status_code)
+            if r.status_code == 200:
+                content = r.content
+    else:  # "od"
+        content = exec_cmd("bash -c \"hexdump -C {}\"".format(os.environ["HOME"] + "/" + file), True)
+    return make_response(content, 200 if len(content) else 204, {"Content-type": content_type})
 
 
 def exec_cmd(cmd, read=False):

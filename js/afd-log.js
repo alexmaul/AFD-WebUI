@@ -149,7 +149,14 @@ var AFDLOG = function() {
 
         callView : function(log_name) {
             console.log("callView " + log_name);
-            $("#" + log_name + "-view-mode").text("View " + mode);
+            // if (!AFDCTRL.isAliasSelected(aliasList)) {
+            // return;
+            // }
+            aliasList = [ "tmp/testfile.bin" ];
+            mode = $("#" + log_name + "-view-mode").text().split(" ")[1].toLowerCase();
+            $.each(aliasList, function(i, v) {
+                window.open(AFDLOG.urlBase + "view/" + mode + "/" + v.replace(/row_/, ""));
+            });
         }
     };
 }();

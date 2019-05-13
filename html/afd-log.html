@@ -72,7 +72,7 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system');">Update</button>
         </tr></table>
-        <textarea id="system_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+        <div id="system_area" class="log_content_area_file"></div>
     </div>
     <!--
     EVENT-LOG
@@ -102,7 +102,7 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive');">Update</button>
         </tr></table>
-        <textarea id="receive_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+        <div id="receive_area" class="log_content_area_file"></div>
     </div>
     <!--
     TRANSFER-LOG
@@ -128,7 +128,7 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Update</button>
         </tr></table>
-        <textarea id="transfer_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+        <div id="transfer_area" class="log_content_area_file"></div>
     </div>
     <!--
     TRANSFER-DEBUG-LOG
@@ -154,7 +154,7 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer-debug');">Update</button>
         </tr></table>
-        <textarea id="transfer-debug_area" class="log_content_area" style="width:80%;" rows="40" readonly></textarea>
+        <div id="transfer-debug_area" class="log_content_area_file"></div>
     </div>
     <!--
     INPUT-LOG
@@ -190,7 +190,7 @@
                 </td>
             </tr>
         </table>
-        <textarea id="input_area" class="log_content_area" style="width:80%;" rows="35" readonly></textarea>
+        <div id="input_area" class="log_content_area_filter"></div>
     </div>
     <!--
     OUTPUT-LOG
@@ -314,7 +314,8 @@
                 </td>
             </tr>
         </table>
-        <textarea id="output_area" class="log_content_area" style="width:80%;" rows="35" readonly></textarea>
+        <!-- <textarea id="output_area" class="log_content_area" style="width:80%;" rows="35" readonly></textarea> -->
+        <div id="output_area" class="log_content_area_filter"></div>
     </div>
     <!--
     DELETE-LOG
@@ -408,7 +409,7 @@
                 </td>
             </tr>
         </table>
-        <textarea id="queue_area" class="log_content_area" style="width:80%;" rows="35" readonly></textarea>
+        <div id="queue_area" class="log_content_area_filter"></div>
     </div>
 </div>
 </body>

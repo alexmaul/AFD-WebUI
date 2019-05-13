@@ -7,6 +7,20 @@ body {
     font-family: monospace;
 }
 
+.log_content_area_file {
+    background-color: lightgrey;
+    font-family: monospace;
+    width:95%;
+    height:75vh
+}
+
+.log_content_area_filter {
+    background-color: lightgrey;
+    font-family: monospace;
+    width:95%;
+    height:67vh
+}
+
 table.tabcol {
     float: left;
 	font-size: 8pt;

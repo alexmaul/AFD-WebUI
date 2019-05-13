@@ -103,10 +103,21 @@ def afd(command=None, action=None):
 
 @app.route("/alda/<typ>", methods=["POST"])
 def alda(typ=None):
-    from_file = {"system":      "SYSTEM_LOG.",
-                 "receive":     "RECEIVE_LOG.",
-                 "transfer":    "TRANSFER_LOG.",
-                 "transfer_debug": "TRANS_DB_LOG."}
+    alda_output_format = {
+        "system":           "",
+        "receive":          "",
+        "transfer":         "",
+        "transfer_debug":   "",
+        "input":            "",
+        "output":           "",
+        "delete":           ""
+    }
+    from_file = {
+        "system":           "SYSTEM_LOG.",
+        "receive":          "RECEIVE_LOG.",
+        "transfer":         "TRANSFER_LOG.",
+        "transfer_debug":   "TRANS_DB_LOG."
+    }
     if typ in from_file:
         fnam = from_file[typ]
         fnum = request.form["file"]
@@ -121,15 +132,15 @@ def alda(typ=None):
             )
     else:
         par_tr = {
-               "start":         "-t ",
-                "end":          "-T ",
-                "directory":    "-d ",
-                "recipient":    "-h ",
-                "filesize":     "-S ",
+               "start":          "-t ",
+                "end":           "-T ",
+                "directory":     "-d ",
+                "recipient":     "-h ",
+                "filesize":      "-S ",
                 "job_id":        "-j ",
-                "protocol":     "-p ",
+                "protocol":      "-p ",
                 "only_archived": "",
-                "trans_time":   "-D ",
+                "trans_time":    "-D ",
                 "delete_reason": "",
             }
         par_lst = []
@@ -149,8 +160,9 @@ def alda(typ=None):
                 par_lst.append(par_tr[key])
             elif key in par_tr:
                 par_lst.append(par_tr[key] + val)
-        cmd = "alda -f -L {} {} {}".format(logtype,
+        cmd = "alda -f -L {} {} {} {}".format(logtype,
                                            " ".join(par_lst),
+                                           alda_output_format.get(typ, ""),
                                            fnam)
         data = exec_cmd(cmd, True)
     return make_response(data, {"Content-type": "text/plain"})

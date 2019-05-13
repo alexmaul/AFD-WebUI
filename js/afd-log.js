@@ -1,6 +1,7 @@
 var AFDLOG = function() {
     return {
         urlBase : "http://localhost:8040/",
+        selectedLogAreaLines : {},
 
         callAldaCmd : function(ctx, paramSet) {
             /*
@@ -12,8 +13,18 @@ var AFDLOG = function() {
                 url : AFDLOG.urlBase + "alda/" + ctx,
                 data : paramSet,
                 success : function(data, status, jqxhr) {
-                    console.log(status);
-                    $(this).text(data);
+                    console.log(ctx, status);
+                    //
+                    let cl = data.split("\n");
+                    let ul = [ "<ul class='list-group list-group-flush'>" ];
+                    for (let i = 0; i < cl.length; i++) {
+                        ul.push("<li class='list-group-item list-group-item-action' name='" + i + "' "
+                                + "onClick='javascript:AFDLOG.toggleLine(\"" + ctx + "\"," + i + ");'>" + cl[i]
+                                + "</li>");
+                    }
+                    ul.push("</ul>");
+                    $(this).html(ul.join("\n"));
+                    // $(this).text(data);
                     $(this).scrollTop($(this)[0].scrollHeight);
                 },
                 error : function(status, jqxhr) {
@@ -22,7 +33,6 @@ var AFDLOG = function() {
                 context : $("#" + ctx + "_area")
             });
         },
-
         callAldaLevel : function(log_name) {
             /*
              * Retrieve full log-file content (e.g. system-log, transfer-log).
@@ -81,6 +91,19 @@ var AFDLOG = function() {
                     obj.checked = true;
                 }
             });
+        },
+        toggleLine : function(ctx, line) {
+            if (this.selectedLogAreaLines[line]) {
+                console.log("deselect", ctx, line);
+                $("#" + ctx + "_area [name='" + line + "']").removeClass("active");
+                delete this.selectedLogAreaLines[line];
+            } else {
+                console.log("select", ctx, line);
+                let sl = $("#" + ctx + "_area [name='" + line + "']");
+                sl.addClass("active");
+                let sle = $("#" + ctx + "_area [name='" + line + "']").text().split("|");
+                this.selectedLogAreaLines[line] = sle[12] + "/" + sle[10];
+            }
         },
 
         setDate : function(log_name, time_range) {
@@ -149,13 +172,13 @@ var AFDLOG = function() {
 
         callView : function(log_name) {
             console.log("callView " + log_name);
-            // if (!AFDCTRL.isAliasSelected(aliasList)) {
-            // return;
-            // }
-            aliasList = [ "tmp/testfile.bin" ];
+            if (AFDLOG.selectedLogAreaLines.length == 0) {
+                alert("Select log entry first!");
+                return;
+            }
             mode = $("#" + log_name + "-view-mode").text().split(" ")[1].toLowerCase();
-            $.each(aliasList, function(i, v) {
-                window.open(AFDLOG.urlBase + "view/" + mode + "/" + v.replace(/row_/, ""));
+            $.each(AFDLOG.selectedLogAreaLines, function(i, v) {
+                window.open(AFDLOG.urlBase + "view/" + mode + "/" + v);
             });
         }
     };

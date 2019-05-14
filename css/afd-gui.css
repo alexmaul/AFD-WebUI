@@ -30,6 +30,9 @@ body {
 .log_content_list thead {
     background:         beige;
 }
+.log_content_list tbody td.al-r {
+    text-align:         right;
+}
 
 .log_content_list .selected {
     color:              white;

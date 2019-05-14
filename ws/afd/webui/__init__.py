@@ -109,7 +109,7 @@ def alda(typ=None):
         "transfer":         "",
         "transfer_debug":   "",
         "input":            "-o \"<tr><td>%ITm.%ITd.</td><td>%ITH:%ITM:%ITS</td><td>%IF</td><td class='al-r'>%OSB</td></tr>\"",
-        "output":           "-o \"<tr archive='%OA %OU %OL'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td class='al-r'>%OSB</td><td class='al-r'>%ODA</td></tr>\"",
+        "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td class='al-r'>%OSB</td><td class='al-r'>%ODA</td></tr>\"",
         "delete":           ""
     }
     from_file = {
@@ -181,7 +181,7 @@ def view(mode="auto", file=None):
         pass
     if mode == "bufr":
         content_type = "text/html"
-        with open(afd_work_dir + "/" + file, "rb") as fh_in:
+        with open(os.path.join(afd_work_dir, "archive", file), "rb") as fh_in:
             decode_url = "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
             r = requests.post(decode_url, files={"file": fh_in})
             app.logger.debug("forward-to: %s - %d", decode_url, r.status_code)

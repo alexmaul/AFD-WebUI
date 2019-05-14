@@ -70,7 +70,7 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system');">Update</button>
+        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system');">Search</button>
         </tr></table>
         <div id="system_area" class="log_content_area_file"></div>
     </div>
@@ -100,7 +100,7 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive');">Update</button>
+        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive');">Search</button>
         </tr></table>
         <div id="receive_area" class="log_content_area_file"></div>
     </div>
@@ -126,7 +126,7 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Update</button>
+        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Search</button>
         </tr></table>
         <div id="transfer_area" class="log_content_area_file"></div>
     </div>
@@ -152,7 +152,7 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer-debug');">Update</button>
+        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer-debug');">Search</button>
         </tr></table>
         <div id="transfer-debug_area" class="log_content_area_file"></div>
     </div>
@@ -185,15 +185,20 @@
                 <td><input type="text" class="filter" name="recipient" size="20" /></td>
             </tr>
             <tr>
-                <td colspan="6" align="center">
-                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('input');">Update</button>
+                <td colspan="3" align="center">
+                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('input');">Search</button>
                 </td>
             </tr>
         </table>
         <div class="log_content_area_filter">
             <table class="log_content_list">
                 <thead class="tabcol-head">
-                    <tr><td>mm.dd.</td><td>HH:MM:SS</td><td>File name</td><td>Hostname</td><td>Type</td><td>File size</td><td>TT</td></tr>
+                    <tr>
+                        <th style="width:8ex;">mm.dd.</th>
+                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th style="text-align:right;width:12ex;">File size</th> 
+                    </tr>
                 </thead>
                 <tbody id="input_area">
                 </tbody>
@@ -302,10 +307,19 @@
                 </td>
                 <td><input type="checkbox" class="filter" name="only_archived" value="true" /> Only archived </td>
                 <td><input type="checkbox" class="filter" name="received_only" value="true" /> Received only </td>
+                <td></td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="output-filename-remote" 
+                                id="output-filename-remote" onChange="javascript:$('.output-filename-remote').toggleClass('d-none')">
+                        <label class="custom-control-label output-filename-remote" for="output-filename-remote">Local</label>
+                        <label class="custom-control-label output-filename-remote d-none" for="output-filename-remote">Remote</label>
+                    </div>
+                </td>
             </tr>
             <tr>
-                <td colspan="4" align="center">
-                    <button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('output');">Update</button>
+                <td colspan="3" align="center">
+                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('output');">Search</button>
                 </td>
                 <td colspan="2" align="center">
                     <!-- Begin selector view mode -->
@@ -325,7 +339,15 @@
         <div class="log_content_area_filter">
             <table class="log_content_list">
                 <thead class="tabcol-head">
-                    <tr><td>mm.dd.</td><td>HH:MM:SS</td><td>File name</td><td>Hostname</td><td>Type</td><td>File size</td><td>TT</td></tr>
+                    <tr>
+                        <th style="width:8ex;">mm.dd.</th>
+                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th style="width:20ex;">Hostname</th> 
+                        <th style="width:8ex;">Type</th> 
+                        <th style="text-align:right;width:12ex;">File size</th> 
+                        <th style="text-align:right;width:12ex;">TT</th>
+                    </tr>
                 </thead>
                 <tbody id="output_area">
                 </tbody>
@@ -406,8 +428,8 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="4" align="center">
-                    <button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('queue');">Update</button>
+                <td colspan="3" align="center">
+                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('queue');">Search</button>
                 </td>
                 <td colspan="2" align="center">
                     <!-- Begin selector view mode -->
@@ -427,7 +449,15 @@
         <div class="log_content_area_filter">
             <table class="log_content_list">
                 <thead class="tabcol-head">
-                    <tr><td>mm.dd.</td><td>HH:MM:SS</td><td>File name</td><td>Hostname</td><td>Type</td><td>File size</td><td>TT</td></tr>
+                    <tr>
+                        <th style="width:8ex;">mm.dd.</th>
+                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th style="width:20ex;">Hostname</th> 
+                        <th style="width:8ex;">Type</th> 
+                        <th style="text-align:right;width:12ex;">File size</th> 
+                        <th style="text-align:right;width:12ex;">TT</th>
+                    </tr>
                 </thead>
                 <tbody id="queue_area">
                 </tbody>

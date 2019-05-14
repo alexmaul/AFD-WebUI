@@ -109,7 +109,7 @@ def alda(typ=None):
         "transfer":         "",
         "transfer_debug":   "",
         "input":            "",
-        "output":           "",
+        "output":           "-o \"<tr archive='%OA'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OO</td><td>%OSB</td><td>%ODA</td></tr>\"",
         "delete":           ""
     }
     from_file = {
@@ -132,7 +132,7 @@ def alda(typ=None):
             )
     else:
         par_tr = {
-               "start":          "-t ",
+                "start":         "-t ",
                 "end":           "-T ",
                 "directory":     "-d ",
                 "recipient":     "-h ",

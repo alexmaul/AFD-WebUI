@@ -109,7 +109,7 @@ def alda(typ=None):
         "transfer":         "",
         "transfer_debug":   "",
         "input":            "",
-        "output":           "-o \"<tr archive='%OA'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OO</td><td>%OSB</td><td>%ODA</td></tr>\"",
+        "output":           "-o \"<tr archive='%OA %OU %OL'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td>%OSB</td><td>%ODA</td></tr>\"",
         "delete":           ""
     }
     from_file = {
@@ -184,7 +184,12 @@ def view(mode="auto", file=None):
             if r.status_code == 200:
                 content = r.content
     else:  # "od"
-        content = exec_cmd("bash -c \"hexdump -C {}\"".format(afd_work_dir + "/" + file), True)
+        content = exec_cmd(
+            "bash -c \"hexdump -C {}\"".format(
+                os.path.join(afd_work_dir, "archive", file)
+                ),
+            True
+            )
     return make_response(content, 200 if len(content) else 204, {"Content-type": content_type})
 
 

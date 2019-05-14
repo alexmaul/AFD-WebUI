@@ -108,8 +108,8 @@ def alda(typ=None):
         "receive":          "",
         "transfer":         "",
         "transfer_debug":   "",
-        "input":            "",
-        "output":           "-o \"<tr archive='%OA %OU %OL'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td>%OSB</td><td>%ODA</td></tr>\"",
+        "input":            "-o \"<tr><td>%ITm.%ITd.</td><td>%ITH:%ITM:%ITS</td><td>%IF</td><td class='al-r'>%OSB</td></tr>\"",
+        "output":           "-o \"<tr archive='%OA %OU %OL'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td class='al-r'>%OSB</td><td class='al-r'>%ODA</td></tr>\"",
         "delete":           ""
     }
     from_file = {
@@ -125,6 +125,7 @@ def alda(typ=None):
         if (fnum == "all"):
             fnum = "*"
         data = exec_cmd(
+            # TODO: statt exec datei selbst filtern und ausgabe als tr/td aufbereiten.
             "bash -c \"grep -shP '<({})>' {}/log/{}{}\"".format(
                 filt, afd_work_dir, fnam, fnum
                 ),
@@ -150,19 +151,22 @@ def alda(typ=None):
         else:
             logtype = typ[0].upper()
         app.logger.debug(request.form)
+        alda_output_line = alda_output_format.get(typ, "")
         for key, val in request.form.items():
             if key == "filename":
                 fnam = val
             elif key == "recipient":
                 rl = ",".join("%" + v for v in val.split(","))
                 par_lst.append("{}'{}'".format(par_tr[key], rl))
+            elif key == "output-filename-remote" and val in ("on", "yes", "true"):
+                alda_output_line = alda_output_line.replace("%Of", "%OF")
             elif key in par_tr and val == "true":
                 par_lst.append(par_tr[key])
             elif key in par_tr:
                 par_lst.append(par_tr[key] + val)
         cmd = "alda -f -L {} {} {} {}".format(logtype,
                                            " ".join(par_lst),
-                                           alda_output_format.get(typ, ""),
+                                           alda_output_line,
                                            fnam)
         data = exec_cmd(cmd, True)
     return make_response(data, {"Content-type": "text/plain"})

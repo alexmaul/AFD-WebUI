@@ -1,6 +1,6 @@
 var AFDCTRL = function() {
     return {
-        urlBase : "http://localhost:8040/",
+        urlBase : "/",
         rowNum : 0, // Initial nomber of alias rows.
         maxRowsPerCol : 40, // Max. number of alias rows.
         markedRows : {}, // Set of selected alias rows.

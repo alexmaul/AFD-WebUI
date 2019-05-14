@@ -135,8 +135,8 @@ var AFDLOG = function() {
                 val_start = "" + tb_mo + tb_dd + "0000";
                 val_end = "" + ta_mo + ta_dd + "0000";
             }
-            $("#" + log_name + " .start").val(val_start);
-            $("#" + log_name + " .end").val(val_end);
+            $("#" + log_name + " .filter[name=start]").val(val_start);
+            $("#" + log_name + " .filter[name=end]").val(val_end);
             console.log(val_start, val_end);
         },
 

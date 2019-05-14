@@ -1,37 +1,50 @@
 body {
-    padding:10px;
+    padding:            10px;
 }
 
 #tab_area {
-    background-color: #d0f4ff;
-    font-family: monospace;
+    background-color:   #d0f4ff;
+    font-family:        monospace;
 }
 
 .log_content_area_file {
-    background-color: lightgrey;
-    font-family: monospace;
-    width:95%;
-    height:75vh
+    background-color:   lightgrey;
+    font-family:        monospace;
+    width:              95%;
+    height:             75vh;
 }
 
 .log_content_area_filter {
-    background-color: lightgrey;
-    font-family: monospace;
-    width:95%;
-    height:67vh
+    background-color:   lightgrey;
+    font-family:        monospace;
+    width:              95%;
+    height:             67vh;
+}
+
+.log_content_list {
+    width:              100%;
+}
+
+.log_content_list thead {
+    background:         beige;
+}
+
+.log_content_list .selected {
+    color:              white;
+    background-color:   black;
 }
 
 table.tabcol {
-    float: left;
-	font-size: 8pt;
-	border-collapse: separate;
-	border-spacing: 0px;
-	padding-top: 5px;
-	padding-left: 5px;
+    float:              left;
+	font-size:          8pt;
+	border-collapse:    separate;
+	border-spacing:     0px;
+	padding-top:        5px;
+	padding-left:       5px;
 }
 
 .tabcol thead {
-	background: beige;
+	background:         beige;
 }
 
 tr * {
@@ -39,174 +52,174 @@ tr * {
 }
 
 tr.tabrow * {
-	border-width: 1px;
-	border-style: solid;
-	border-color: #d0f4ff;
+	border-width:       1px;
+	border-style:       solid;
+	border-color:       #d0f4ff;
 }
 
 tr.tabrow_mark * {
 	/*
-    padding-left:2px;
-    padding-right:2px;
+    padding-left:       2px;
+    padding-right:      2px;
     */
-	border-width: 1px;
-	border-style: solid;
-	border-color: black;
+	border-width:       1px;
+	border-style:       solid;
+	border-color:       black;
 }
 
 .marked {
-	color: white;
-	background: black;
+	color:              white;
+	background:         black;
 }
 
 td.alias {
-	width: 12ex;
+	width:              12ex;
 }
 
 td.status_led {
-	width: 2px;
+	width:              2px;
 }
 
 .numval {
-	width: 5ex;
-	text-align: right;
-	background: lightblue;
+	width:              5ex;
+	text-align:         right;
+	background:         lightblue;
 }
 
 .numval_mark {
-	width: 5ex;
-	text-align: right;
-	color: white;
-	background: black;
+	width:              5ex;
+	text-align:         right;
+	color:              white;
+	background:         black;
 }
 
 .debug {
-	color: gold;
+	color:              gold;
 }
 
 .trace {
-	color: darkorange;
+	color:              darkorange;
 }
 
 .full_trace {
-	color: red;
+	color:              red;
 }
 
 /*
 Alias-field:
 */
 .TRANSFER_ACTIVE {
-	color: white;
-	background: darkgreen;
+	color:              white;
+	background:         darkgreen;
 }
 
 .TRANSFER_NORMAL {
-	background: limegreen;
+	background:         limegreen;
 }
 
 .TRANSFER_DISABLED {
-	background: lightblue;
+	background:         lightblue;
 }
 
 .TRANSFER_STOP {
-	background: orange;
+	background:         orange;
 }
 
 .STOP_TRANSFER {
-	background: orange;
+	background:         orange;
 }
 
 .NORMAL_STATUS {
-	background: limegreen;
+	background:         limegreen;
 }
 
 .DISABLED {
-	background: white;
+	background:         white;
 }
 
 .HOST_DISABLED {
-    background: white;
+    background:          white;
 }
 
 .HOST_NOT_IN_DIR_CONFIG {
-	background: #d0f4ff;
+	background:         #d0f4ff;
 }
 
 .HOST_CONFIG_HOST_DISABLED {
-	background: white;
+	background:         white;
 }
 
 .HOST_ERROR_OFFLINE {
-	background: red;
+	background:         red;
 }
 
 .HOST_ERROR_ACKNOWLEDGED {
-	background: orange;
+	background:         orange;
 }
 
 .DANGER_PAUSE_QUEUE_STAT {
-	background: black;
+	background:        black;
 }
 
 .HOST_ERROR_OFFLINE_STATIC {
-	background: yellow;
+	background:         yellow;
 }
 
 .HOST_ACTION_SUCCESS {
-	background: blue;
+	background:         blue;
 }
 
 /* 
 Job status:
 */
 .jobs {
-	font-size: 8pt;
-	font-stretch: condensed;
+	font-size:          8pt;
+	font-stretch:       condensed;
 }
 
 .DISCONNECT {
-	color: black;
-	background: white;
+	color:              black;
+	background:         white;
 }
 
 .CONNECTING {
-	color: black;
-	background: lightblue;
+	color:              black;
+	background:         lightblue;
 }
 
 .LOC_active {
-	color: black;
-	background: blue;
+	color:              black;
+	background:         blue;
 }
 
 .FTP_burst_active {
-	color: black;
-	background: lightgreen;
+	color:              black;
+	background:         lightgreen;
 }
 
 .FTP_active {
-	color: white;
-	background: green;
-}
+	color:              white;
+	background:         green;
+} 
 
 /* 
 Queue status:
 */
 .PAUSE_QUEUE {
-	background: saddlebrown;
+	background:         saddlebrown;
 }
 
 .AUTO_PAUSE_QUEUE {
-	background: darkorange;
+	background:         darkorange;
 }
 
 /*
 Modal select
 */
 div.row {
-    padding-bottom: 20px;
+    padding-bottom:     20px;
 }
 
 div.row .form-check {
-    padding-left: 20px;
+    padding-left:       20px;
 }

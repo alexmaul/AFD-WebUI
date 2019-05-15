@@ -40,7 +40,7 @@
         <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link disabled" id="delete-tab" data-toggle="tab" href="#delete" role="tab" aria-controls="delete" aria-selected="false">Delete</a>
+        <a class="nav-link" id="delete-tab" data-toggle="tab" href="#delete" role="tab" aria-controls="delete" aria-selected="false">Delete</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" id="queue-tab" data-toggle="tab" href="#queue" role="tab" aria-controls="delete" aria-selected="false">Queue</a>
@@ -198,6 +198,7 @@
                         <th class="clst-hh">HH:MM:SS</th> 
                         <th>File name</th> 
                         <th class="clst-fs">File size</th> 
+                        <th width="1em"></th>
                     </tr>
                 </thead>
             </table>
@@ -351,6 +352,7 @@
                         <th class="clst-tr">Type</th> 
                         <th class="clst-fs">File size</th> 
                         <th class="clst-tt">TT</th>
+                        <th width="1em"></th>
                     </tr>
                 </thead>
             </table>
@@ -366,7 +368,199 @@
     DELETE-LOG
     //-->
     <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
-        
+        <table>
+            <tr>
+                <td> Start time: </td>
+                <td><input type="text" class="filter" name="start" size="8" /></td>
+                <td align="right">End time: </td>
+                <td align="right"><input type="text" class="filter" name="end" size="8" /></td>
+                <td />
+                <td>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'today');">Today</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'yesterday');">Yesterday</button>
+                </td>
+            </tr>
+            <tr>
+                <td> File name: </td>
+                <td colspan="3"><input type="text" class="filter" name="filename" size="40" /></td>
+                <td> File size: </td>
+                <td><input type="text" class="filter" name="filesize" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Directory: </td>
+                <td colspan="3"><input type="text" class="filter" name="directory" size="40" /></td>
+                <td> Recipient: </td>
+                <td><input type="text" class="filter" name="recipient" size="20" /></td>
+            </tr>
+            <tr>
+                <td />
+                <td>
+                    <!-- Begin modal delete reason -->
+                    <button type="button" id="modalDeleteButton" class="btn btn-secondary" data-toggle="modal" data-target="#modalDelete">Delete reason</button>
+                    <input type="hidden" id="modalDeleteValue" class="filter" name="delete-reason" value="" />
+                    <div class="modal fade" id="modalDelete" tabindex="-1" role="dialog" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalDeleteLabel">Delete reasons:</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-0" value="0" checked>
+                                                <label for="delete-reason-0" class="form-check-label">Age-limit(O)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-1" value="1" checked>
+                                                <label for="delete-reason-1" class="form-check-label">Age-limit(I)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-2" value="2" checked>
+                                                <label for="delete-reason-2" class="form-check-label">User delete</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-3" value="3" checked>
+                                                <label for="delete-reason-3" class="form-check-label">Exec delete</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-4" value="4" checked>
+                                                <label for="delete-reason-4" class="form-check-label">Missing msg</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-5" value="5" checked>
+                                                <label for="delete-reason-5" class="form-check-label">Duplicate(I)</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-6" value="6" checked>
+                                                <label for="delete-reason-6" class="form-check-label">Duplicate(O)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-7" value="7" checked>
+                                                <label for="delete-reason-7" class="form-check-label">Unknown file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-8" value="8" checked>
+                                                <label for="delete-reason-8" class="form-check-label">Job ID error</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-9" value="9" checked>
+                                                <label for="delete-reason-9" class="form-check-label">Old lock file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-10" value="10" checked>
+                                                <label for="delete-reason-10" class="form-check-label">Queued file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-11" value="11" checked>
+                                                <label for="delete-reason-11" class="form-check-label">Delete option</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-12" value="12" checked>
+                                                <label for="delete-reason-12" class="form-check-label">Del stale job</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-13" value="13" checked>
+                                                <label for="delete-reason-13" class="form-check-label">Update DB del</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-14" value="14" checked>
+                                                <label for="delete-reason-14" class="form-check-label">Other proc</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-15" value="15" checked>
+                                                <label for="delete-reason-15" class="form-check-label">Del pool dir</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-16" value="16" checked>
+                                                <label for="delete-reason-16" class="form-check-label">Exec stored</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-17" value="17" checked>
+                                                <label for="delete-reason-17" class="form-check-label">Host disabled</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-18" value="18" checked>
+                                                <label for="delete-reason-18" class="form-check-label">Convert fail</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-19" value="19" checked>
+                                                <label for="delete-reason-19" class="form-check-label">Rename overwr</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-20" value="20" checked>
+                                                <label for="delete-reason-20" class="form-check-label">Mail recp rej</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-21" value="21" checked>
+                                                <label for="delete-reason-21" class="form-check-label">Mirror delete</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-22" value="22" checked>
+                                                <label for="delete-reason-22" class="form-check-label">Queue error</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-23" value="23" checked>
+                                                <label for="delete-reason-23" class="form-check-label">Int. link err</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.toggleModal('modalDelete');">Toggle all</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End modal delete reason -->
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" align="center">
+                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('delete');">Search</button>
+                </td>
+            </tr>
+        </table>
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
+                <thead class="tabcol-head">
+                    <tr>
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-rn">Reason</th> 
+                        <th class="clst-pu">Process/User</th> 
+                        <th width="1em"></th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="log_content-area-scroll">
+                <table class="log_content-list">
+                    <tbody id="delete-area">
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     <!--
     QUEUE
@@ -467,6 +661,7 @@
                         <th class="clst-tr">Type</th> 
                         <th class="clst-fs">File size</th> 
                         <th class="clst-tt">TT</th>
+                        <th width="1em"></th>
                     </tr>
                 </thead>
             </table>

@@ -68,6 +68,12 @@ Log-content list, column definition
     text-align:         right;
     width:              12ex;
 }
+.log_content-list .clst-rn {
+    width:              40ex;
+}
+.log_content-list .clst-pu {
+    width:              20ex;
+}
 
 .log_content-list .selected {
     color:              white;

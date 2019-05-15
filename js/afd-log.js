@@ -62,7 +62,6 @@ var AFDLOG = function() {
              */
             console.log("callAldaFilter " + log_name);
             let paramSet = {};
-            console.log($("#" + log_name + " .filter"));
             $.each($("#" + log_name + " .filter"), function(i, obj) {
                 if (obj.type == "checkbox") {
                     if (obj.checked == true) {
@@ -180,7 +179,7 @@ var AFDLOG = function() {
             $(window.location.hash + "-tab").tab("show");
         }
         // Set update function for modal events.
-        let modalList = [ "modalProtocol" ];
+        let modalList = [ "modalProtocol", "modalDelete" ];
         for (let i = 0; i < modalList.length; i++) {
             $("#" + modalList[i]).on("hide.bs.modal", function(event) {
                 AFDLOG.updateModal(event.target.id);

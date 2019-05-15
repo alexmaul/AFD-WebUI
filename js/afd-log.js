@@ -8,6 +8,7 @@ var AFDLOG = function() {
              * Exec general AFD command, handle ajax call.
              */
             console.log("callAldaCmd: " + ctx + ": " + paramSet);
+            $("#" + ctx + " .log_content-area-scroll .spinner-border").removeClass("d-none");
             $.ajax({
                 type : "POST",
                 url : AFDLOG.urlBase + "alda/" + ctx,
@@ -22,6 +23,9 @@ var AFDLOG = function() {
                 },
                 error : function(status, jqxhr) {
                     console.log(status, jqxhr);
+                },
+                complete : function(a, b) {
+                    $("#" + ctx + " .log_content-area-scroll .spinner-border").addClass("d-none");
                 },
                 context : $("#" + ctx + "-area")
             });

@@ -133,7 +133,7 @@ def log_from_file(file_name):
 def log_from_alda(typ):
     alda_output_format = {
         "input":            "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td><td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td><td class='clst-fs'>%OSB</td></tr>\"",
-        "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td></tr>\"",
+        "output":           "-o \"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td></tr>\"",
         "delete":           "-o \"<tr><td class='clst-dd'>%DTm.%DTd.</td><td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td><td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td><td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td></tr>\""
     }
     par_tr = {
@@ -175,6 +175,23 @@ def log_from_alda(typ):
                                        alda_output_line,
                                        fnam)
     data = exec_cmd(cmd, True)
+    if typ == "output":
+        # Parse each line, and set archive flag.
+        new_data = []
+        for data_line in data.split("\n"):
+            if not data_line:
+                continue
+            parts = data_line.split("|")
+            if not parts[1].startswith("/"):
+                if os.path.exists(os.path.join(afd_work_dir, "archive", parts[1])):
+                    parts[-2] = "Y"
+                else:
+                    parts[-2] = "D"
+            else:
+                parts[1] = ""
+                parts[-2] = "N"
+            new_data.append("".join(parts))
+        data = "\n".join(new_data)
     return make_response(data, {"Content-type": "text/plain"})
 
 

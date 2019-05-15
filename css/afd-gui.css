@@ -74,6 +74,9 @@ Log-content list, column definition
 .log_content-list .clst-pu {
     width:              20ex;
 }
+.log_content-list .clst-aa {
+    width:              2ex;
+}
 
 .log_content-list .selected {
     color:              white;

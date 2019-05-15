@@ -153,12 +153,12 @@ var AFDLOG = function() {
             console.log("callView " + log_name);
             let selectedLogAreaLines = [];
             $.each($("#" + log_name + " .selected"), function(i, obj) {
-                if (obj.attributes["archive"]) {
+                if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
                     selectedLogAreaLines.push(obj.attributes["archive"].value);
                 }
             });
             if (selectedLogAreaLines.length == 0) {
-                alert("Select log entry first!");
+                alert("Select archived log entry first!");
                 return;
             }
             mode = $("#" + log_name + "-view-mode").text().split(" ")[1].toLowerCase();

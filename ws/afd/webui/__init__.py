@@ -110,61 +110,71 @@ def alda(typ=None):
         "transfer_debug":   "TRANS_DB_LOG."
     }
     if typ in from_file:
-        fnam = from_file[typ]
-        fnum = request.form["file"]
-        filt = request.form["filter"]
-        if (fnum == "all"):
-            fnum = "*"
-        data = exec_cmd(
-            # TODO: statt exec datei selbst filtern und ausgabe als tr/td aufbereiten.
-            "bash -c \"grep -shP '<({})>' {}/log/{}{}\"".format(
-                filt, afd_work_dir, fnam, fnum
-                ),
-            True
-            )
+        return log_from_file(from_file[typ])
     else:
-        alda_output_format = {
-            "input":            "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td><td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td><td class='clst-fs'>%OSB</td></tr>\"",
-            "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td></tr>\"",
-            "delete":           ""
+        return log_from_alda(typ)
+
+
+def log_from_file(file_name):
+    file_number = request.form["file"]
+    level_filter = request.form["filter"]
+    if (file_number == "all"):
+        file_number = "*"
+    data = exec_cmd(
+        # TODO: statt exec datei selbst filtern und ausgabe als tr/td aufbereiten.
+        "bash -c \"grep -shP '<({})>' {}/log/{}{}\"".format(
+            level_filter, afd_work_dir, file_name, file_number
+            ),
+        True
+        )
+    return make_response(data, {"Content-type": "text/plain"})
+
+
+def log_from_alda(typ):
+    alda_output_format = {
+        "input":            "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td><td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td><td class='clst-fs'>%OSB</td></tr>\"",
+        "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td></tr>\"",
+        "delete":           "-o \"<tr><td class='clst-dd'>%DTm.%DTd.</td><td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td><td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td><td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td></tr>\""
+    }
+    par_tr = {
+            "start":         "-t ",
+            "end":           "-T ",
+            "directory":     "-d ",
+            "recipient":     "-h ",
+            "filesize":      "-S ",
+            "job_id":        "-j ",
+            "protocol":      "-p ",
+            "archived-only": None,
+            "trans-time":    "-D ",
+            "delete-reason": None,
         }
-        par_tr = {
-                "start":         "-t ",
-                "end":           "-T ",
-                "directory":     "-d ",
-                "recipient":     "-h ",
-                "filesize":      "-S ",
-                "job_id":        "-j ",
-                "protocol":      "-p ",
-                "archived-only": "",
-                "trans-time":    "-D ",
-                "delete-reason": "",
-            }
-        par_lst = []
-        fnam = ""
-        if request.form.get("received-only", None):
-            logtype = "R"
-        else:
-            logtype = typ[0].upper()
-        app.logger.debug(request.form)
-        alda_output_line = alda_output_format.get(typ, "")
-        for key, val in request.form.items():
-            if key == "filename":
-                fnam = val
-            elif key == "recipient":
-                rl = ",".join("%" + v for v in val.split(","))
-                par_lst.append("{}'{}'".format(par_tr[key], rl))
-            elif key == "output-filename-remote" and val in ("on", "yes", "true"):
-                alda_output_line = alda_output_line.replace("%Of", "%OF")
-            elif key in par_tr and val == "true":
-                par_lst.append(par_tr[key])
-            elif key in par_tr:
-                par_lst.append(par_tr[key] + val)
-        cmd = "alda -f -L {} {} {} {}".format(logtype,
-                                           " ".join(par_lst),
-                                           alda_output_line,
-                                           fnam)
-        data = exec_cmd(cmd, True)
+    par_lst = []
+    fnam = ""
+    if request.form.get("received-only", None):
+        logtype = "R"
+    else:
+        logtype = typ[0].upper()
+    app.logger.debug(request.form)
+    alda_output_line = alda_output_format.get(typ, "")
+    for key, val in request.form.items():
+        if key in par_tr and par_tr[key] is None:
+            continue
+        elif key == "filename":
+            fnam = val
+        elif key == "recipient":
+            rl = ",".join("%" + v for v in val.split(","))
+            par_lst.append("{}'{}'".format(par_tr[key], rl))
+        elif key == "output-filename-remote" and val in ("on", "yes", "true"):
+            alda_output_line = alda_output_line.replace("%Of", "%OF")
+        elif key in par_tr and val == "true":
+            par_lst.append(par_tr[key])
+        elif key in par_tr:
+            par_lst.append(par_tr[key] + val)
+    cmd = "alda -f -L {} {} {} {}".format(logtype,
+                                       " ".join(par_lst),
+                                       alda_output_line,
+                                       fnam)
+    data = exec_cmd(cmd, True)
     return make_response(data, {"Content-type": "text/plain"})
 
 

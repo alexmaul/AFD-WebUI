@@ -22,9 +22,14 @@ Log-content area, as simple text:
 Log-content area, in list format:
 */
 .log_content-area-filter {
-    background-color:   lightgrey;
     font-family:        monospace;
     width:              95%;
+}
+
+.log_content-area-scroll {
+    background-color:   lightgrey;
+    font-family:        monospace;
+    width:              100%;
     height:             67vh;
     overflow-y:         scroll;
 }
@@ -40,6 +45,9 @@ Log-content area, in list format:
 /*
 Log-content list, column definition
 */
+.log_content-list td,th {
+    padding-right:      2ex;
+}
 .log_content-list .clst-dd {
     width:              8ex;
 }

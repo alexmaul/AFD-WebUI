@@ -10,18 +10,18 @@ var AFDCTRL = function() {
              */
             if (this.markedRows[row.attr("id")]) {
                 console.log("alias-click-deselect:", row.attr("id"));
-                row.addClass("tabrow");
-                row.removeClass("tabrow_mark");
+                row.addClass("tab-row");
+                row.removeClass("tab-row-mark");
                 row.children(".mrkbl").removeClass("marked");
-                row.children(".numval_mark").addClass("numval");
-                row.children(".numval_mark").removeClass("numval_mark");
+                row.children(".numval-mark").addClass("numval");
+                row.children(".numval-mark").removeClass("numval-mark");
                 delete this.markedRows[row.attr("id")];
             } else {
                 console.log("alias-click-select:", row.attr("id"));
-                row.addClass("tabrow_mark");
-                row.removeClass("tabrow");
+                row.addClass("tab-row-mark");
+                row.removeClass("tab-row");
                 row.children(".mrkbl").addClass("marked");
-                row.children(".numval").addClass("numval_mark");
+                row.children(".numval").addClass("numval-mark");
                 row.children(".numval").removeClass("numval");
                 this.markedRows[row.attr("id")] = true;
             }
@@ -186,9 +186,9 @@ var AFDCTRL = function() {
             alias_cl = ""
             $.each(aliasList, function(i, v) {
                 if (i > 0) {
-                    alias_cl += "," + v.replace(/row_/, "")
+                    alias_cl += "," + v.replace(/row-/, "")
                 } else {
-                    alias_cl = v.replace(/row_/, "")
+                    alias_cl = v.replace(/row-/, "")
                 }
             });
             $.ajax({
@@ -213,7 +213,7 @@ var AFDCTRL = function() {
             }
             console.log("callAliasWindow:", cmd, aliasList);
             $.each(aliasList, function(i, v) {
-                window.open(AFDCTRL.urlBase + "alias/" + cmd + "/" + v.replace(/row_/, ""));
+                window.open(AFDCTRL.urlBase + "alias/" + cmd + "/" + v.replace(/row-/, ""));
             });
         },
         isAliasSelected : function(aliasList) {
@@ -236,7 +236,7 @@ var AFDCTRL = function() {
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
                 this_data = data["data"];
                 $.each(this_data, function(i, v) {
-                    if ($("#row_" + v.alias).length == 0) {
+                    if ($("#row-" + v.alias).length == 0) {
                         AFDCTRL.addRow(AFDCTRL.rowNum, v);
                         AFDCTRL.rowNum += 1;
                     }
@@ -253,16 +253,16 @@ var AFDCTRL = function() {
             console.log("rownum:", rowNum, "maxRowsPerCol:", AFDCTRL.maxRowsPerCol, "lastCol:", lastCol, "tabcol.len:",
                     $(".tabcol").length);
             if ($(".tabcol").length <= lastCol) {
-                let col = $("#template_tabcol").clone();
+                let col = $("#template-tabcol").clone();
                 col.attr("id", "tabcol-" + lastCol);
                 col.addClass("tabcol");
                 col.removeAttr("style");
                 col.find("tbody").attr("id", "tbdy-" + lastCol);
-                $("#tab_area").append(col);
+                $("#tab-area").append(col);
             }
-            let row = $("#template_row").clone();
+            let row = $("#template-row").clone();
             row.attr("rowNum", rowNum);
-            row.attr("id", "row_" + val.alias);
+            row.attr("id", "row-" + val.alias);
             row.children(".alias").html(val.alias);
             row.show();
             row.removeAttr("style");
@@ -279,7 +279,7 @@ var AFDCTRL = function() {
              * 
              */
             let typ = null, j, x, y;
-            let row = $("#row_" + val.alias);
+            let row = $("#row-" + val.alias);
             for (typ in val) {
                 if (!val.hasOwnProperty(typ)) {
                     next;
@@ -396,7 +396,7 @@ var AFDCTRL = function() {
                     for (j in val.jobs) {
                         jid = row.attr("id") + "_job_" + val.jobs[j].job_num;
                         if ($("#" + jid).length == 0) {
-                            radd = $("#template_job").clone();
+                            radd = $("#template-job").clone();
                             radd.attr("id", jid);
                             row.children(".jobs").append(radd);
                             radd.show();
@@ -422,7 +422,7 @@ var AFDCTRL = function() {
     $(document).ready(function() {
         /* Set height for host area. */
         let tab_area_height = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
-        $("#tab_area").attr("style", "height:" + tab_area_height + "px;");
+        $("#tab-area").attr("style", "height:" + tab_area_height + "px;");
         /* Set event-handler for navbar menu. */
         $("nav").find("a").not(".dropdown-toggle").click(function(event) {
             AFDCTRL.evalMenu(event.target.text);

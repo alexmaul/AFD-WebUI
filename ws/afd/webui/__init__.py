@@ -103,15 +103,6 @@ def afd(command=None, action=None):
 
 @app.route("/alda/<typ>", methods=["POST"])
 def alda(typ=None):
-    alda_output_format = {
-        "system":           "",
-        "receive":          "",
-        "transfer":         "",
-        "transfer_debug":   "",
-        "input":            "-o \"<tr><td>%ITm.%ITd.</td><td>%ITH:%ITM:%ITS</td><td>%IF</td><td class='al-r'>%OSB</td></tr>\"",
-        "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td>%OTm.%OTd.</td><td>%OTH:%OTM:%OTS</td><td>%Of</td><td>%OH</td><td>%OP</td><td class='al-r'>%OSB</td><td class='al-r'>%ODA</td></tr>\"",
-        "delete":           ""
-    }
     from_file = {
         "system":           "SYSTEM_LOG.",
         "receive":          "RECEIVE_LOG.",
@@ -132,6 +123,11 @@ def alda(typ=None):
             True
             )
     else:
+        alda_output_format = {
+            "input":            "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td><td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td><td class='clst-fs'>%OSB</td></tr>\"",
+            "output":           "-o \"<tr archive='%OA/%xOZu_%xOU_%xOL_%Of'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td></tr>\"",
+            "delete":           ""
+        }
         par_tr = {
                 "start":         "-t ",
                 "end":           "-T ",
@@ -140,13 +136,13 @@ def alda(typ=None):
                 "filesize":      "-S ",
                 "job_id":        "-j ",
                 "protocol":      "-p ",
-                "only_archived": "",
-                "trans_time":    "-D ",
-                "delete_reason": "",
+                "archived-only": "",
+                "trans-time":    "-D ",
+                "delete-reason": "",
             }
         par_lst = []
         fnam = ""
-        if request.form.get("only_received", None):
+        if request.form.get("received-only", None):
             logtype = "R"
         else:
             logtype = typ[0].upper()

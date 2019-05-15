@@ -23,7 +23,7 @@ var AFDLOG = function() {
                 error : function(status, jqxhr) {
                     console.log(status, jqxhr);
                 },
-                context : $("#" + ctx + "_area")
+                context : $("#" + ctx + "-area")
             });
         },
         callAldaLevel : function(log_name) {
@@ -40,7 +40,7 @@ var AFDLOG = function() {
                 debug : "D",
             };
             let filter = [];
-            $.each($("#" + log_name + " ." + log_name + "_level"), function(i, v) {
+            $.each($("#" + log_name + " ." + log_name + "-level"), function(i, v) {
                 if (v.checked) {
                     filter.push(transl[v.value]);
                 }
@@ -49,7 +49,7 @@ var AFDLOG = function() {
                 alert("Check at least one log-level!");
                 return false;
             }
-            let file_number = $("#" + log_name + "_logfile").get(0).value;
+            let file_number = $("#" + log_name + "-logfile").get(0).value;
             AFDLOG.callAldaCmd(log_name, {
                 file : file_number,
                 filter : filter.join("|")

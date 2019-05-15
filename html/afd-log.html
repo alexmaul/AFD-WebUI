@@ -31,7 +31,7 @@
         <a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">Transfer</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="transfer-debug-tab" data-toggle="tab" href="#transfer-debug" role="tab" aria-controls="transfer-debug" aria-selected="false">Transfer Debug</a>
+        <a class="nav-link" id="transfer_debug-tab" data-toggle="tab" href="#transfer_debug" role="tab" aria-controls="transfer_debug" aria-selected="false">Transfer Debug</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="false">Input</a>
@@ -52,15 +52,15 @@
     //-->
     <div class="tab-pane fade show active" id="system" role="tabpanel" aria-labelledby="system-tab">
         <table><tr>
-        <td><input type="checkbox" class="system_level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="system_level" value="config" checked /> Config  </td>
-        <td><input type="checkbox" class="system_level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="system_level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="system_level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="system_level" value="debug" /> Debug  </td>
+        <td><input type="checkbox" class="system-level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="system-level" value="config" checked /> Config  </td>
+        <td><input type="checkbox" class="system-level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="system-level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="system-level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="system-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="system_logfile">
+        <td><select id="system-logfile">
             <option selected>0</option>
             <option>1</option>
             <option>2</option>
@@ -72,7 +72,7 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system');">Search</button>
         </tr></table>
-        <div id="system_area" class="log_content_area_file"></div>
+        <textarea id="system-area" class="log_content-area-file" readonly></textarea>
     </div>
     <!--
     EVENT-LOG
@@ -83,14 +83,14 @@
     //-->
     <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">        
         <table><tr>
-        <td><input type="checkbox" class="receive_level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="receive_level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="receive_level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="receive_level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="receive_level" value="debug" /> Debug  </td>
+        <td><input type="checkbox" class="receive-level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="receive-level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="receive-level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="receive-level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="receive-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="receive_logfile">
+        <td><select id="receive-logfile">
             <option selected>0</option>
             <option>1</option>
             <option>2</option>
@@ -102,21 +102,21 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive');">Search</button>
         </tr></table>
-        <div id="receive_area" class="log_content_area_file"></div>
+        <textarea id="receive-area" class="log_content-area-file" readonly></textarea>
     </div>
     <!--
     TRANSFER-LOG
     //-->
     <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">        
         <table><tr>
-        <td><input type="checkbox" class="transfer_level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="transfer_level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="transfer_level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="transfer_level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="transfer_level" value="debug" /> Debug  </td>
+        <td><input type="checkbox" class="transfer-level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="transfer-level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="transfer-level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="transfer-level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="transfer-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="transfer_logfile">
+        <td><select id="transfer-logfile">
             <option selected>0</option>
             <option>1</option>
             <option>2</option>
@@ -128,21 +128,21 @@
         </select>  </td>
         <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Search</button>
         </tr></table>
-        <div id="transfer_area" class="log_content_area_file"></div>
+        <textarea id="transfer-area" class="log_content-area-file" readonly></textarea>
     </div>
     <!--
-    TRANSFER-DEBUG-LOG
+    transfer_debug-LOG
     //-->
-    <div class="tab-pane fade" id="transfer-debug" role="tabpanel" aria-labelledby="transfer-debug-tab">        
+    <div class="tab-pane fade" id="transfer_debug" role="tabpanel" aria-labelledby="transfer_debug-tab">        
         <table><tr>
-        <td><input type="checkbox" class="transfer-debug_level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="transfer-debug_level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="transfer-debug_level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="transfer-debug_level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="transfer-debug_level" value="debug" /> Debug  </td>
+        <td><input type="checkbox" class="transfer_debug-level" value="info" checked /> Info </td>
+        <td><input type="checkbox" class="transfer_debug-level" value="warn" checked /> Warn  </td>
+        <td><input type="checkbox" class="transfer_debug-level" value="error" checked /> Error  </td>
+        <td><input type="checkbox" class="transfer_debug-level" value="offline" /> Offline  </td>
+        <td><input type="checkbox" class="transfer_debug-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="transfer-debug_logfile">
+        <td><select id="transfer_debug-logfile">
             <option selected>0</option>
             <option>1</option>
             <option>2</option>
@@ -152,9 +152,9 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer-debug');">Search</button>
+        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer_debug');">Search</button>
         </tr></table>
-        <div id="transfer-debug_area" class="log_content_area_file"></div>
+        <textarea id="transfer_debug-area" class="log_content-area-file" readonly></textarea>
     </div>
     <!--
     INPUT-LOG
@@ -190,17 +190,17 @@
                 </td>
             </tr>
         </table>
-        <div class="log_content_area_filter">
-            <table class="log_content_list">
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
                 <thead class="tabcol-head">
                     <tr>
-                        <th style="width:8ex;">mm.dd.</th>
-                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
                         <th>File name</th> 
-                        <th style="text-align:right;width:12ex;">File size</th> 
+                        <th class="clst-fs">File size</th> 
                     </tr>
                 </thead>
-                <tbody id="input_area">
+                <tbody id="input-area">
                 </tbody>
             </table>
         </div>
@@ -235,9 +235,9 @@
             </tr>
             <tr>
                 <td> Job ID: </td>
-                <td colspan="3"><input type="text" class="filter" name="job_id" size="40" /></td>
+                <td colspan="3"><input type="text" class="filter" name="job-id" size="40" /></td>
                 <td> Trans time: </td>
-                <td><input type="text" class="filter" name="trans_time" size="20" /></td>
+                <td><input type="text" class="filter" name="trans-time" size="20" /></td>
             </tr>
             <tr>
                 <td />
@@ -258,40 +258,40 @@
                                     <form>
                                         <div class="row">
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_ftp" value="ftp" checked>
-                                                <label for="protocol_select_ftp" class="form-check-label">FTP</label>
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-ftp" value="ftp" checked>
+                                                <label for="protocol-select-ftp" class="form-check-label">FTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_sftp" value="sftp" checked>
-                                                <label for="protocol_select_sftp" class="form-check-label">SFTP</label>
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-sftp" value="sftp" checked>
+                                                <label for="protocol-select-sftp" class="form-check-label">SFTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_scp" value="scp" checked>
-                                                <label for="protocol_select_scp" class="form-check-label">SCP</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_http" value="http" checked>
-                                                <label for="protocol_select_http" class="form-check-label">HTTP</label>
-                                            </div>
-                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_smtp" value="mailto" checked>
-                                                <label for="protocol_select_smtp" class="form-check-label">SMTP</label>
-                                            </div>
-                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_file" value="file" checked>
-                                                <label for="protocol_select_file" class="form-check-label">FILE</label>
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-scp" value="scp" checked>
+                                                <label for="protocol-select-scp" class="form-check-label">SCP</label>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_wmo" value="wmo" checked>
-                                                <label for="protocol_select_wmo" class="form-check-label">WMO</label>
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-http" value="http" checked>
+                                                <label for="protocol-select-http" class="form-check-label">HTTP</label>
                                             </div>
                                             <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
-                                                <input type="checkbox" class="form-check-input" id="protocol_select_exec" value="exec" checked>
-                                                <label for="protocol_select_exec" class="form-check-label">EXEC</label>
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-smtp" value="mailto" checked>
+                                                <label for="protocol-select-smtp" class="form-check-label">SMTP</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-file" value="file" checked>
+                                                <label for="protocol-select-file" class="form-check-label">FILE</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-wmo" value="wmo" checked>
+                                                <label for="protocol-select-wmo" class="form-check-label">WMO</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-exec" value="exec" checked>
+                                                <label for="protocol-select-exec" class="form-check-label">EXEC</label>
                                             </div>
                                         </div>
                                     </form>
@@ -305,8 +305,8 @@
                     </div>
                     <!-- End modal protocol -->
                 </td>
-                <td><input type="checkbox" class="filter" name="only_archived" value="true" /> Only archived </td>
-                <td><input type="checkbox" class="filter" name="received_only" value="true" /> Received only </td>
+                <td><input type="checkbox" class="filter" name="archived-only" value="true" /> Only archived </td>
+                <td><input type="checkbox" class="filter" name="received-only" value="true" /> Received only </td>
                 <td></td>
                 <td>
                     <div class="custom-control custom-switch">
@@ -336,20 +336,20 @@
                 </td>
             </tr>
         </table>
-        <div class="log_content_area_filter">
-            <table class="log_content_list">
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
                 <thead class="tabcol-head">
                     <tr>
-                        <th style="width:8ex;">mm.dd.</th>
-                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
                         <th>File name</th> 
-                        <th style="width:20ex;">Hostname</th> 
-                        <th style="width:8ex;">Type</th> 
-                        <th style="text-align:right;width:12ex;">File size</th> 
-                        <th style="text-align:right;width:12ex;">TT</th>
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-tr">Type</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-tt">TT</th>
                     </tr>
                 </thead>
-                <tbody id="output_area">
+                <tbody id="output-area">
                 </tbody>
             </table>
         </div>
@@ -446,20 +446,20 @@
                 </td>
             </tr>
         </table>
-        <div class="log_content_area_filter">
-            <table class="log_content_list">
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
                 <thead class="tabcol-head">
                     <tr>
-                        <th style="width:8ex;">mm.dd.</th>
-                        <th style="width:10ex;">HH:MM:SS</th> 
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
                         <th>File name</th> 
-                        <th style="width:20ex;">Hostname</th> 
-                        <th style="width:8ex;">Type</th> 
-                        <th style="text-align:right;width:12ex;">File size</th> 
-                        <th style="text-align:right;width:12ex;">TT</th>
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-tr">Type</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-tt">TT</th>
                     </tr>
                 </thead>
-                <tbody id="queue_area">
+                <tbody id="queue-area">
                 </tbody>
             </table>
         </div>

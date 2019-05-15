@@ -7,7 +7,10 @@ body {
     font-family:        monospace;
 }
 
-.log_content_area_file {
+/*
+Log-content area, as simple text:
+*/
+.log_content-area-file {
     background-color:   lightgrey;
     font-family:        monospace;
     width:              95%;
@@ -15,7 +18,10 @@ body {
     overflow-y:         scroll;
 }
 
-.log_content_area_filter {
+/*
+Log-content area, in list format:
+*/
+.log_content-area-filter {
     background-color:   lightgrey;
     font-family:        monospace;
     width:              95%;
@@ -23,22 +29,46 @@ body {
     overflow-y:         scroll;
 }
 
-.log_content_list {
+.log_content-list {
     width:              100%;
 }
 
-.log_content_list thead {
+.log_content-list thead {
     background:         beige;
 }
-.log_content_list tbody td.al-r {
+
+/*
+Log-content list, column definition
+*/
+.log_content-list .clst-dd {
+    width:              8ex;
+}
+.log_content-list .clst-hh {
+    width:              10ex
+}
+.log_content-list .clst-hn {
+    width:              20ex;
+}
+.log_content-list .clst-tr {
+    width:              8ex;
+}
+.log_content-list .clst-fs {
     text-align:         right;
+    width:              12ex;
+}
+.log_content-list .clst-tt {
+    text-align:         right;
+    width:              12ex;
 }
 
-.log_content_list .selected {
+.log_content-list .selected {
     color:              white;
     background-color:   black;
 }
 
+/*
+AFD-Ctrl window, host/alias bars
+*/
 table.tabcol {
     float:              left;
 	font-size:          8pt;
@@ -56,13 +86,13 @@ tr * {
 	
 }
 
-tr.tabrow * {
+tr.tab-row * {
 	border-width:       1px;
 	border-style:       solid;
 	border-color:       #d0f4ff;
 }
 
-tr.tabrow_mark * {
+tr.tab-row-mark * {
 	/*
     padding-left:       2px;
     padding-right:      2px;
@@ -81,7 +111,7 @@ td.alias {
 	width:              12ex;
 }
 
-td.status_led {
+td.status-led {
 	width:              2px;
 }
 
@@ -91,7 +121,7 @@ td.status_led {
 	background:         lightblue;
 }
 
-.numval_mark {
+.numval-mark {
 	width:              5ex;
 	text-align:         right;
 	color:              white;

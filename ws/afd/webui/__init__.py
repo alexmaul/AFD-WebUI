@@ -50,15 +50,68 @@ def alias(action=None):
         return make_response("", 204, {"Content-type": "text/plain"})
     elif request.method == "GET":
         if action.startswith("info"):
-            cmd = "get_hostname "
-            cmd_opt = "-h"
+            data = collect_info(action.split("/")[1])
         elif action.startswith("config"):
             cmd = "get_dc_data"
             cmd_opt = "-h"
-        data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
+            data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
         return make_response(data, {"Content-type": "text/plain"})
     else:
         return abort(405)
+
+
+def collect_info(host):
+    field_values = {}
+    raw = exec_cmd("fsa_view {}".format(host), True)
+    for l in raw.split("\n"):
+        if not len(l) or l[0] in (" ", "="):
+            continue
+        if l[0] == "-":
+            break
+        le = [x.strip() for x in l.split(":")]
+        if len(le) < 2:
+            continue
+        if le[0] == "Hostname (display)":
+            field_values["hostname"] = le[1].strip("><")
+        elif le[0] == "Real hostname 1":
+            field_values["real1"] = le[1]
+        elif le[0] == "Real hostname 2":
+            field_values["real2"] = le[1]
+        elif le[0] == "Host toggle":
+            field_values["active"] = le[1]
+        elif le[0] == "Host toggle string":
+            field_values["togglestr"] = (le[1][1], le[1][2])
+        elif le[0] == "File counter done":
+            field_values["filetransf"] = le[1]
+        elif le[0] == "Bytes send":
+            field_values["bytetransf"] = le[1]
+        elif le[0] == "Last connection":
+            field_values["lastcon"] = le[1]
+        elif le[0] == "Connections":
+            field_values["connects"] = le[1]
+        elif le[0] == "Total errors":
+            field_values["toterr"] = le[1]
+        elif le[0] == "Retry interval":
+            field_values["retrint"] = le[1]
+        elif le[0].startswith("Protocol"):
+            field_values["protocol"] = le[1]
+    print(field_values)
+    
+    data="""
+    <table class="info-box">
+    <tr>
+        <td class="info-column"></td>
+        <td class="info-column"><input type="text" readonly></input></td>
+        <td class="info-column"></td>
+        <td class="info-column"><input type="text" readonly></input></td>
+    </tr>
+    <tr> <td></td> <td></td> <td></td> <td></td> </tr>
+    </table>
+    """.format(
+        
+        )
+    
+    return data
 
 
 @app.route("/afd/<command>/<action>", methods=["GET", "POST"])

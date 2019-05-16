@@ -70,7 +70,7 @@
             <option>6</option>
             <option>all</option>
         </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('system');">Search</button>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('system');">Update</button>
         </tr></table>
         <textarea id="system-area" class="log_content-area-file" readonly></textarea>
     </div>
@@ -90,17 +90,19 @@
         <td><input type="checkbox" class="receive-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="receive-logfile">
-            <option selected>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>all</option>
-        </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('receive');">Search</button>
+        <td>
+            <select id="receive-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('receive');">Update</button>
         </tr></table>
         <textarea id="receive-area" class="log_content-area-file" readonly></textarea>
     </div>
@@ -116,17 +118,19 @@
         <td><input type="checkbox" class="transfer-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="transfer-logfile">
-            <option selected>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>all</option>
-        </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Search</button>
+        <td>
+            <select id="transfer-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>  
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Update</button>
         </tr></table>
         <textarea id="transfer-area" class="log_content-area-file" readonly></textarea>
     </div>
@@ -142,17 +146,19 @@
         <td><input type="checkbox" class="transfer_debug-level" value="debug" /> Debug  </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
-        <td><select id="transfer_debug-logfile">
-            <option selected>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>all</option>
-        </select>  </td>
-        <td><button type="submit" style="width:10em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaLevel('transfer_debug');">Search</button>
+        <td>
+            <select id="transfer_debug-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer_debug');">Update</button>
         </tr></table>
         <textarea id="transfer_debug-area" class="log_content-area-file" readonly></textarea>
     </div>
@@ -170,6 +176,7 @@
                 <td>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'today');">Today</button>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'clear');">Clr</button>
                 </td>
             </tr>
             <tr>
@@ -185,8 +192,9 @@
                 <td><input type="text" class="filter" name="recipient" size="20" /></td>
             </tr>
             <tr>
-                <td colspan="3" align="center">
-                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('input');">Search</button>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('input');">Search</button>
                 </td>
             </tr>
         </table>
@@ -225,6 +233,7 @@
                 <td>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'today');">Today</button>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'clear');">Clr</button>
                 </td>
             </tr>
             <tr>
@@ -324,12 +333,11 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="3" align="center">
-                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('output');">Search</button>
-                </td>
-                <td colspan="2" align="center">
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('output');">Search</button>
                     <!-- Begin selector view mode -->
-                    <div class="btn-group">
+                    <div class="btn-group button-action">
                         <button type="button" class="btn btn-primary" id="output-view-mode" onClick="javascript:AFDLOG.callView('output');">View Auto</button>
                         <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                         <div class="dropdown-menu">
@@ -381,6 +389,7 @@
                 <td>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'today');">Today</button>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'clear');">Clr</button>
                 </td>
             </tr>
             <tr>
@@ -537,8 +546,9 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="3" align="center">
-                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('delete');">Search</button>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('delete');">Search</button>
                 </td>
             </tr>
         </table>
@@ -580,6 +590,7 @@
                 <td>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'today');">Today</button>
                     <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'clear');">Clr</button>
                 </td>
             </tr>
             <tr>
@@ -636,12 +647,11 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="3" align="center">
-                    <button type="submit" style="width:20em" class="btn btn-primary" onClick="javascript:AFDLOG.callAldaFilter('queue');">Search</button>
-                </td>
-                <td colspan="2" align="center">
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('queue');">Search</button>
                     <!-- Begin selector view mode -->
-                    <div class="btn-group">
+                    <div class="btn-group button-action">
                         <button type="button" class="btn btn-primary" id="queue-view-mode" onClick="javascript:AFDLOG.callView('queue');">View Auto</button>
                         <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                         <div class="dropdown-menu">

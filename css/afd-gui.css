@@ -7,6 +7,11 @@ body {
     font-family:        monospace;
 }
 
+.button-action {
+    width:              10em;
+    margin-right:      1em;
+}
+
 /*
 Log-content area, as simple text:
 */

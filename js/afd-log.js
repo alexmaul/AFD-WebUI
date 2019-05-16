@@ -93,7 +93,12 @@ var AFDLOG = function() {
             /*
              * Set input fields for start- and end-time according to range.
              */
-            console.log("setDate " + log_name);
+            console.log("setDate", log_name, time_range);
+            if (time_range == "clear") {
+                $("#" + log_name + " .filter[name=start]").val("");
+                $("#" + log_name + " .filter[name=end]").val("");
+                return;
+            }
             let val_start = "";
             let val_end = "";
             let now = new Date(Date.now());

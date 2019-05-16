@@ -146,7 +146,6 @@ def log_from_alda(typ):
             "filesize":      "-S ",
             "job_id":        "-j ",
             "protocol":      "-p ",
-            "archived-only": None,
             "trans-time":    "-D ",
             "delete-reason": None,
         }
@@ -156,6 +155,10 @@ def log_from_alda(typ):
         logtype = "R"
     else:
         logtype = typ[0].upper()
+    if request.form.get("archived-only", None):
+        archived_only = True
+    else:
+        archived_only = False
     app.logger.debug(request.form)
     alda_output_line = alda_output_format.get(typ, "")
     for key, val in request.form.items():
@@ -192,7 +195,8 @@ def log_from_alda(typ):
             else:
                 parts[1] = ""
                 parts[-2] = "N"
-            new_data.append("".join(parts))
+            if not archived_only or parts[-2] == "Y":
+                new_data.append("".join(parts))
         data = "\n".join(new_data)
     return make_response(data, {"Content-type": "text/plain"})
 

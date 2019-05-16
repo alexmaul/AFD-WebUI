@@ -1,5 +1,7 @@
 import os.path
 import requests
+import re
+import magic
 from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
                    redirect, Markup, json, make_response, abort)
@@ -195,28 +197,38 @@ def log_from_alda(typ):
     return make_response(data, {"Content-type": "text/plain"})
 
 
-@app.route("/view/<mode>/<path:file>", methods=["GET"])
-def view(mode="auto", file=None):
+@app.route("/view/<mode>/<path:arcfile>", methods=["GET"])
+def view(mode="auto", arcfile=None):
     content = ""
-    content_type = "text/plain"
+    arcfile_path = os.path.join(afd_work_dir, "archive", arcfile)
+    if not os.path.exists(arcfile_path):
+        return abort(404)
     if mode == "auto":
-        # TODO: determine action from file type.
-        pass
-    if mode == "bufr":
+        content_type = magic.from_file(arcfile_path, mime=True)
+        if content_type == "application/octet-stream":
+            m = re.match(".*[-.](\w+)$", arcfile)
+            if m is not None and m.group(1) in ("bufr", "wmo"):
+                mode = "bufr"
+            else:
+                mode = "hexdump"
+    if mode in ("hexdump", "od"):
+        content_type = "text/plain"
+        content = exec_cmd(
+            "bash -c \"hexdump -C {}\"".format(arcfile_path),
+            True
+            )
+    elif mode == "bufr":
         content_type = "text/html"
-        with open(os.path.join(afd_work_dir, "archive", file), "rb") as fh_in:
+        with open(arcfile_path, "rb") as fh_in:
             decode_url = "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
             r = requests.post(decode_url, files={"file": fh_in})
             app.logger.debug("forward-to: %s - %d", decode_url, r.status_code)
             if r.status_code == 200:
                 content = r.content
-    else:  # "od"
-        content = exec_cmd(
-            "bash -c \"hexdump -C {}\"".format(
-                os.path.join(afd_work_dir, "archive", file)
-                ),
-            True
-            )
+    else:
+        with open(arcfile_path, "rb") as fh_in:
+            content = fh_in.read()
+            content_type = magic.from_buffer(content, mime=True)
     return make_response(content, 200 if len(content) else 204, {"Content-type": content_type})
 
 

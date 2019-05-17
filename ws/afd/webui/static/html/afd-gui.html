@@ -160,9 +160,10 @@
     </div>
 
     <!-- Begin modal INFO -->
+    <input type="hidden" id="modalInfoHost" class="filter" name="info-host" value="" />
     <div class="modal fade" id="modalInfo" tabindex="-1" role="dialog" aria-labelledby="modalInfoLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content modal-info-box">
+            <div class="modal-content info-box">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalInfoLabel"></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -172,6 +173,7 @@
                 <div class="modal-body" id="modalInfoBody">
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onClick="javascript:AFDCTRL.saveInfoText();">Save</button>
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>

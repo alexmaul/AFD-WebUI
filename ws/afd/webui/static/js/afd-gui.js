@@ -238,9 +238,29 @@ var AFDCTRL = function() {
                 url : AFDCTRL.urlBase + "alias/info/" + aliasName,
                 success : function(data, status, jqxhr) {
                     console.log(status, jqxhr);
-                    $("#modalInfoLabel").text(aliasName+" Info")
+                    $("#modalInfoHost").val(aliasName)
+                    $("#modalInfoLabel").text(aliasName + " Info")
                     $("#modalInfoBody").html(data);
                     $("#modalInfo").modal("show");
+                }
+            });
+        },
+
+        saveInfoText : function() {
+            console.log("saveInfoText");
+            let info_host = $("#modalInfoHost")[0]
+            let info_text = $("#modalInfoBody .info-area")[0];
+            console.log(info_host.value);
+            console.log(info_text.value);
+            $.ajax({
+                type : "POST",
+                url : AFDCTRL.urlBase + "save/info",
+                data : {
+                    host : info_host.value,
+                    text : info_text.value
+                },
+                complete : function(a, b) {
+                    console.log(b);
                 }
             });
         },

@@ -24,6 +24,16 @@ div.row .form-check {
     padding-left:       20px;
 }
 
+.modal-info-box {
+    background-color:   beige;
+    font-family:        monospace;
+}
+
+.modal-info-area {
+    width:              100%;
+    overflow-y:         scroll;
+}
+
 /***** Log Window **********************************************/
 
 /*** Log-content area, as simple text: ***/

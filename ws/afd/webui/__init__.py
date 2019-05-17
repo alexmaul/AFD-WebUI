@@ -66,7 +66,10 @@ def alias_get(action=None):
 
 
 def collect_info(host):
-    field_values = {"HOST_ONE":"", "HOST_TWO":""}
+    field_values = {"HOST_ONE":  "",
+                    "HOST_TWO":  "",
+                    "info":      "No information available.",
+                    }
     raw = exec_cmd("fsa_view {}".format(host), True)
     for l in raw.split("\n"):
         if not len(l) or l[0] == " ":
@@ -75,6 +78,8 @@ def collect_info(host):
             break
         if l[0] == "=":
             field_values["hostname"] = l.split(" ")[1]
+            field_values["host1"] = field_values["hostname"]
+            field_values["host2"] = field_values["hostname"]
         le = [x.strip() for x in l.split(":")]
         if len(le) < 2:
             continue
@@ -85,7 +90,8 @@ def collect_info(host):
         elif le[0] == "Host toggle":
             field_values[le[1]] = "checked"
         elif le[0] == "Host toggle string":
-            field_values["togglestr"] = (le[1][1], le[1][2])
+            field_values["host1"] = field_values["hostname"] + le[1][1]
+            field_values["host2"] = field_values["hostname"] + le[1][2]
         elif le[0] == "File counter done":
             field_values["filetransf"] = le[1]
         elif le[0] == "Bytes send":
@@ -102,47 +108,50 @@ def collect_info(host):
             field_values["protocol"] = le[1]
     print(field_values)
 
+    # TODO: load info file.
+    
     data = """
-    <table class="info-box">
-    <tr>
-        <td class="info-column">Hostname :</td>
-        <td class="info-column"><input type="text" readonly>{hostname:s}</input></td>
-        <td class="info-column">Host toggle :</td>
-        <td class="info-column"><input type="radio" readonly {HOST_ONE} /><input type="radio" readonly {HOST_TWO} /></td>
-    </tr>
-    <tr>
-        <td class="info-column">Real host name 1 :</td>
-        <td class="info-column"><input type="text" readonly>{real1}</input></td>
-        <td class="info-column">Real host name 2 :</td>
-        <td class="info-column"><input type="text" readonly>{real2}</input></td>
-    </tr>
-    <tr>
-        <td class="info-column">Files transfered :</td>
-        <td class="info-column"><input type="text" readonly>{filetransf}</input></td>
-        <td class="info-column">Bytes transfered :</td>
-        <td class="info-column"><input type="text" readonly>{bytetransf}</input></td>
-    </tr>
-    <tr>
-        <td class="info-column">Last connection :</td>
-        <td class="info-column"><input type="text" readonly>{lastcon}</input></td>
-        <td class="info-column">No. of connections :</td>
-        <td class="info-column"><input type="text" readonly>{connects}</input></td>
-    </tr>
-    <tr>
-        <td class="info-column">Total errors :</td>
-        <td class="info-column"><input type="text" readonly>{toterr}</input></td>
-        <td class="info-column">Retry interval (sec) :</td>
-        <td class="info-column"><input type="text" readonly>{retrint}</input></td>
-    </tr>
-    <tr>
-        <td colspan="4">Protocols : {protocol}</td>
-    </tr>
-    <tr>
-        <td colspan="4">
-            <textarea></textarea>
-        </td>
-    </tr>
+    <table width="100%">
+        <tr>
+            <td class="info-column"><input type="radio" readonly {HOST_ONE} onclick="return false;" /> {host1}</td>
+            <td class="info-column"><input type="text" readonly value="" /></td>
+            <td width="50px" />
+            <td class="info-column"><input type="radio" readonly {HOST_TWO} onclick="return false;" /> {host2}</td>
+            <td class="info-column"><input type="text" readonly value="" /></td>
+        </tr>
+        <tr>
+            <td class="info-column">Real host name 1</td>
+            <td class="info-column"><input type="text" readonly value="{real1}" /></td>
+            <td width="5em" />
+            <td class="info-column">Real host name 2</td>
+            <td class="info-column"><input type="text" readonly value="{real2}" /></td>
+        </tr>
+        <tr>
+            <td class="info-column">Files transfered</td>
+            <td class="info-column"><input type="text" readonly value="{filetransf}" /></td>
+            <td width="5em" />
+            <td class="info-column">Bytes transfered</td>
+            <td class="info-column"><input type="text" readonly value="{bytetransf}" /></td>
+        </tr>
+        <tr>
+            <td class="info-column">Last connection</td>
+            <td class="info-column"><input type="text" readonly value="{lastcon}" /></td>
+            <td width="5em" />
+            <td class="info-column">No. of connections</td>
+            <td class="info-column"><input type="text" readonly value="{connects}" /></td>
+        </tr>
+        <tr>
+            <td class="info-column">Total errors</td>
+            <td class="info-column"><input type="text" readonly value="{toterr}" /></td>
+            <td width="5em" />
+            <td class="info-column">Retry interval (sec)</td>
+            <td class="info-column"><input type="text" readonly value="{retrint}" /></td>
+        </tr>
     </table>
+    <hr />
+    <div style="width:100%; text-align:center;">Protocols : {protocol}</div>
+    <hr />
+    <textarea class="modal-info-area">{info}</textarea>
     """.format_map(field_values)
 
     return data

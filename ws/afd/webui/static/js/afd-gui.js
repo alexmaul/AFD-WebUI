@@ -232,11 +232,13 @@ var AFDCTRL = function() {
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
+            let aliasName = aliasList[0].replace(/row-/, "");
             $.ajax({
                 type : "GET",
-                url : AFDCTRL.urlBase + "alias/info/" + aliasList[0].replace(/row-/, ""),
+                url : AFDCTRL.urlBase + "alias/info/" + aliasName,
                 success : function(data, status, jqxhr) {
                     console.log(status, jqxhr);
+                    $("#modalInfoLabel").text(aliasName+" Info")
                     $("#modalInfoBody").html(data);
                     $("#modalInfo").modal("show");
                 }

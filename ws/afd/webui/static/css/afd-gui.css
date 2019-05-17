@@ -1,20 +1,33 @@
+/***** General definitions *************************************/
+
 body {
     padding:            10px;
 }
 
-#tab_area {
+#tab-area {
     background-color:   #d0f4ff;
     font-family:        monospace;
 }
 
 .button-action {
     width:              10em;
-    margin-right:      1em;
+    margin-right:       1em;
 }
 
-/*
-Log-content area, as simple text:
-*/
+/*** Modal select ***/
+
+div.row {
+    padding-bottom:     20px;
+}
+
+div.row .form-check {
+    padding-left:       20px;
+}
+
+/***** Log Window **********************************************/
+
+/*** Log-content area, as simple text: ***/
+
 .log_content-area-file {
     background-color:   lightgrey;
     font-family:        monospace;
@@ -23,9 +36,8 @@ Log-content area, as simple text:
     overflow-y:         scroll;
 }
 
-/*
-Log-content area, in list format:
-*/
+/*** Log-content area, in list format: ***/
+
 .log_content-area-filter {
     font-family:        monospace;
     width:              95%;
@@ -47,9 +59,8 @@ Log-content area, in list format:
     background:         beige;
 }
 
-/*
-Log-content list, column definition
-*/
+/*** Log-content list, column definition ***/
+
 .log_content-list td,th {
     padding-right:      2ex;
 }
@@ -88,110 +99,106 @@ Log-content list, column definition
     background-color:   black;
 }
 
-/*
-AFD-Ctrl window, host/alias bars
-*/
+/***** AFD-Ctrl window *****************************************/
+
+/*** AFD-Ctrl window, host/alias bars ***/
+
 table.tabcol {
     float:              left;
-	font-size:          8pt;
-	border-collapse:    separate;
-	border-spacing:     0px;
-	padding-top:        5px;
-	padding-left:       5px;
+    font-size:          8pt;
+    border-collapse:    separate;
+    border-spacing:     0px;
+    padding-top:        5px;
+    padding-left:       5px;
 }
 
 .tabcol thead {
-	background:         beige;
+    background:         beige;
 }
 
 tr * {
-	
+    
 }
 
 tr.tab-row * {
-	border-width:       1px;
-	border-style:       solid;
-	border-color:       #d0f4ff;
+    border-width:       1px;
+    border-style:       solid;
+    border-color:       #d0f4ff;
 }
 
 tr.tab-row-mark * {
-	/*
-    padding-left:       2px;
-    padding-right:      2px;
-    */
-	border-width:       1px;
-	border-style:       solid;
-	border-color:       black;
+    border-width:       1px;
+    border-style:       solid;
+    border-color:       black;
 }
 
 .marked {
-	color:              white;
-	background:         black;
+    color:              white;
+    background:         black;
 }
 
 td.alias {
-	width:              12ex;
+    width:              12ex;
 }
 
 td.status-led {
-	width:              2px;
+    width:              2px;
 }
 
 .numval {
-	width:              5ex;
-	text-align:         right;
-	background:         lightblue;
+    width:              5ex;
+    text-align:         right;
+    background:         lightblue;
 }
 
 .numval-mark {
-	width:              5ex;
-	text-align:         right;
-	color:              white;
-	background:         black;
+    width:              5ex;
+    text-align:         right;
+    color:              white;
+    background:         black;
 }
 
 .debug {
-	color:              gold;
+    color:              gold;
 }
 
 .trace {
-	color:              darkorange;
+    color:              darkorange;
 }
 
 .full_trace {
-	color:              red;
+    color:              red;
 }
 
-/*
-Alias-field:
-*/
+/*** Alias-field status info: ***/
+
 .TRANSFER_ACTIVE {
-	color:              white;
-	background:         darkgreen;
+    color:              white;
+    background:         darkgreen;
 }
 
 .TRANSFER_NORMAL {
-	background:         limegreen;
+    background:         limegreen;
 }
 
 .TRANSFER_DISABLED {
-	background:         lightblue;
+    background:         lightblue;
 }
 
 .TRANSFER_STOP {
-	background:         orange;
+    background:         orange;
 }
 
 .STOP_TRANSFER {
-	background:         orange;
+    background:         orange;
 }
 
 .NORMAL_STATUS {
-	background:         limegreen;
+    background:         limegreen;
 }
 
 .DISABLED {
-	background:         white;
+    background:         white;
 }
 
 .HOST_DISABLED {
@@ -199,84 +206,72 @@ Alias-field:
 }
 
 .HOST_NOT_IN_DIR_CONFIG {
-	background:         #d0f4ff;
+    background:         #d0f4ff;
 }
 
 .HOST_CONFIG_HOST_DISABLED {
-	background:         white;
+    background:         white;
 }
 
 .HOST_ERROR_OFFLINE {
-	background:         red;
+    background:         red;
 }
 
 .HOST_ERROR_ACKNOWLEDGED {
-	background:         orange;
+    background:         orange;
 }
 
 .DANGER_PAUSE_QUEUE_STAT {
-	background:        black;
+    background:        black;
 }
 
 .HOST_ERROR_OFFLINE_STATIC {
-	background:         yellow;
+    background:         yellow;
 }
 
 .HOST_ACTION_SUCCESS {
-	background:         blue;
+    background:         blue;
 }
 
-/* 
-Job status:
-*/
+/*** Job status: ***/
+
 .jobs {
-	font-size:          8pt;
-	font-stretch:       condensed;
+    font-size:          8pt;
+    font-stretch:       condensed;
 }
 
 .DISCONNECT {
-	color:              black;
-	background:         white;
+    color:              black;
+    background:         white;
 }
 
 .CONNECTING {
-	color:              black;
-	background:         lightblue;
+    color:              black;
+    background:         lightblue;
 }
 
 .LOC_active {
-	color:              black;
-	background:         blue;
+    color:              black;
+    background:         blue;
 }
 
 .FTP_burst_active {
-	color:              black;
-	background:         lightgreen;
+    color:              black;
+    background:         lightgreen;
 }
 
 .FTP_active {
-	color:              white;
-	background:         green;
+    color:              white;
+    background:         green;
 } 
 
-/* 
-Queue status:
-*/
+/*** Queue status: ***/
+
 .PAUSE_QUEUE {
-	background:         saddlebrown;
+    background:         saddlebrown;
 }
 
 .AUTO_PAUSE_QUEUE {
-	background:         darkorange;
+    background:         darkorange;
 }
 
-/*
-Modal select
-*/
-div.row {
-    padding-bottom:     20px;
-}
-
-div.row .form-check {
-    padding-left:       20px;
-}

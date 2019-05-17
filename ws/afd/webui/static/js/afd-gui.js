@@ -45,7 +45,7 @@ var AFDCTRL = function() {
                     AFDCTRL.callAfdCmd("event");
                     break;
                 case "Start/Stop host":
-                    AFDCTRL.callAliasToggle([ "status_queue", "status_send", "status_retrieve" ], [ "PAUSE_QUEUE",
+                    AFDCTRL.callAliasToggle([ "status-queue", "status-send", "status-retrieve" ], [ "PAUSE_QUEUE",
                             "STOP_TRANSFER", "STOP_TRANSFER" ], "start", "stop", Object.keys(this.markedRows));
                     break;
                 case "Enable/Disable host":
@@ -70,7 +70,7 @@ var AFDCTRL = function() {
                  * Menu: View
                  */
                 case "Info":
-                    AFDCTRL.callAliasWindow("info", Object.keys(this.markedRows));
+                    AFDCTRL.viewModalInfo(Object.keys(this.markedRows));
                     break;
                 case "Configuration":
                     AFDCTRL.callAliasWindow("config", Object.keys(this.markedRows));
@@ -226,6 +226,23 @@ var AFDCTRL = function() {
             }
             return true;
         },
+
+        viewModalInfo : function(aliasList) {
+            console.log("viewModalInfo:", aliasList);
+            if (!AFDCTRL.isAliasSelected(aliasList)) {
+                return;
+            }
+            $.ajax({
+                type : "GET",
+                url : AFDCTRL.urlBase + "alias/info/" + aliasList[0].replace(/row-/, ""),
+                success : function(data, status, jqxhr) {
+                    console.log(status, jqxhr);
+                    $("#modalInfoBody").html(data);
+                    $("#modalInfo").modal("show");
+                }
+            });
+        },
+
         /***********************************************************************
          * Methods to load data and update display.
          */
@@ -287,59 +304,59 @@ var AFDCTRL = function() {
                 if (typ == "host_status") {
                     if (val.host_status.indexOf("HOST_IN_DIR_CONFIG") >= 0) {
                         if (val.host_status.indexOf("HOST_CONFIG_HOST_DISABLED") >= 0) {
-                            row.children(".status_run").removeClass().addClass(
-                                    "alias status_run HOST_CONFIG_HOST_DISABLED");
+                            row.children(".status-run").removeClass().addClass(
+                                    "alias status-run HOST_CONFIG_HOST_DISABLED");
                         } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_ERROR_OFFLINE");
+                            row.children(".status-run").removeClass().addClass("alias status-run HOST_ERROR_OFFLINE");
                         } else if (val.host_status.indexOf("HOST_ERROR_ACKNOWLEDGED") >= 0) {
-                            row.children(".status_run").removeClass().addClass(
-                                    "alias status_run HOST_ERROR_ACKNOWLEDGED");
+                            row.children(".status-run").removeClass().addClass(
+                                    "alias status-run HOST_ERROR_ACKNOWLEDGED");
                         } else if (val.host_status.indexOf("DANGER_PAUSE_QUEUE_STAT") >= 0) {
-                            row.children(".status_run").removeClass().addClass(
-                                    "alias status_run DANGER_PAUSE_QUEUE_STAT");
+                            row.children(".status-run").removeClass().addClass(
+                                    "alias status-run DANGER_PAUSE_QUEUE_STAT");
                         } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE_STATIC") >= 0) {
-                            row.children(".status_run").removeClass().addClass(
-                                    "alias status_run HOST_ERROR_OFFLINE_STATIC");
+                            row.children(".status-run").removeClass().addClass(
+                                    "alias status-run HOST_ERROR_OFFLINE_STATIC");
                         } else if (val.host_status.indexOf("HOST_ACTION_SUCCESS") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_ACTION_SUCCESS");
+                            row.children(".status-run").removeClass().addClass("alias status-run HOST_ACTION_SUCCESS");
                         } else if (val.host_status.indexOf("TRANSFER_ACTIVE") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run TRANSFER_ACTIVE");
+                            row.children(".status-run").removeClass().addClass("alias status-run TRANSFER_ACTIVE");
                         } else if (val.host_status.indexOf("HOST_DISABLED") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run HOST_DISABLED");
+                            row.children(".status-run").removeClass().addClass("alias status-run HOST_DISABLED");
                         } else if (val.host_status.indexOf("NORMAL_STATUS") >= 0) {
-                            row.children(".status_run").removeClass().addClass("alias status_run NORMAL_STATUS");
+                            row.children(".status-run").removeClass().addClass("alias status-run NORMAL_STATUS");
                         }
                     } else { /* HOST_NOT_IN_DIR_CONFIG */
-                        row.children(".status_run").removeClass().addClass("HOST_NOT_IN_DIR_CONFIG");
+                        row.children(".status-run").removeClass().addClass("HOST_NOT_IN_DIR_CONFIG");
                     }
                     if (val.host_status.indexOf("PAUSE_QUEUE") >= 0) {
-                        row.children(".status_queue").removeClass().addClass("status_led status_queue PAUSE_QUEUE");
+                        row.children(".status-queue").removeClass().addClass("status-led status-queue PAUSE_QUEUE");
                     } else if (val.host_status.indexOf("AUTO_PAUSE_QUEUE") >= 0) {
-                        row.children(".status_queue").removeClass()
-                                .addClass("status_led status_queue AUTO_PAUSE_QUEUE");
+                        row.children(".status-queue").removeClass()
+                                .addClass("status-led status-queue AUTO_PAUSE_QUEUE");
                     } else {
-                        row.children(".status_queue").removeClass().addClass("status_led status_queue NORMAL_STATUS");
+                        row.children(".status-queue").removeClass().addClass("status-led status-queue NORMAL_STATUS");
                     }
                     if (val.host_status.indexOf("STOP_TRANSFER") >= 0) {
                         if (val.direction.indexOf("S") >= 0) {
-                            row.children(".status_send").removeClass().addClass("status_led status_send STOP_TRANSFER");
+                            row.children(".status-send").removeClass().addClass("status-led status-send STOP_TRANSFER");
                         }
                         if (val.direction.indexOf("R") >= 0) {
-                            row.children(".status_retrieve").removeClass().addClass(
-                                    "status_led status_retrieve STOP_TRANSFER");
+                            row.children(".status-retrieve").removeClass().addClass(
+                                    "status-led status-retrieve STOP_TRANSFER");
                         }
                     } else {
                         if (val.direction.indexOf("S") >= 0) {
-                            row.children(".status_send").removeClass().addClass(
-                                    "status_led status_send TRANSFER_NORMAL");
+                            row.children(".status-send").removeClass().addClass(
+                                    "status-led status-send TRANSFER_NORMAL");
                         }
                         if (val.direction.indexOf("R") >= 0) {
-                            row.children(".status_retrieve").removeClass().addClass(
-                                    "status_led status_retrieve TRANSFER_NORMAL");
+                            row.children(".status-retrieve").removeClass().addClass(
+                                    "status-led status-retrieve TRANSFER_NORMAL");
                         }
                     }
                 } else if (typ == "debug_mode") {
-                    let ctx = row.find(".debug_canvas").get(0).getContext("2d");
+                    let ctx = row.find(".debug-canvas").get(0).getContext("2d");
                     switch (val.debug_mode) {
                         case "debug":
                             ctx.fillStyle = "gold";
@@ -355,24 +372,24 @@ var AFDCTRL = function() {
                     }
                     ctx.fillRect(1, 1, 5, 5);
                 } else if (typ == "direction") {
-                    row.children(".status_send").removeClass().addClass("status_led status_send");
-                    row.children(".status_retrieve").removeClass().addClass("status_led status_retrieve");
+                    row.children(".status-send").removeClass().addClass("status-led status-send");
+                    row.children(".status-retrieve").removeClass().addClass("status-led status-retrieve");
                     switch (val.direction) {
                         case "S":
-                            row.children(".status_send").addClass("TRANSFER_NORMAL");
-                            row.children(".status_retrieve").addClass("TRANSFER_DISABLED");
+                            row.children(".status-send").addClass("TRANSFER_NORMAL");
+                            row.children(".status-retrieve").addClass("TRANSFER_DISABLED");
                             break;
                         case "R":
-                            row.children(".status_send").addClass("TRANSFER_DISABLED");
-                            row.children(".status_retrieve").addClass("TRANSFER_NORMAL");
+                            row.children(".status-send").addClass("TRANSFER_DISABLED");
+                            row.children(".status-retrieve").addClass("TRANSFER_NORMAL");
                             break;
                         case "SR":
-                            row.children(".status_send").addClass("TRANSFER_NORMAL");
-                            row.children(".status_retrieve").addClass("TRANSFER_NORMAL");
+                            row.children(".status-send").addClass("TRANSFER_NORMAL");
+                            row.children(".status-retrieve").addClass("TRANSFER_NORMAL");
                             break;
                         default:
-                            row.children(".status_send").addClass("TRANSFER_DISABLED");
-                            row.children(".status_retrieve").addClass("TRANSFER_DISABLED");
+                            row.children(".status-send").addClass("TRANSFER_DISABLED");
+                            row.children(".status-retrieve").addClass("TRANSFER_DISABLED");
                             break;
                     }
                 } else if (typ == "file_size") {

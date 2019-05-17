@@ -22,63 +22,68 @@ def fsa():
     return make_response(data, {"Content-type": "application/json"})
 
 
-@app.route("/alias/<path:action>", methods=["POST", "GET"])
-def alias(action=None):
+@app.route("/alias/<path:action>", methods=["POST"])
+def alias_post(action=None):
     app.logger.debug("action: %s", action)
     app.logger.debug(request.form)
     cmd = "afdcmd"
     cmd_opt = ""
-    if request.method == "POST":
-        alias_list = request.form["alias"].split(",")
-        if action == "start":
-            cmd_opt = "-t -q"
-        elif action == "stop":
-            cmd_opt = "-T -Q"
-        elif action == "able":
-            cmd_opt = "-X"
-        elif action == "debug":
-            cmd_opt = "-d"
-        elif action == "trace":
-            cmd_opt = "-c"
-        elif action == "fulltrace":
-            cmd_opt = "-C"
-        elif action == "switch":
-            cmd_opt = "-s"
-        elif action == "retry":
-            cmd_opt = "-r"
-        exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
-        return make_response("", 204, {"Content-type": "text/plain"})
-    elif request.method == "GET":
-        if action.startswith("info"):
-            data = collect_info(action.split("/")[1])
-        elif action.startswith("config"):
-            cmd = "get_dc_data"
-            cmd_opt = "-h"
-            data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
+    alias_list = request.form["alias"].split(",")
+    if action == "start":
+        cmd_opt = "-t -q"
+    elif action == "stop":
+        cmd_opt = "-T -Q"
+    elif action == "able":
+        cmd_opt = "-X"
+    elif action == "debug":
+        cmd_opt = "-d"
+    elif action == "trace":
+        cmd_opt = "-c"
+    elif action == "fulltrace":
+        cmd_opt = "-C"
+    elif action == "switch":
+        cmd_opt = "-s"
+    elif action == "retry":
+        cmd_opt = "-r"
+    exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
+    return make_response("", 204, {"Content-type": "text/plain"})
+
+
+@app.route("/alias/<path:action>", methods=["GET"])
+def alias_get(action=None):
+    app.logger.debug("action: %s", action)
+    app.logger.debug(request.form)
+    cmd = "afdcmd"
+    cmd_opt = ""
+    if action.startswith("info"):
+        data = collect_info(action.split("/")[1])
+        return make_response(data, {"Content-type": "text/html"})
+    elif action.startswith("config"):
+        cmd = "get_dc_data"
+        cmd_opt = "-h"
+        data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
         return make_response(data, {"Content-type": "text/plain"})
-    else:
-        return abort(405)
 
 
 def collect_info(host):
-    field_values = {}
+    field_values = {"HOST_ONE":"", "HOST_TWO":""}
     raw = exec_cmd("fsa_view {}".format(host), True)
     for l in raw.split("\n"):
-        if not len(l) or l[0] in (" ", "="):
+        if not len(l) or l[0] == " ":
             continue
         if l[0] == "-":
             break
+        if l[0] == "=":
+            field_values["hostname"] = l.split(" ")[1]
         le = [x.strip() for x in l.split(":")]
         if len(le) < 2:
             continue
-        if le[0] == "Hostname (display)":
-            field_values["hostname"] = le[1].strip("><")
-        elif le[0] == "Real hostname 1":
+        if le[0] == "Real hostname 1":
             field_values["real1"] = le[1]
         elif le[0] == "Real hostname 2":
             field_values["real2"] = le[1]
         elif le[0] == "Host toggle":
-            field_values["active"] = le[1]
+            field_values[le[1]] = "checked"
         elif le[0] == "Host toggle string":
             field_values["togglestr"] = (le[1][1], le[1][2])
         elif le[0] == "File counter done":
@@ -86,7 +91,7 @@ def collect_info(host):
         elif le[0] == "Bytes send":
             field_values["bytetransf"] = le[1]
         elif le[0] == "Last connection":
-            field_values["lastcon"] = le[1]
+            field_values["lastcon"] = ":".join(le[1:])
         elif le[0] == "Connections":
             field_values["connects"] = le[1]
         elif le[0] == "Total errors":
@@ -96,21 +101,50 @@ def collect_info(host):
         elif le[0].startswith("Protocol"):
             field_values["protocol"] = le[1]
     print(field_values)
-    
-    data="""
+
+    data = """
     <table class="info-box">
     <tr>
-        <td class="info-column"></td>
-        <td class="info-column"><input type="text" readonly></input></td>
-        <td class="info-column"></td>
-        <td class="info-column"><input type="text" readonly></input></td>
+        <td class="info-column">Hostname :</td>
+        <td class="info-column"><input type="text" readonly>{hostname:s}</input></td>
+        <td class="info-column">Host toggle :</td>
+        <td class="info-column"><input type="radio" readonly {HOST_ONE} /><input type="radio" readonly {HOST_TWO} /></td>
     </tr>
-    <tr> <td></td> <td></td> <td></td> <td></td> </tr>
+    <tr>
+        <td class="info-column">Real host name 1 :</td>
+        <td class="info-column"><input type="text" readonly>{real1}</input></td>
+        <td class="info-column">Real host name 2 :</td>
+        <td class="info-column"><input type="text" readonly>{real2}</input></td>
+    </tr>
+    <tr>
+        <td class="info-column">Files transfered :</td>
+        <td class="info-column"><input type="text" readonly>{filetransf}</input></td>
+        <td class="info-column">Bytes transfered :</td>
+        <td class="info-column"><input type="text" readonly>{bytetransf}</input></td>
+    </tr>
+    <tr>
+        <td class="info-column">Last connection :</td>
+        <td class="info-column"><input type="text" readonly>{lastcon}</input></td>
+        <td class="info-column">No. of connections :</td>
+        <td class="info-column"><input type="text" readonly>{connects}</input></td>
+    </tr>
+    <tr>
+        <td class="info-column">Total errors :</td>
+        <td class="info-column"><input type="text" readonly>{toterr}</input></td>
+        <td class="info-column">Retry interval (sec) :</td>
+        <td class="info-column"><input type="text" readonly>{retrint}</input></td>
+    </tr>
+    <tr>
+        <td colspan="4">Protocols : {protocol}</td>
+    </tr>
+    <tr>
+        <td colspan="4">
+            <textarea></textarea>
+        </td>
+    </tr>
     </table>
-    """.format(
-        
-        )
-    
+    """.format_map(field_values)
+
     return data
 
 

@@ -227,7 +227,14 @@ var AFDCTRL = function() {
             return true;
         },
 
+        /***********************************************************************
+         * Methods for load/save host information (INFO-files).
+         */
         viewModalInfo : function(aliasList) {
+            /*
+             * Retrieve host information (incl. INFO-file) for all hosts in
+             * aliasList.
+             */
             console.log("viewModalInfo:", aliasList);
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
@@ -247,6 +254,9 @@ var AFDCTRL = function() {
         },
 
         closeInfo : function(info_host) {
+            /*
+             * Remove host info from modal. Close modal if removing last info.
+             */
             console.log("closeInfo:", info_host);
             $("#infoBox_" + info_host).remove();
             if ($("#modalInfoBody").children().length == 0) {
@@ -257,6 +267,9 @@ var AFDCTRL = function() {
         },
 
         saveInfoText : function(info_host) {
+            /*
+             * Send POST to save edited text in INFO-file.
+             */
             console.log("saveInfoText");
             let info_text = $("#infoArea_" + info_host)[0];
             console.log(info_host);

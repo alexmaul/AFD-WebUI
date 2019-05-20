@@ -26,27 +26,32 @@ def fsa():
 def alias_post(action=None):
     app.logger.debug("action: %s", action)
     app.logger.debug(request.form)
-    cmd = "afdcmd"
-    cmd_opt = ""
-    alias_list = request.form["alias"].split(",")
-    if action == "start":
-        cmd_opt = "-t -q"
-    elif action == "stop":
-        cmd_opt = "-T -Q"
-    elif action == "able":
-        cmd_opt = "-X"
-    elif action == "debug":
-        cmd_opt = "-d"
-    elif action == "trace":
-        cmd_opt = "-c"
-    elif action == "fulltrace":
-        cmd_opt = "-C"
-    elif action == "switch":
-        cmd_opt = "-s"
-    elif action == "retry":
-        cmd_opt = "-r"
-    exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
-    return make_response("", 204, {"Content-type": "text/plain"})
+    if action.startswith("info/"):
+        alias = action.split("/", 2)[1]
+        resp = save_info(alias, request.form.get("text", ""))
+    else:
+        cmd = "afdcmd"
+        cmd_opt = ""
+        alias_list = request.form["alias"].split(",")
+        if action == "start":
+            cmd_opt = "-t -q"
+        elif action == "stop":
+            cmd_opt = "-T -Q"
+        elif action == "able":
+            cmd_opt = "-X"
+        elif action == "debug":
+            cmd_opt = "-d"
+        elif action == "trace":
+            cmd_opt = "-c"
+        elif action == "fulltrace":
+            cmd_opt = "-C"
+        elif action == "switch":
+            cmd_opt = "-s"
+        elif action == "retry":
+            cmd_opt = "-r"
+        exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
+        resp = make_response("", 204, {"Content-type": "text/plain"})
+    return resp
 
 
 @app.route("/alias/<path:action>", methods=["GET"])
@@ -65,22 +70,16 @@ def alias_get(action=None):
         return make_response(data, {"Content-type": "text/plain"})
 
 
-@app.route("/save/<what>", methods=["POST"])
-def save(what=None):
-    app.logger.debug("save %s", what)
+def save_info(host, info_text=None):
+    app.logger.debug("save info %s", host)
     app.logger.debug(request.form)
-    if what == "info":
-        try:
-            host = request.form["host"]
-            info_text = request.form.get("text", "")
-            fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + host)
-            with open(fn_info, "wt") as fh_info:
-                fh_info.write(info_text)
-        except Exception as e:
-            app.logger.warning(e)
-            return abort(500)
-    elif what == "hostconfig":
-        pass
+    try:
+        fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + host)
+        with open(fn_info, "wt") as fh_info:
+            fh_info.write(info_text)
+    except Exception as e:
+        app.logger.warning(e)
+        return abort(500)
     return make_response("", 204, {"Content-type": "text/plain"})
 
 
@@ -133,47 +132,55 @@ def collect_info(host):
             field_values["info"] = fh_info.read()
 
     data = """
-    <table width="100%">
-        <tr>
-            <td class="info-column"><input type="radio" readonly {HOST_ONE} onclick="return false;" /> {host1}</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="" /></td>
-            <td width="50px" />
-            <td class="info-column"><input type="radio" readonly {HOST_TWO} onclick="return false;" /> {host2}</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="" /></td>
-        </tr>
-        <tr>
-            <td class="info-column">Real host name 1</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{real1}" /></td>
-            <td width="5em" />
-            <td class="info-column">Real host name 2</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{real2}" /></td>
-        </tr>
-        <tr>
-            <td class="info-column">Files transfered</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{filetransf}" /></td>
-            <td width="5em" />
-            <td class="info-column">Bytes transfered</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{bytetransf}" /></td>
-        </tr>
-        <tr>
-            <td class="info-column">Last connection</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{lastcon}" /></td>
-            <td width="5em" />
-            <td class="info-column">No. of connections</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{connects}" /></td>
-        </tr>
-        <tr>
-            <td class="info-column">Total errors</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{toterr}" /></td>
-            <td width="5em" />
-            <td class="info-column">Retry interval (sec)</td>
-            <td class="info-column"><input type="text" class="info-field" readonly value="{retrint}" /></td>
-        </tr>
-    </table>
-    <hr />
-    <div style="width:100%; text-align:center;">Protocols : <span class="info-field">{protocol}</span></div>
-    <hr />
-    <textarea class="info-area">{info}</textarea>
+    <div class="info-box" id="infoBox_{hostname}">
+        <h5 class="info-header">{hostname} Info</h5>
+        <table width="100%">
+            <tr>
+                <td class="info-column"><input type="radio" readonly {HOST_ONE} onclick="return false;" /> {host1}</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="" /></td>
+                <td width="50px" />
+                <td class="info-column"><input type="radio" readonly {HOST_TWO} onclick="return false;" /> {host2}</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="" /></td>
+            </tr>
+            <tr>
+                <td class="info-column">Real host name 1</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{real1}" /></td>
+                <td width="5em" />
+                <td class="info-column">Real host name 2</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{real2}" /></td>
+            </tr>
+            <tr>
+                <td class="info-column">Files transfered</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{filetransf}" /></td>
+                <td width="5em" />
+                <td class="info-column">Bytes transfered</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{bytetransf}" /></td>
+            </tr>
+            <tr>
+                <td class="info-column">Last connection</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{lastcon}" /></td>
+                <td width="5em" />
+                <td class="info-column">No. of connections</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{connects}" /></td>
+            </tr>
+            <tr>
+                <td class="info-column">Total errors</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{toterr}" /></td>
+                <td width="5em" />
+                <td class="info-column">Retry interval (sec)</td>
+                <td class="info-column"><input type="text" class="info-field" readonly value="{retrint}" /></td>
+            </tr>
+        </table>
+        <hr />
+        <div style="width:100%; text-align:center;">Protocols : <span class="info-field">{protocol}</span></div>
+        <hr />
+        <textarea class="info-area" id="infoArea_{hostname}">{info}</textarea>
+        <div style="width:100%; text-align:center;">
+            <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.saveInfoText('{hostname}');">Save</button>
+            <button type="button" class="btn btn-primary button-action" onClick="javascript:AFDCTRL.closeInfo('{hostname}');">Close</button>
+        </div>
+        <hr style="border-width:3px;"/>
+    </div>
     """.format_map(field_values)
 
     return data

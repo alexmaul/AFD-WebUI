@@ -31,57 +31,90 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     HTTP-Response:
         ``{"data": [{...}, ...]}``
     
-``/alias/<path:action>``
+``/alias/info/<name>``
 
-    All actions target alias entries. A selection in the UI-page is required.
-    
-    - Action: start, stop, able, debug, trace, fulltrace, switch, retry
-
-        Work on one or more alias entries.
+    - Retrieve host information (including INFO-file) for host `name`.
         
-        Request-method: POST
-        
-        Request-body:
-            List of one ore more alias names, comma-seperated.
-            ``alias: NAME,[NAME],...``
-            
-        HTTP-Status-code: 204
-            
-    - Action: info/<alias>, config/<alias>
-
-        Work on exactly one alias.
-
         Request-method: GET
-    
+        
         HTTP-Status-code: 200, 404
-
-``/afd/<command>/<action>``
-    - List of ``command: action``:
         
-        amg, fd: toggle
+        Content-type: *text/html*
         
-        dc, hc: update
-        
-        afd: start, stop
-        
-        Request-method: GET
-
-        HTTP-Status-code: 204
-
-    - hc: change
+    - Save (edited) text in INFO-file for host `name`.
+    
         Request-method: POST
+        
+        Request-body: key = *text*, value = *plain text*.
 
         HTTP-Status-code: 204, 500
 
-``/alda/<typ>``
+``/alias/config/<name>``
+
+    Retrieve configuration details from DIR_CONFIG(s) for host `name`.
+        
+    Request-method: GET
     
-    Typ: system, event, receive, transfer, input, output, delete
+    HTTP-Status-code: 200, 404
+
+``/alias/<action>``
+
+    All actions target alias entries. A selection in the UI-page is required.
+    
+    List of actions: start, stop, able, debug, trace, fulltrace, switch, retry
+
+    Work on one or more alias entries.
+    
+    Request-method: POST
+    
+    Request-body:
+        List of one ore more alias names, comma-seperated.
+        ``alias: NAME,[NAME],...``
+        
+    HTTP-Status-code: 204
+            
+``/afd/<command>/<action>``
+    
+    List of *command/action*:
+    ``amg/toggle``, ``fd/toggle``, ``dc/update``, ``afd/start``, ``afd/stop``
+    
+    ``hc/update``
+        Trigger HOST_CONFIG re-read.
+    
+    ``hc/save``
+        Save edited configuration in HOST_CONFIG.
+        
+        Request-body: *key:value* list.
+
+    Request-method: POST
+
+    HTTP-Status-code: 204, 500
+
+``/log/<typ>``
+    
+    Typ:
+        ``system``, ``event``, ``receive``, ``transfer``, ``transfer-debug``,
+        ``input``, ``output``, ``delete``, ``queue``
     
     Request-method: POST
     
     Request-body:
         Set of parameter specifying filter options for the selected 
         log-information.
+
+``/view/<mode>/<path:arcfile>``
+
+    `mode`: *auto*, *bufr*, etc. Specifies program to execute as configured in
+    AFD_CONFIG.
+    
+    `arcfile`: path/filename of archived file in AFD archive.
+    
+    Request-method: GET
+    
+    HTTP Status-code: 200, 204
+    
+    Content-type: depends on program output and/or file type.
+
 
 Static Files
 ~~~~~~~~~~~~

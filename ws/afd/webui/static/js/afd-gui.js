@@ -168,7 +168,7 @@ var AFDCTRL = function() {
              */
             console.log("callAfdCmd:", cmd);
             $.ajax({
-                type : "GET",
+                type : "POST",
                 url : AFDCTRL.urlBase + "afd/" + cmd,
                 complete : function(a, b) {
                     console.log(b);
@@ -210,7 +210,7 @@ var AFDCTRL = function() {
                 return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
-            let alias_cl = aliasCommaList(aliasList, false);
+            let alias_cl = AFDCTRL.aliasCommaList(aliasList, false);
             $.ajax({
                 type : "POST",
                 url : AFDCTRL.urlBase + "alias/" + cmd,

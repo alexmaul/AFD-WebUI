@@ -22,65 +22,60 @@ def fsa():
     return make_response(data, {"Content-type": "application/json"})
 
 
-@app.route("/alias/<path:action>", methods=["POST"])
-def alias_post(action=None):
-    app.logger.debug("action: %s", action)
-    app.logger.debug(request.form)
-    if action.startswith("info/"):
-        alias = action.split("/", 2)[1]
-        resp = save_info(alias, request.form.get("text", ""))
-    else:
-        cmd = "afdcmd"
-        cmd_opt = ""
-        alias_list = request.form["alias"].split(",")
-        if action == "start":
-            cmd_opt = "-t -q"
-        elif action == "stop":
-            cmd_opt = "-T -Q"
-        elif action == "able":
-            cmd_opt = "-X"
-        elif action == "debug":
-            cmd_opt = "-d"
-        elif action == "trace":
-            cmd_opt = "-c"
-        elif action == "fulltrace":
-            cmd_opt = "-C"
-        elif action == "switch":
-            cmd_opt = "-s"
-        elif action == "retry":
-            cmd_opt = "-r"
-        exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
-        resp = make_response("", 204, {"Content-type": "text/plain"})
-    return resp
-
-
-@app.route("/alias/<path:action>", methods=["GET"])
-def alias_get(action=None):
-    app.logger.debug("action: %s", action)
-    app.logger.debug(request.form)
-    cmd = "afdcmd"
-    cmd_opt = ""
-    if action.startswith("info"):
-        data = collect_info(action.split("/")[1])
-        return make_response(data, {"Content-type": "text/html"})
-    elif action.startswith("config"):
-        cmd = "get_dc_data"
-        cmd_opt = "-h"
-        data = exec_cmd("{} {} {}".format(cmd, cmd_opt, action.split("/")[1]), True)
-        return make_response(data, {"Content-type": "text/plain"})
-
-
-def save_info(host, info_text=None):
+@app.route("/alias/info/<host>", methods=["POST"])
+def alias_info_post(host):
     app.logger.debug("save info %s", host)
     app.logger.debug(request.form)
     try:
         fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + host)
         with open(fn_info, "wt") as fh_info:
-            fh_info.write(info_text)
+            fh_info.write(request.form.get("text", ""))
     except Exception as e:
         app.logger.warning(e)
         return abort(500)
     return make_response("", 204, {"Content-type": "text/plain"})
+
+
+@app.route("/alias/<action>", methods=["POST"])
+def alias_post(action):
+    app.logger.debug("action: %s", action)
+    app.logger.debug(request.form)
+    cmd = "afdcmd"
+    cmd_opt = ""
+    alias_list = request.form["alias"].split(",")
+    if action == "start":
+        cmd_opt = "-t -q"
+    elif action == "stop":
+        cmd_opt = "-T -Q"
+    elif action == "able":
+        cmd_opt = "-X"
+    elif action == "debug":
+        cmd_opt = "-d"
+    elif action == "trace":
+        cmd_opt = "-c"
+    elif action == "fulltrace":
+        cmd_opt = "-C"
+    elif action == "switch":
+        cmd_opt = "-s"
+    elif action == "retry":
+        cmd_opt = "-r"
+    exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
+    return make_response("", 204, {"Content-type": "text/plain"})
+
+
+@app.route("/alias/<action>/<host>", methods=["GET"])
+def alias_get(action, host):
+    app.logger.debug("action: %s", action)
+    cmd = "afdcmd"
+    cmd_opt = ""
+    if action == "info":
+        data = collect_info(host)
+        return make_response(data, {"Content-type": "text/html"})
+    elif action == "config":
+        cmd = "get_dc_data"
+        cmd_opt = "-h"
+        data = exec_cmd("{} {} {}".format(cmd, cmd_opt, host), True)
+        return make_response(data, {"Content-type": "text/plain"})
 
 
 def collect_info(host):
@@ -186,49 +181,48 @@ def collect_info(host):
     return data
 
 
-@app.route("/afd/<command>/<action>", methods=["GET", "POST"])
+@app.route("/afd/<command>/<action>", methods=["POST"])
 def afd(command=None, action=None):
     app.logger.debug("command: %s   action: %s", command, action)
     app.logger.debug(request.form)
     cmd = "afdcmd"
     cmd_opt = ""
-    if request.method == "GET":
-        if command == "amg":
-            if action == "toggle":
-                cmd = "afdcmd"
-                cmd_opt = "-Y"
-        elif command == "fd":
-            if action == "toggle":
-                cmd = "afdcmd"
-                cmd_opt = "-Z"
-        elif command == "dc":
-            if action == "update":
-                cmd = "udc"
-                cmd_opt = ""
-        elif command == "hc":
-            if action == "update":
-                cmd = "uhc"
-                cmd_opt = ""
-        elif command == "afd":
-            if action == "start":
-                cmd = "afd"
-                cmd_opt = " -a"
-            elif action == "stop":
-                cmd = "afd"
-                cmd_opt = "-s"
-        exec_cmd("{} {}".format(cmd, cmd_opt))
-        return make_response("", 204, {"Content-type": "text/plain"})
-    elif request.method == "POST" and command == "hc" and action == "change":
-        r = save_hc(request.form)
-        if r:
-            return make_response(r, 500, {"Content-type": "text/plain"})
-        else:
-            return make_response("", 204, {"Content-type": "text/plain"})
+    if command == "amg":
+        if action == "toggle":
+            cmd = "afdcmd"
+            cmd_opt = "-Y"
+    elif command == "fd":
+        if action == "toggle":
+            cmd = "afdcmd"
+            cmd_opt = "-Z"
+    elif command == "dc":
+        if action == "update":
+            cmd = "udc"
+            cmd_opt = ""
+    elif command == "hc":
+        if action == "update":
+            cmd = "uhc"
+            cmd_opt = ""
+        elif action == "save":
+            r = save_hc(request.form)
+            if r:
+                return make_response(r, 500, {"Content-type": "text/plain"})
+            else:
+                return make_response("", 204, {"Content-type": "text/plain"})
+    elif command == "afd":
+        if action == "start":
+            cmd = "afd"
+            cmd_opt = " -a"
+        elif action == "stop":
+            cmd = "afd"
+            cmd_opt = "-s"
     else:
         return abort(400)
+    exec_cmd("{} {}".format(cmd, cmd_opt))
+    return make_response("", 204, {"Content-type": "text/plain"})
 
 
-@app.route("/alda/<typ>", methods=["POST"])
+@app.route("/log/<typ>", methods=["POST"])
 def alda(typ=None):
     app.logger.debug("log-info: %s", typ)
     app.logger.debug(request.form)

@@ -27,7 +27,11 @@ div.row .form-check {
 .info-box {
     background-color:   amber;
     font-family:        sans-serif;
-    font-size:          .8rem;
+    font-size:          .9rem;
+}
+.info-header {
+    text-background:    beige;
+    text-align:         center;
 }
 .info-field {
     background-color:   beige;

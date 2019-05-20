@@ -232,31 +232,39 @@ var AFDCTRL = function() {
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
-            let aliasName = aliasList[0].replace(/row-/, "");
-            $.ajax({
-                type : "GET",
-                url : AFDCTRL.urlBase + "alias/info/" + aliasName,
-                success : function(data, status, jqxhr) {
-                    console.log(status, jqxhr);
-                    $("#modalInfoHost").val(aliasName)
-                    $("#modalInfoLabel").text(aliasName + " Info")
-                    $("#modalInfoBody").html(data);
-                    $("#modalInfo").modal("show");
-                }
+            $.each(aliasList, function(i, v) {
+                let aliasName = v.replace(/row-/, "");
+                $.ajax({
+                    type : "GET",
+                    url : AFDCTRL.urlBase + "alias/info/" + aliasName,
+                    success : function(data, status, jqxhr) {
+                        console.log(status, jqxhr);
+                        $("#modalInfoBody").append(data);
+                    }
+                });
             });
+            $("#modalInfo").modal("show");
         },
 
-        saveInfoText : function() {
+        closeInfo : function(info_host) {
+            console.log("closeInfo:", info_host);
+            $("#infoBox_" + info_host).remove();
+            if ($("#modalInfoBody").children().length == 0) {
+                $("#modalInfo").modal("hide");
+            } else {
+                $("#modalInfo").modal("handleUpdate");
+            }
+        },
+
+        saveInfoText : function(info_host) {
             console.log("saveInfoText");
-            let info_host = $("#modalInfoHost")[0]
-            let info_text = $("#modalInfoBody .info-area")[0];
-            console.log(info_host.value);
+            let info_text = $("#infoArea_" + info_host)[0];
+            console.log(info_host);
             console.log(info_text.value);
             $.ajax({
                 type : "POST",
-                url : AFDCTRL.urlBase + "save/info",
+                url : AFDCTRL.urlBase + "alias/info/" + info_host,
                 data : {
-                    host : info_host.value,
                     text : info_text.value
                 },
                 complete : function(a, b) {

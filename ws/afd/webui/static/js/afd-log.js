@@ -180,20 +180,26 @@ var AFDLOG = function() {
 }();
 
 (function() {
-    $(document).ready(function() {
-        // Activate tab if url-anchor is set.
-        console.log(window.location);
-        if (window.location.hash != "") {
-            console.log("found anchor: " + window.location.hash);
-            $(window.location.hash + "-tab").tab("show");
-        }
-        // Set update function for modal events.
-        let modalList = [ "modalProtocol", "modalDelete" ];
-        for (let i = 0; i < modalList.length; i++) {
-            $("#" + modalList[i]).on("hide.bs.modal", function(event) {
-                AFDLOG.updateModal(event.target.id);
+    $(document).ready(
+            function() {
+                // Activate tab if url-anchor is set.
+                console.log(window.location);
+                if (window.location.hash != "") {
+                    console.log("found anchor: " + window.location.hash);
+                    $(window.location.hash + "-tab").tab("show");
+                }
+                if (window.location.search != "") {
+                    console.log("found query: " + window.location.search);
+                    $("#" + window.location.hash.substring(1) + " .filter[name=recipient]").val(
+                            window.location.search.substring(1));
+                }
+                // Set update function for modal events.
+                let modalList = [ "modalProtocol", "modalDelete" ];
+                for (let i = 0; i < modalList.length; i++) {
+                    $("#" + modalList[i]).on("hide.bs.modal", function(event) {
+                        AFDLOG.updateModal(event.target.id);
+                    });
+                    AFDLOG.updateModal(modalList[i]);
+                }
             });
-            AFDLOG.updateModal(modalList[i]);
-        }
-    });
 })();

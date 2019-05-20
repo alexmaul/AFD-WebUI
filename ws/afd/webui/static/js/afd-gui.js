@@ -1,9 +1,20 @@
 var AFDCTRL = function() {
     return {
         urlBase : "/",
+
         rowNum : 0, // Initial nomber of alias rows.
+
         maxRowsPerCol : 40, // Max. number of alias rows.
+
         markedRows : {}, // Set of selected alias rows.
+
+        setMaxRows : function(rows) {
+            AFDCTRL.maxRowsPerCol = rows;
+            AFDCTRL.rowNum = 0;
+            console.log("new max rows:", AFDCTRL.maxRowsPerCol);
+            $('.tabcol').remove();
+        },
+
         toggleMark : function(row) {
             /*
              * Select/deselect alias row.
@@ -26,12 +37,24 @@ var AFDCTRL = function() {
                 this.markedRows[row.attr("id")] = true;
             }
         },
-        setMaxRows : function(rows) {
-            AFDCTRL.maxRowsPerCol = rows;
-            AFDCTRL.rowNum = 0;
-            console.log("new max rows:", AFDCTRL.maxRowsPerCol);
-            $('.tabcol').remove();
+
+        aliasCommaList : function(aliasList, prefix) {
+            /*
+             * Join all hostnames from aliasList to comma-seperated string.
+             */
+            let alias_cl = "";
+            $.each(aliasList, function(i, v) {
+                if (i > 0) {
+                    alias_cl += "," + v.replace(/row-/, "");
+                } else if (prefix) {
+                    alias_cl = "?" + v.replace(/row-/, "");
+                } else {
+                    alias_cl = v.replace(/row-/, "");
+                }
+            });
+            return alias_cl;
         },
+
         evalMenu : function(menuItem) {
             /*
              * Evaluate and deferr actions from menu selection.
@@ -88,16 +111,20 @@ var AFDCTRL = function() {
                     window.open("/static/html/afd-log.html#transfer-debug");
                     break;
                 case "Input Log":
-                    window.open("/static/html/afd-log.html#input");
+                    window.open("/static/html/afd-log.html"
+                            + AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#input");
                     break;
                 case "Output Log":
-                    window.open("/static/html/afd-log.html#output");
+                    window.open("/static/html/afd-log.html"
+                            + AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#output");
                     break;
                 case "Delete Log":
-                    window.open("/static/html/afd-log.html#delete");
+                    window.open("/static/html/afd-log.html"
+                            + AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#delete");
                     break;
                 case "Queue":
-                    window.open("/static/html/afd-log.html#queue");
+                    window.open("/static/html/afd-log.html"
+                            + AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#queue");
                     break;
                 /*
                  * Menu: Control
@@ -183,14 +210,7 @@ var AFDCTRL = function() {
                 return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
-            alias_cl = ""
-            $.each(aliasList, function(i, v) {
-                if (i > 0) {
-                    alias_cl += "," + v.replace(/row-/, "")
-                } else {
-                    alias_cl = v.replace(/row-/, "")
-                }
-            });
+            let alias_cl = aliasCommaList(aliasList, false);
             $.ajax({
                 type : "POST",
                 url : AFDCTRL.urlBase + "alias/" + cmd,

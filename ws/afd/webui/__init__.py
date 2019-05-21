@@ -334,8 +334,6 @@ def view(mode="auto", arcfile=None):
             m = re.match(".*[-.](\w+)$", arcfile)
             if m is not None and m.group(1) in ("bufr", "wmo"):
                 mode = "bufr"
-            else:
-                mode = "hexdump"
     if mode in ("hexdump", "od"):
         content_type = "text/plain"
         content = exec_cmd(

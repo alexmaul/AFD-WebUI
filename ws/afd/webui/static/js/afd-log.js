@@ -1,6 +1,8 @@
 var AFDLOG = function() {
     return {
         urlBase : "/",
+        urlView : "view/",
+        urlLog : "log/",
         selectedLogAreaLines : {},
 
         callAldaCmd : function(ctx, paramSet) {
@@ -11,7 +13,7 @@ var AFDLOG = function() {
             $("#" + ctx + " .log_content-area-scroll .spinner-border").removeClass("d-none");
             $.ajax({
                 type : "POST",
-                url : AFDLOG.urlBase + "alda/" + ctx,
+                url : AFDLOG.urlBase + AFDLOG.urlLog + ctx,
                 data : paramSet,
                 success : function(data, status, jqxhr) {
                     console.log(ctx, status);
@@ -173,7 +175,7 @@ var AFDLOG = function() {
             mode = $("#" + log_name + "-view-mode").text().split(" ")[1].toLowerCase();
             console.log("view", mode, selectedLogAreaLines);
             $.each(selectedLogAreaLines, function(i, v) {
-                window.open(AFDLOG.urlBase + "view/" + mode + "/" + v);
+                window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);
             });
         }
     };

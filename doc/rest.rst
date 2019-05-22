@@ -1,25 +1,38 @@
 HTTP Resources
 ==============
 
-.. contents::
-
+There are two types of HTTP resources in *AFD Web-UI*: static HTML pages, and
+URL which are bound REST-like to function calls.
+ 
 Static Pages
 ------------
 
-Static content.
+Static content for user access. Pages are served "as-is", without processing.
+
+.. topic:: List of URL:
+
+    - `/static/html/afd-gui.html <#sh-gui>`_
+
+    - `/static/html/afd-log.html[?alias-list][#log-type] <#_sh-log>`_
+
+    - `/static/html/afd-hcedit.html <#sh-hced>`_
 
 It is safe to directly address the pages listed from a browser (by i.e.
 bookmarks). They are all accessible via the menu-bar on the *AFD-control* page.
 
 
-``/static/html/afd-gui.html``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _sh-gui:
 
-    AFD-control-window, replication of the *afd_ctrl*'s *Motif*-window. 
+- ``/static/html/afd-gui.html``
+
+    *AFD-control* page, replication of the *afd_ctrl*'s *Motif*-window.
+    
+    The root URL ``/`` redirects to this page.
 
 
-``/static/html/afd-log.html[?alias-list][#log-type]``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _sh-log:
+
+- ``/static/html/afd-log.html[?alias-list][#log-type]``
 
     HTML-page for all log-windows as tabs.
     
@@ -45,35 +58,56 @@ bookmarks). They are all accessible via the menu-bar on the *AFD-control* page.
         *recipient* with "*local,localhost*".
 
 
-``/static/html/afd-hcedit.html``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _sh-hced:
+
+- ``/static/html/afd-hcedit.html``
 
     HTML-form-page for editing the *HOST_CONFIG* settings.
+
 
 REST Adresses
 -------------
 
 The following REST-methods are supported.
 
+.. topic:: List of URL:
+
+    - `Root-URL "/" <#root>`_
+
+    - `/fsa/json <#fsa>`_
+
+    - `/alias/info/<name> <#al-inf>`_
+
+    - `/alias/config/<name> <#al-cfg>`_
+
+    - `/alias/<action> <#al-act>`_
+
+    - `/afd/<command>/<action> <#afd-cmd>`_
+
+    - `/log/<typ> <#log>`_
+
+    - `/view/<mode>/<path:arcfile> <#view>`_
+
 All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
 
 
+.. _root:
 
-``/``
-~~~~~
+- Root-URL ``/``
     
     Request-method: GET
         
     HTTP-Status-code: 303
     
-    Always redirects to the main AFD-control-window page.
+    Always redirects to the static `AFD-control page`.
     
     This (and the static page it redirects to) is the only URL a user should 
     request. Otherwise the dependant JS, CSS, etc files might not be loaded. 
 
 
-``/fsa/json``
-~~~~~~~~~~~~~
+.. _fsa:
+
+- ``/fsa/json``
 
     Request fsa-status information as JSON.
     
@@ -85,10 +119,11 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     
     HTTP-Response:
         ``{"data": [{...}, ...]}``
+
+
+.. _al-inf:
     
-    
-``/alias/info/<name>``
-~~~~~~~~~~~~~~~~~~~~~~
+- ``/alias/info/<name>``
 
     - Retrieve host information (including INFO-file) for host `name`.
         
@@ -107,8 +142,9 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
         HTTP-Status-code: 204, 500
 
 
-``/alias/config/<name>``
-~~~~~~~~~~~~~~~~~~~~~~~~
+.. _al-cfg:
+
+- ``/alias/config/<name>``
 
     Retrieve configuration details from DIR_CONFIG(s) for host `name`.
         
@@ -117,8 +153,9 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     HTTP-Status-code: 200, 404
 
 
-``/alias/<action>``
-~~~~~~~~~~~~~~~~~~~
+.. _al-act:
+
+- ``/alias/<action>``
 
     All actions target alias entries. A selection in the UI-page is required.
     Actions work on one or more selected alias entries.
@@ -137,8 +174,9 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     HTTP-Status-code: 204
 
 
-``/afd/<command>/<action>``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _afd-cmd:
+
+- ``/afd/<command>/<action>``
     
     List of *command/action*:
     ``amg/toggle``, ``fd/toggle``, ``dc/update``, ``afd/start``, ``afd/stop``
@@ -156,8 +194,9 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     HTTP-Status-code: 204, 500
 
 
-``/log/<typ>``
-~~~~~~~~~~~~~~
+.. _log:
+
+- ``/log/<typ>``
     
     Typ:
         ``system``, ``event``, ``receive``, ``transfer``, ``transfer-debug``,
@@ -182,8 +221,9 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
         HTTP Response: HTML-fragment, content for <tbody>.
 
 
-``/view/<mode>/<path:arcfile>``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _view:
+
+- ``/view/<mode>/<path:arcfile>``
 
     `mode`: ``auto``, ``bufr``, etc.
         Specifies program to execute as configured in AFD_CONFIG.
@@ -204,4 +244,31 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
     
     Content-type: depends on program output and/or file type.
 
+
+Additional Static Files
+-----------------------
+The following static files are referenced from the HTML pages and loaded 
+automaticaly from the browser. There's no reason to access them expicitly.
+
+- ``/static/css/``
+
+    - ``afd-gui.css``
+
+    - ``bootstrap.min.css``
+
+    - ``bootstrap.min.css.map``
+
+- ``/static/js/``
+
+    - ``afd-gui.js``
+
+    - ``afd-log.js``
+
+    - ``bootstrap.bundle.min.js``
+
+    - ``excanvas.min.js``
+
+    - ``jquery-3.4.0.min.js``
+
+    - ``npm.js``
 

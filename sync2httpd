@@ -1,2 +1,0 @@
-cp -rL afd-gui.* css js fonts dummy.js /var/www/html/afd
-cp -Lr cgi/* /var/www/cgi-bin/afd

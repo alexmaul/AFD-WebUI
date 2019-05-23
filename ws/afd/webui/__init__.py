@@ -10,6 +10,10 @@ from subprocess import Popen, PIPE, CalledProcessError
 app = Flask(__name__)
 afd_work_dir = None
 
+CONTENT_PLAIN = "text/plain"
+CONTENT_JSON = "application/json"
+CONTENT_HTML = "text/html"
+
 
 @app.route("/")
 def index():
@@ -19,7 +23,7 @@ def index():
 @app.route("/fsa/json", methods=["GET"])
 def fsa():
     data = '{"data":' + exec_cmd("fsa_view_json", True) + "}"
-    return make_response(data, {"Content-type": "application/json"})
+    return make_response(data, {"Content-type": CONTENT_JSON})
 
 
 @app.route("/alias/info/<host>", methods=["POST"])
@@ -33,7 +37,7 @@ def alias_info_post(host):
     except Exception as e:
         app.logger.warning(e)
         return abort(500)
-    return make_response("", 204, {"Content-type": "text/plain"})
+    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
 
 
 @app.route("/alias/<action>", methods=["POST"])
@@ -60,7 +64,7 @@ def alias_post(action):
     elif action == "retry":
         cmd_opt = "-r"
     exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
-    return make_response("", 204, {"Content-type": "text/plain"})
+    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
 
 
 @app.route("/alias/<action>/<host>", methods=["GET"])
@@ -70,12 +74,12 @@ def alias_get(action, host):
     cmd_opt = ""
     if action == "info":
         data = collect_info(host)
-        return make_response(data, {"Content-type": "text/html"})
+        return make_response(data, {"Content-type": CONTENT_HTML})
     elif action == "config":
         cmd = "get_dc_data"
         cmd_opt = "-h"
         data = exec_cmd("{} {} {}".format(cmd, cmd_opt, host), True)
-        return make_response(data, {"Content-type": "text/plain"})
+        return make_response(data, {"Content-type": CONTENT_PLAIN})
 
 
 def collect_info(host):
@@ -129,6 +133,7 @@ def collect_info(host):
     return render_template("info.html", **field_values)
 
 
+@app.route("/afd/<command>", methods=["GET"])
 @app.route("/afd/<command>/<action>", methods=["POST"])
 def afd(command=None, action=None):
     app.logger.debug("command: %s   action: %s", command, action)
@@ -148,15 +153,19 @@ def afd(command=None, action=None):
             cmd = "udc"
             cmd_opt = ""
     elif command == "hc":
-        if action == "update":
-            cmd = "uhc"
-            cmd_opt = ""
-        elif action == "save":
-            r = save_hc(request.form)
-            if r:
-                return make_response(r, 500, {"Content-type": "text/plain"})
-            else:
-                return make_response("", 204, {"Content-type": "text/plain"})
+        if request.method == "GET":
+            hc_data = read_hostconfig()
+            return make_response(hc_data, {"Content-type": CONTENT_JSON})
+        elif request.method == "POST":
+            if action == "update":
+                cmd = "uhc"
+                cmd_opt = ""
+            elif action == "save":
+                r = save_hc(request.form)
+                if r:
+                    return make_response(r, 500, {"Content-type": CONTENT_PLAIN})
+                else:
+                    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
     elif command == "afd":
         if action == "start":
             cmd = "afd"
@@ -167,7 +176,13 @@ def afd(command=None, action=None):
     else:
         return abort(400)
     exec_cmd("{} {}".format(cmd, cmd_opt))
-    return make_response("", 204, {"Content-type": "text/plain"})
+    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
+
+
+def read_hostconfig():
+    hc_data = {}
+    ...
+    return json.dumps(hc_data)
 
 
 @app.route("/log/<typ>", methods=["POST"])
@@ -198,14 +213,25 @@ def log_from_file(file_name):
             ),
         True
         )
-    return make_response(data, {"Content-type": "text/plain"})
+    return make_response(data, {"Content-type": CONTENT_PLAIN})
 
 
 def log_from_alda(typ):
     alda_output_format = {
-        "input":            "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td><td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td><td class='clst-fs'>%OSB</td></tr>\"",
-        "output":           "-o \"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'><td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td><td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td><td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td></tr>\"",
-        "delete":           "-o \"<tr><td class='clst-dd'>%DTm.%DTd.</td><td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td><td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td><td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td></tr>\""
+        "input": "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td>"
+                    +"<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
+                    +"<td class='clst-fs'>%OSB</td></tr>\"",
+        "output": "-o \"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
+                    +"<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
+                    +"%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"
+                    +"<td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td>"
+                    +"<td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td>"
+                    +"</tr>\"",
+        "delete": "-o \"<tr><td class='clst-dd'>%DTm.%DTd.</td>"
+                    +"<td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td>"
+                    +"<td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td>"
+                    +"<td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td>"
+                    +"</tr>\""
     }
     par_tr = {
             "start":         "-t ",
@@ -267,7 +293,7 @@ def log_from_alda(typ):
             if not archived_only or parts[-2] == "Y":
                 new_data.append("".join(parts))
         data = "\n".join(new_data)
-    return make_response(data, {"Content-type": "text/plain"})
+    return make_response(data, {"Content-type": CONTENT_PLAIN})
 
 
 @app.route("/view/<mode>/<path:arcfile>", methods=["GET"])
@@ -283,13 +309,13 @@ def view(mode="auto", arcfile=None):
             if m is not None and m.group(1) in ("bufr", "wmo"):
                 mode = "bufr"
     if mode in ("hexdump", "od"):
-        content_type = "text/plain"
+        content_type = CONTENT_PLAIN
         content = exec_cmd(
             "bash -c \"hexdump -C {}\"".format(arcfile_path),
             True
             )
     elif mode == "bufr":
-        content_type = "text/html"
+        content_type = CONTENT_HTML
         with open(arcfile_path, "rb") as fh_in:
             decode_url = "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
             r = requests.post(decode_url, files={"file": fh_in})

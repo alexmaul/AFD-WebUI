@@ -528,6 +528,13 @@ var AFDCTRL = function() {
             AFDCTRL.evalMenu(event.target.text);
         });
         /*
+         * Set update function for modal events.
+         */
+        $("#modalInfo").on("hide.bs.modal", function(event) {
+            console.log("clear modalInfoBody");
+            $("#modalInfoBody").children().remove();
+        });
+        /*
          * Initial load data.
          */
         AFDCTRL.loadData();

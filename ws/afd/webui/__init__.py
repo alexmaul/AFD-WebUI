@@ -15,6 +15,18 @@ CONTENT_PLAIN = "text/plain"
 CONTENT_JSON = "application/json"
 CONTENT_HTML = "text/html"
 
+# These field names tuple represent the fields in HOST_CONFIG.
+# Important is their exact order!
+HOSTCONFIG_FIELD_NAMES = (
+    "alias", "real1", "real2", "host_toggle", "proxy_name",
+    "allowed_transfers", "max_errors", "retry_interval",
+    "transfer_block_size", "successful_retries", "file_size_offset",
+    "transfer_timeout", "no_bursts", "host_status", "special_flags",
+    "transfer_rate_limit", "ttl", "socket_send_buffer",
+    "socket_receive_buffer", "dupcheck_timeout", "dupcheck_flag",
+    "keep_connected", "warn_time",
+)
+
 
 @app.route("/")
 def index():
@@ -155,7 +167,7 @@ def afd(command=None, action=None):
             cmd_opt = ""
     elif command == "hc":
         if request.method == "GET":
-            hc_data = read_hostconfig()
+            hc_data = json.dumps(read_hostconfig())
             return make_response(hc_data, {"Content-type": CONTENT_JSON})
         elif request.method == "POST":
             if action == "update":
@@ -181,17 +193,7 @@ def afd(command=None, action=None):
 
 
 def read_hostconfig():
-    # These field names tuple represent the fields in HOST_CONFIG.
-    # Important is their exact order!
-    field_names = (
-        "alias", "real1", "real2", "host_toggle", "proxy_name",
-        "allowed_transfers", "max_errors", "retry_interval",
-        "transfer_block_size", "successful_retries", "file_size_offset",
-        "transfer_timeout", "no_bursts", "host_status", "special_flags",
-        "transfer_rate_limit", "ttl", "socket_send_buffer",
-        "socket_receive_buffer", "dupcheck_timeout", "dupcheck_flag",
-        "keep_connected", "warn_time",
-    )
+    hc_order = []
     hc_data = {}
 
     def int_or_str(s):
@@ -200,16 +202,42 @@ def read_hostconfig():
         except:
             return s
 
-    with open(os.path.join(afd_work_dir, "etc", "HOST_CONFIG")) as fh_hc:
+    with open(os.path.join(afd_work_dir, "etc", "HOST_CONFIG"), "rt") as fh_hc:
         for line in fh_hc:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             fields = line.split(":")
-            hc_data[fields[0]] = { n:int_or_str(fields[i])
+            hc_order.append(fields[0])
+            hc_data[fields[0]] = {n:int_or_str(fields[i])
                                   for i, n
-                                  in enumerate(field_names) }
-    return json.dumps(hc_data)
+                                  in enumerate(HOSTCONFIG_FIELD_NAMES)
+                                  }
+    return {"order":hc_order, "data":hc_data}
+
+
+def save_hc(form):
+    tmp_fn_hc = os.path.join(afd_work_dir, "etc", ".HOST_CONFIG")
+    # Read current content of HOST_CONFIG
+    hc = read_hostconfig()
+    app.logger.debug(form)
+    if form.get("submit") == "data":
+        # Replace all values for one host with those from the request.form
+        hc["data"][form["alias"]] = {n:form.get(n, "")
+                                     for n
+                                     in HOSTCONFIG_FIELD_NAMES}
+    elif form.get("submit") == "order":
+        # Replace the host order
+        hc["order"] = form["order"]
+    with open(tmp_fn_hc, "wt") as fh_hc:
+        # Write a new HOST_CONFIG to a temporary file.
+        for alias in hc["order"]:
+            line = ":".join(hc["data"][alias][field]
+                            for field
+                            in HOSTCONFIG_FIELD_NAMES
+                            )
+            fh_hc.write(line, end="\n")
+    # TODO: Replace original HOST_CONFIG with our temporary one
 
 
 @app.route("/log/<typ>", methods=["POST"])
@@ -378,10 +406,6 @@ def exec_cmd(cmd, read=False):
     except CalledProcessError as e:
         app.logger.exception(e)
     return  result
-
-
-def save_hc(form):
-    pass
 
 
 def run():

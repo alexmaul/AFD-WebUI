@@ -193,13 +193,22 @@ def read_hostconfig():
         "keep_connected", "warn_time",
     )
     hc_data = {}
+
+    def int_or_str(s):
+        try:
+            return int(s)
+        except:
+            return s
+
     with open(os.path.join(afd_work_dir, "etc", "HOST_CONFIG")) as fh_hc:
         for line in fh_hc:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             fields = line.split(":")
-            hc_data[fields[0]] = { n:fields[i] for i, n in enumerate(field_names) }
+            hc_data[fields[0]] = { n:int_or_str(fields[i])
+                                  for i, n
+                                  in enumerate(field_names) }
     return json.dumps(hc_data)
 
 

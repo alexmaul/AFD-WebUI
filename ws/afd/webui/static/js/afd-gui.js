@@ -42,17 +42,17 @@ var AFDCTRL = function() {
             /*
              * Join all hostnames from aliasList to comma-seperated string.
              */
-            let alias_cl = "";
+            let aliasCommaList = "";
             $.each(aliasList, function(i, v) {
                 if (i > 0) {
-                    alias_cl += "," + v.replace(/row-/, "");
+                    aliasCommaList += "," + v.replace(/row-/, "");
                 } else if (prefix) {
-                    alias_cl = "?" + v.replace(/row-/, "");
+                    aliasCommaList = "?" + v.replace(/row-/, "");
                 } else {
-                    alias_cl = v.replace(/row-/, "");
+                    aliasCommaList = v.replace(/row-/, "");
                 }
             });
-            return alias_cl;
+            return aliasCommaList;
         },
 
         evalMenu : function(menuItem) {
@@ -210,12 +210,12 @@ var AFDCTRL = function() {
                 return;
             }
             console.log("callAliasCmd:", cmd, aliasList);
-            let alias_cl = AFDCTRL.aliasCommaList(aliasList, false);
+            let aliasCommaList = AFDCTRL.aliasCommaList(aliasList, false);
             $.ajax({
                 type : "POST",
                 url : AFDCTRL.urlBase + "alias/" + cmd,
                 data : {
-                    alias : alias_cl
+                    alias : aliasCommaList
                 },
                 complete : function(a, b) {
                     console.log(b);
@@ -273,12 +273,12 @@ var AFDCTRL = function() {
             $("#modalInfo").modal("show");
         },
 
-        closeInfo : function(info_host) {
+        closeInfo : function(infoHost) {
             /*
              * Remove host info from modal. Close modal if removing last info.
              */
-            console.log("closeInfo:", info_host);
-            $("#infoBox_" + info_host).remove();
+            console.log("closeInfo:", infoHost);
+            $("#infoBox_" + infoHost).remove();
             if ($("#modalInfoBody").children().length == 0) {
                 $("#modalInfo").modal("hide");
             } else {
@@ -286,19 +286,19 @@ var AFDCTRL = function() {
             }
         },
 
-        saveInfoText : function(info_host) {
+        saveInfoText : function(infoHost) {
             /*
              * Send POST to save edited text in INFO-file.
              */
             console.log("saveInfoText");
-            let info_text = $("#infoArea_" + info_host)[0];
-            console.log(info_host);
-            console.log(info_text.value);
+            let infoText = $("#infoArea_" + infoHost)[0];
+            console.log(infoHost);
+            console.log(infoText.value);
             $.ajax({
                 type : "POST",
-                url : AFDCTRL.urlBase + "alias/info/" + info_host,
+                url : AFDCTRL.urlBase + "alias/info/" + infoHost,
                 data : {
-                    text : info_text.value
+                    text : infoText.value
                 },
                 complete : function(a, b) {
                     console.log(b);
@@ -314,8 +314,8 @@ var AFDCTRL = function() {
              * 
              */
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
-                this_data = data["data"];
-                $.each(this_data, function(i, v) {
+                thisData = data["data"];
+                $.each(thisData, function(i, v) {
                     if ($("#row-" + v.alias).length == 0) {
                         AFDCTRL.addRow(AFDCTRL.rowNum, v);
                         AFDCTRL.rowNum += 1;
@@ -501,8 +501,8 @@ var AFDCTRL = function() {
 (function() {
     $(document).ready(function() {
         /* Set height for host area. */
-        let tab_area_height = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
-        $("#tab-area").attr("style", "height:" + tab_area_height + "px;");
+        let tabAreaHeight = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
+        $("#tab-area").attr("style", "height:" + tabAreaHeight + "px;");
         /* Set event-handler for navbar menu. */
         $("nav").find("a").not(".dropdown-toggle").click(function(event) {
             AFDCTRL.evalMenu(event.target.text);

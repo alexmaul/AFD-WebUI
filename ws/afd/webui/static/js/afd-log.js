@@ -32,11 +32,11 @@ var AFDLOG = function() {
                 context : $("#" + ctx + "-area")
             });
         },
-        callAldaLevel : function(log_name) {
+        callAldaLevel : function(logName) {
             /*
              * Retrieve full log-file content (e.g. system-log, transfer-log).
              */
-            console.log("callAldaLevel " + log_name);
+            console.log("callAldaLevel " + logName);
             var transl = {
                 info : "I",
                 config : "C",
@@ -46,7 +46,7 @@ var AFDLOG = function() {
                 debug : "D",
             };
             let filter = [];
-            $.each($("#" + log_name + " ." + log_name + "-level"), function(i, v) {
+            $.each($("#" + logName + " ." + logName + "-level"), function(i, v) {
                 if (v.checked) {
                     filter.push(transl[v.value]);
                 }
@@ -55,20 +55,20 @@ var AFDLOG = function() {
                 alert("Check at least one log-level!");
                 return false;
             }
-            let file_number = $("#" + log_name + "-logfile").get(0).value;
-            AFDLOG.callAldaCmd(log_name, {
-                file : file_number,
+            let fileNumber = $("#" + logName + "-logfile").get(0).value;
+            AFDLOG.callAldaCmd(logName, {
+                file : fileNumber,
                 filter : filter.join("|")
             });
         },
 
-        callAldaFilter : function(log_name) {
+        callAldaFilter : function(logName) {
             /*
              * Retrieve log information with ALDA.
              */
-            console.log("callAldaFilter " + log_name);
+            console.log("callAldaFilter " + logName);
             let paramSet = {};
-            $.each($("#" + log_name + " .filter"), function(i, obj) {
+            $.each($("#" + logName + " .filter"), function(i, obj) {
                 if (obj.type == "checkbox") {
                     if (obj.checked == true) {
                         paramSet[obj.name] = obj.value;
@@ -78,7 +78,7 @@ var AFDLOG = function() {
                 }
             });
             console.log(paramSet);
-            AFDLOG.callAldaCmd(log_name, paramSet);
+            AFDLOG.callAldaCmd(logName, paramSet);
         },
 
         toggleModal : function(modal) {
@@ -91,79 +91,71 @@ var AFDLOG = function() {
             });
         },
 
-        setDate : function(log_name, time_range) {
+        setDate : function(logName, timeRange) {
             /*
              * Set input fields for start- and end-time according to range.
              */
-            console.log("setDate", log_name, time_range);
-            if (time_range == "clear") {
-                $("#" + log_name + " .filter[name=start]").val("");
-                $("#" + log_name + " .filter[name=end]").val("");
+            console.log("setDate", logName, timeRange);
+            if (timeRange == "clear") {
+                $("#" + logName + " .filter[name=start]").val("");
+                $("#" + logName + " .filter[name=end]").val("");
                 return;
             }
-            let val_start = "";
-            let val_end = "";
+            let dateStart = "";
+            let dateEnd = "";
             let now = new Date(Date.now());
-            let ta_mo = now.getMonth() + 1;
-            let ta_dd = now.getDate();
-            let ta_hh = now.getHours();
-            let ta_mi = now.getMinutes();
+            let datetimeNowMonth = now.getMonth() + 1;
+            let datetimeNowDay = now.getDate();
+            let datetimeNowHour = now.getHours();
+            let datetimeNowMinute = now.getMinutes();
             let yday = new Date(Date.now());
             yday.setDate(now.getDate() - 1);
-            let tb_mo = yday.getMonth() + 1;
-            let tb_dd = yday.getDate();
-            let tb_hh = yday.getHours();
-            let tb_mi = yday.getMinutes();
-            if (ta_mo < 10) {
-                ta_mo = '0' + ta_mo;
+            let datetimeYdayMonth = yday.getMonth() + 1;
+            let datetimeYdayDay = yday.getDate();
+            if (datetimeNowMonth < 10) {
+                datetimeNowMonth = '0' + datetimeNowMonth;
             }
-            if (ta_dd < 10) {
-                ta_dd = '0' + ta_dd;
+            if (datetimeNowDay < 10) {
+                datetimeNowDay = '0' + datetimeNowDay;
             }
-            if (ta_hh < 10) {
-                ta_hh = '0' + ta_hh;
+            if (datetimeNowHour < 10) {
+                datetimeNowHour = '0' + datetimeNowHour;
             }
-            if (ta_mi < 10) {
-                ta_mi = '0' + ta_mi;
+            if (datetimeNowMinute < 10) {
+                datetimeNowMinute = '0' + datetimeNowMinute;
             }
-            if (tb_mo < 10) {
-                tb_mo = '0' + tb_mo;
+            if (datetimeYdayMonth < 10) {
+                datetimeYdayMonth = '0' + datetimeYdayMonth;
             }
-            if (tb_dd < 10) {
-                tb_dd = '0' + tb_dd;
+            if (datetimeYdayDay < 10) {
+                datetimeYdayDay = '0' + datetimeYdayDay;
             }
-            if (tb_hh < 10) {
-                tb_hh = '0' + tb_hh;
+            if (timeRange == "today") {
+                dateStart = "" + datetimeNowMonth + datetimeNowDay + "0000";
+                dateEnd = "" + datetimeNowMonth + datetimeNowDay + datetimeNowHour + datetimeNowMinute;
+            } else if (timeRange == "yesterday") {
+                dateStart = "" + datetimeYdayMonth + datetimeYdayDay + "0000";
+                dateEnd = "" + datetimeNowMonth + datetimeNowDay + "0000";
             }
-            if (tb_mi < 10) {
-                tb_mi = '0' + tb_mi;
-            }
-            if (time_range == "today") {
-                val_start = "" + ta_mo + ta_dd + "0000";
-                val_end = "" + ta_mo + ta_dd + ta_hh + ta_mi;
-            } else if (time_range == "yesterday") {
-                val_start = "" + tb_mo + tb_dd + "0000";
-                val_end = "" + ta_mo + ta_dd + "0000";
-            }
-            $("#" + log_name + " .filter[name=start]").val(val_start);
-            $("#" + log_name + " .filter[name=end]").val(val_end);
-            console.log(val_start, val_end);
+            $("#" + logName + " .filter[name=start]").val(dateStart);
+            $("#" + logName + " .filter[name=end]").val(dateEnd);
+            console.log(dateStart, dateEnd);
         },
 
-        updateModal : function(modal_id) {
+        updateModal : function(modalId) {
             let checkedList = [];
-            $.each($("#" + modal_id + " .form-check-input"), function(i, obj) {
+            $.each($("#" + modalId + " .form-check-input"), function(i, obj) {
                 if (obj.checked) {
                     checkedList.push(obj.value);
                 }
             });
-            $("#" + modal_id + "Value").attr("value", checkedList.join(","));
+            $("#" + modalId + "Value").attr("value", checkedList.join(","));
         },
 
-        callView : function(log_name) {
-            console.log("callView " + log_name);
+        callView : function(logName) {
+            console.log("callView " + logName);
             let selectedLogAreaLines = [];
-            $.each($("#" + log_name + " .selected"), function(i, obj) {
+            $.each($("#" + logName + " .selected"), function(i, obj) {
                 if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
                     selectedLogAreaLines.push(obj.attributes["archive"].value);
                 }
@@ -172,7 +164,7 @@ var AFDLOG = function() {
                 alert("Select archived log entry first!");
                 return;
             }
-            mode = $("#" + log_name + "-view-mode").text().split(" ")[1].toLowerCase();
+            mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
             console.log("view", mode, selectedLogAreaLines);
             $.each(selectedLogAreaLines, function(i, v) {
                 window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);

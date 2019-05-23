@@ -1,14 +1,21 @@
 var AFDLOG = function() {
     return {
+        /** urlBase. */
         urlBase : "/",
+
+        /** urlView. */
         urlView : "view/",
+
+        /** urlLog. */
         urlLog : "log/",
+
+        /** selectedLogAreaLines. */
         selectedLogAreaLines : {},
 
+        /**
+         * Exec general AFD command, handle ajax call.
+         */
         callAldaCmd : function(ctx, paramSet) {
-            /*
-             * Exec general AFD command, handle ajax call.
-             */
             console.log("callAldaCmd: " + ctx + ": " + paramSet);
             $("#" + ctx + " .log_content-area-scroll .spinner-border").removeClass("d-none");
             $.ajax({
@@ -32,10 +39,11 @@ var AFDLOG = function() {
                 context : $("#" + ctx + "-area")
             });
         },
+
+        /**
+         * Retrieve full log-file content (e.g. system-log, transfer-log).
+         */
         callAldaLevel : function(logName) {
-            /*
-             * Retrieve full log-file content (e.g. system-log, transfer-log).
-             */
             console.log("callAldaLevel " + logName);
             var transl = {
                 info : "I",
@@ -62,10 +70,10 @@ var AFDLOG = function() {
             });
         },
 
+        /**
+         * Retrieve log information with ALDA.
+         */
         callAldaFilter : function(logName) {
-            /*
-             * Retrieve log information with ALDA.
-             */
             console.log("callAldaFilter " + logName);
             let paramSet = {};
             $.each($("#" + logName + " .filter"), function(i, obj) {
@@ -81,6 +89,9 @@ var AFDLOG = function() {
             AFDLOG.callAldaCmd(logName, paramSet);
         },
 
+        /**
+         * 
+         */
         toggleModal : function(modal) {
             $.each($("#" + modal + " input.form-check-input"), function(i, obj) {
                 if (obj.checked == true) {
@@ -91,10 +102,10 @@ var AFDLOG = function() {
             });
         },
 
+        /**
+         * Set input fields for start- and end-time according to range.
+         */
         setDate : function(logName, timeRange) {
-            /*
-             * Set input fields for start- and end-time according to range.
-             */
             console.log("setDate", logName, timeRange);
             if (timeRange == "clear") {
                 $("#" + logName + " .filter[name=start]").val("");
@@ -142,6 +153,9 @@ var AFDLOG = function() {
             console.log(dateStart, dateEnd);
         },
 
+        /**
+         * 
+         */
         updateModal : function(modalId) {
             let checkedList = [];
             $.each($("#" + modalId + " .form-check-input"), function(i, obj) {
@@ -152,6 +166,9 @@ var AFDLOG = function() {
             $("#" + modalId + "Value").attr("value", checkedList.join(","));
         },
 
+        /**
+         * 
+         */
         callView : function(logName) {
             console.log("callView " + logName);
             let selectedLogAreaLines = [];
@@ -170,24 +187,31 @@ var AFDLOG = function() {
                 window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);
             });
         }
-    };
+    }; /* End returned object. */
 }();
 
 (function() {
     $(document).ready(
             function() {
-                // Activate tab if url-anchor is set.
+                /*
+                 * Activate tab if url-anchor is set.
+                 */
                 console.log(window.location);
                 if (window.location.hash != "") {
                     console.log("found anchor: " + window.location.hash);
                     $(window.location.hash + "-tab").tab("show");
                 }
+                /*
+                 * Pre-set input field "Recipient" if "?..." is set in URL.
+                 */
                 if (window.location.search != "") {
                     console.log("found query: " + window.location.search);
                     $("#" + window.location.hash.substring(1) + " .filter[name=recipient]").val(
                             window.location.search.substring(1));
                 }
-                // Set update function for modal events.
+                /*
+                 * Set update function for modal events.
+                 */
                 let modalList = [ "modalProtocol", "modalDelete" ];
                 for (let i = 0; i < modalList.length; i++) {
                     $("#" + modalList[i]).on("hide.bs.modal", function(event) {

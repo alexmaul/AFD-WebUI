@@ -1,13 +1,18 @@
 var AFDCTRL = function() {
     return {
+        /** urlBase. */
         urlBase : "/",
 
-        rowNum : 0, // Initial nomber of alias rows.
+        /** Initial number of alias rows. */
+        rowNum : 0,
 
-        maxRowsPerCol : 40, // Max. number of alias rows.
+        /** Max. number of alias rows. */
+        maxRowsPerCol : 40,
 
-        markedRows : {}, // Set of selected alias rows.
+        /** Set of selected alias rows. */
+        markedRows : {},
 
+        /** Set max. number of rows for control-window host display. */
         setMaxRows : function(rows) {
             AFDCTRL.maxRowsPerCol = rows;
             AFDCTRL.rowNum = 0;
@@ -15,10 +20,10 @@ var AFDCTRL = function() {
             $('.tabcol').remove();
         },
 
+        /**
+         * Select/deselect alias row.
+         */
         toggleMark : function(row) {
-            /*
-             * Select/deselect alias row.
-             */
             if (this.markedRows[row.attr("id")]) {
                 console.log("alias-click-deselect:", row.attr("id"));
                 row.addClass("tab-row");
@@ -38,10 +43,10 @@ var AFDCTRL = function() {
             }
         },
 
+        /**
+         * Join all hostnames from aliasList to comma-seperated string.
+         */
         aliasCommaList : function(aliasList, prefix) {
-            /*
-             * Join all hostnames from aliasList to comma-seperated string.
-             */
             let aliasCommaList = "";
             $.each(aliasList, function(i, v) {
                 if (i > 0) {
@@ -55,10 +60,10 @@ var AFDCTRL = function() {
             return aliasCommaList;
         },
 
+        /**
+         * Evaluate and deferr actions from menu selection.
+         */
         evalMenu : function(menuItem) {
-            /*
-             * Evaluate and deferr actions from menu selection.
-             */
             console.log("menu-click:", menuItem, Object.keys(this.markedRows));
             switch (menuItem) {
                 /*
@@ -159,13 +164,14 @@ var AFDCTRL = function() {
                     break;
             }
         },
-        /***********************************************************************
+        /*
+         * ====================================================================
          * Methods building and sending commands to AFD.
          */
+        /**
+         * Exec general AFD command, handle ajax call.
+         */
         callAfdCmd : function(cmd) {
-            /*
-             * Exec general AFD command, handle ajax call.
-             */
             console.log("callAfdCmd:", cmd);
             $.ajax({
                 type : "POST",
@@ -175,13 +181,13 @@ var AFDCTRL = function() {
                 }
             });
         },
+        /**
+         * Decide and exec command for selected alias.
+         * 
+         * Decission is made by testing if any of the nodes with ID from lookFor
+         * has the corresponding class from testFor.
+         */
         callAliasToggle : function(lookFor, testFor, swon, swoff, aliasList) {
-            /*
-             * Decide and exec command for selected alias.
-             * 
-             * Decission is made by testing if any of the nodes with ID from
-             * lookFor has the corresponding class from testFor.
-             */
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
@@ -200,12 +206,13 @@ var AFDCTRL = function() {
                 AFDCTRL.callAliasCmd(sw, [ alias ]);
             });
         },
+
+        /**
+         * Exec command for selected alias.
+         * 
+         * Expects empty response (http 204).
+         */
         callAliasCmd : function(cmd, aliasList) {
-            /*
-             * Exec command for selected alias.
-             * 
-             * Expects empty response (http 204).
-             */
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
@@ -222,12 +229,13 @@ var AFDCTRL = function() {
                 }
             });
         },
+
+        /**
+         * Open new window with command response.
+         * 
+         * Best suited for e.g. alias configuration.
+         */
         callAliasWindow : function(cmd, aliasList) {
-            /*
-             * Open new window with command response.
-             * 
-             * Best suited for e.g. alias configuration.
-             */
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
             }
@@ -236,10 +244,11 @@ var AFDCTRL = function() {
                 window.open(AFDCTRL.urlBase + "alias/" + cmd + "/" + v.replace(/row-/, ""));
             });
         },
+
+        /**
+         * Test if any alias is selected, popup alert if not.
+         */
         isAliasSelected : function(aliasList) {
-            /*
-             * Test if any alias is selected, popup alert if not.
-             */
             if (aliasList.length == 0) {
                 alert("You must first select a host!");
                 return false;
@@ -247,14 +256,15 @@ var AFDCTRL = function() {
             return true;
         },
 
-        /***********************************************************************
+        /*
+         * ====================================================================
          * Methods for load/save host information (INFO-files).
          */
+        /**
+         * Retrieve host information (incl. INFO-file) for all hosts in
+         * aliasList.
+         */
         viewModalInfo : function(aliasList) {
-            /*
-             * Retrieve host information (incl. INFO-file) for all hosts in
-             * aliasList.
-             */
             console.log("viewModalInfo:", aliasList);
             if (!AFDCTRL.isAliasSelected(aliasList)) {
                 return;
@@ -273,10 +283,10 @@ var AFDCTRL = function() {
             $("#modalInfo").modal("show");
         },
 
+        /**
+         * Remove host info from modal. Close modal if removing last info.
+         */
         closeInfo : function(infoHost) {
-            /*
-             * Remove host info from modal. Close modal if removing last info.
-             */
             console.log("closeInfo:", infoHost);
             $("#infoBox_" + infoHost).remove();
             if ($("#modalInfoBody").children().length == 0) {
@@ -286,10 +296,10 @@ var AFDCTRL = function() {
             }
         },
 
+        /**
+         * Send POST to save edited text in INFO-file.
+         */
         saveInfoText : function(infoHost) {
-            /*
-             * Send POST to save edited text in INFO-file.
-             */
             console.log("saveInfoText");
             let infoText = $("#infoArea_" + infoHost)[0];
             console.log(infoHost);
@@ -306,13 +316,14 @@ var AFDCTRL = function() {
             });
         },
 
-        /***********************************************************************
+        /*
+         * ====================================================================
          * Methods to load data and update display.
          */
+        /**
+         * 
+         */
         loadData : function() {
-            /*
-             * 
-             */
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
                 thisData = data["data"];
                 $.each(thisData, function(i, v) {
@@ -324,11 +335,11 @@ var AFDCTRL = function() {
                 });
             });
         },
-        addRow : function(rowNum, val) {
-            /*
-             * 
-             */
 
+        /**
+         * 
+         */
+        addRow : function(rowNum, val) {
             let lastCol = Math.floor(rowNum / AFDCTRL.maxRowsPerCol);
             console.log("rownum:", rowNum, "maxRowsPerCol:", AFDCTRL.maxRowsPerCol, "lastCol:", lastCol, "tabcol.len:",
                     $(".tabcol").length);
@@ -351,13 +362,18 @@ var AFDCTRL = function() {
             });
             $("#tbdy-" + lastCol).append(row);
         },
+
+        /**
+         * 
+         */
         removeRow : function(rowAlias) {
 
         },
+
+        /**
+         * 
+         */
         setRowData : function(val) {
-            /*
-             * 
-             */
             let typ = null, j, x, y;
             let row = $("#row-" + val.alias);
             for (typ in val) {
@@ -495,21 +511,29 @@ var AFDCTRL = function() {
                 }
             }
         } /* setRowData */
-    };
+    }; /* End returned object. */
 }();
 
 (function() {
     $(document).ready(function() {
-        /* Set height for host area. */
+        /*
+         * Set height for host area.
+         */
         let tabAreaHeight = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
         $("#tab-area").attr("style", "height:" + tabAreaHeight + "px;");
-        /* Set event-handler for navbar menu. */
+        /*
+         * Set event-handler for navbar menu.
+         */
         $("nav").find("a").not(".dropdown-toggle").click(function(event) {
             AFDCTRL.evalMenu(event.target.text);
         });
-        /* Initial load data. */
+        /*
+         * Initial load data.
+         */
         AFDCTRL.loadData();
-        /* Set interval-handler to regularly load data and update display. */
+        /*
+         * Set interval-handler to regularly load data and update display.
+         */
         setInterval(function() {
             AFDCTRL.loadData();
         }, 5000);

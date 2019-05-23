@@ -6,6 +6,7 @@ from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
                    redirect, Markup, json, make_response, abort)
 from subprocess import Popen, PIPE, CalledProcessError
+from builtins import enumerate
 
 app = Flask(__name__)
 afd_work_dir = None
@@ -180,8 +181,25 @@ def afd(command=None, action=None):
 
 
 def read_hostconfig():
+    # These field names tuple represent the fields in HOST_CONFIG.
+    # Important is their exact order!
+    field_names = (
+        "alias", "real1", "real2", "host_toggle", "proxy_name",
+        "allowed_transfers", "max_errors", "retry_interval",
+        "transfer_block_size", "successful_retries", "file_size_offset",
+        "transfer_timeout", "no_bursts", "host_status", "special_flags",
+        "transfer_rate_limit", "ttl", "socket_send_buffer",
+        "socket_receive_buffer", "dupcheck_timeout", "dupcheck_flag",
+        "keep_connected", "warn_time",
+    )
     hc_data = {}
-    ...
+    with open(os.path.join(afd_work_dir, "etc", "HOST_CONFIG")) as fh_hc:
+        for line in fh_hc:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            fields = line.split(":")
+            hc_data[fields[0]] = { n:fields[i] for i, n in enumerate(field_names) }
     return json.dumps(hc_data)
 
 

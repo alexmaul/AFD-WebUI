@@ -29,7 +29,7 @@
         </div>
         <div class="col">
             <p>
-            <input type="checkbox" class="filter" name="host_toggle" /> Host switching
+            <input type="checkbox" class="filter" name="host_toggle" /> Host switching          <!-- "no" muss die anderen toggle disablen -->
             <span class="space-long"></span> 
             Host toggle character 1: <input type="text" class="filter" size="1em" maxlength="1" name="host_toggle" />
             <span class="space-long"></span> 
@@ -88,13 +88,43 @@
             </div>
             <hr/>
             <p>
-            Check for duplicates:
+            Check for duplicates:                                               <!-- TODO: radio muss alle .dupcheck en/disablen -->
             <span class="space-short"></span> 
             <input type="radio" class="filter" name="dupcheck_flag" value="yes" /> Enabled
             <span class="space-short"></span> 
             <input type="radio" class="filter" name="dupcheck_flag" value="no" checked /> Disabled
             <span class="space-long"></span>
-            Timeout:  <input type="text" class="filter" size="10ch" name="ttl" />
+            Timeout:  <input type="text" class="filter dupcheck" size="10ch" name="" />     <!-- name setzen -->
+            <input type="checkbox" class="filter dupcheck" name="dupcheck_flag" value="fixed"/> Fixed
+            <span class="space-long"></span>
+            Reference:
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_reference" value="alias" /> Alias
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_reference" value="recipient" /> Recipient
+            <p>
+            <input type="radio" class="filter dupcheck" name="dupcheck_type_name" value="name" /> Name
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_type_namesize" value="name-size" /> Name+size
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_type_nosuffix" value="name-no-suffix" /> Name, no suffix
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_type_content" value="content" /> Content
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_type_namecontent" value="name-content" /> Name+content
+            <p>
+            <input type="checkbox" class="filter dupcheck" name="dupcheck_flag" value="" /> Delete
+            <span class="space-short"></span> 
+            <input type="checkbox" class="filter dupcheck" name="dupcheck_flag" value="" /> Store
+            <span class="space-short"></span> 
+            <input type="checkbox" class="filter dupcheck" name="dupcheck_flag" value="" /> Warn
+            <span class="space-long"></span>
+            CRC-type: 
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_crc" value="crc32" /> CRC-32
+            <span class="space-short"></span> 
+            <input type="radio" class="filter dupcheck" name="dupcheck_crc" value="crc32c" /> CRC-32c
+            <hr/>
         </div>
     </div>
     <span style="padding:1em;"></span>

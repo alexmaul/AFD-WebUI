@@ -18,6 +18,19 @@ body.form-page {
     background-color:   bisque;
 }
 
+.space-long {
+    padding-right:      3em;
+}
+
+.space-short {
+    padding-right:      1em;
+}
+
+#alias-list {
+    height:             100%;
+    width:              12em;
+}
+
 /*** Modal select ***/
 
 div.row {

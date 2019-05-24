@@ -17,15 +17,7 @@
 </head>
 <body class="form-page">
 <h3 align="center">Host Config Editor</h3>
-<!--
-    "alias", "real1", "real2", "host_toggle", "proxy_name",
-    "allowed_transfers", "max_errors", "retry_interval",
-    "transfer_block_size", "successful_retries", "file_size_offset",
-    "transfer_timeout", "no_bursts", "host_status", "special_flags",
-    "transfer_rate_limit", "ttl", "socket_send_buffer",
-    "socket_receive_buffer", "dupcheck_timeout", "dupcheck_flag",
-    "keep_connected", "warn_time",
--->
+<span style="padding:1em;"></span>
 <div class="container-fluid">
     <div class="row">
         <div class="col-2">
@@ -36,28 +28,81 @@
             </select>
         </div>
         <div class="col">
-            <form>
-                <input type="checkbox" class="filter" name="host_toggle" /> Host switching
-                &nbsp;
-                Host toggle character 1: <input type="text" class="filter" size="1em" maxlength="1" name="host_toggle" />
-                Host toggle character 2: <input type="text" class="filter" size="1em" maxlength="1" name="host_toggle" />
-                &nbsp;
-                <input type="checkbox" class="filter" name="host_toggle" /> Auto
-                <p/>
-                Host/IP
-                1: <input type="text" class="filter" size="20em" name="real1" />
-                2: <input type="text" class="filter" size="20em" name="real2" />
-                &nbsp;
-                Proxy Name: <input type="text" class="filter" size="20em" name="proxy_name" />
-                <p/>
-                <input type="checkbox" class="filter" name="use_local" /> Use scheme &quot;file&quot; when hostname matches local nodename
-                <p/>
-                
-            </form>
+            <p>
+            <input type="checkbox" class="filter" name="host_toggle" /> Host switching
+            <span class="space-long"></span> 
+            Host toggle character 1: <input type="text" class="filter" size="1em" maxlength="1" name="host_toggle" />
+            <span class="space-long"></span> 
+            Host toggle character 2: <input type="text" class="filter" size="1em" maxlength="1" name="host_toggle" />
+            <span class="space-long"></span> 
+            <input type="checkbox" class="filter" name="host_toggle" /> Auto
+            <hr/>
+            <p>
+            Host/IP
+            1: <input type="text" class="filter" size="20em" name="real1" />
+            <span class="space-short"></span> 
+            2: <input type="text" class="filter" size="20em" name="real2" />
+            <span class="space-long"></span> 
+            Proxy Name: <input type="text" class="filter" size="20em" name="proxy_name" />
+            <p>
+            <input type="checkbox" class="filter" name="use_local" /> Use scheme &quot;file&quot; when hostname matches local nodename
+            <hr/>
+            <p>
+            Transfer timeout: <input type="text" class="filter" size="4ch" name="transfer_timeout" />
+            <span class="space-long"></span> 
+            <input type="checkbox" class="filter" name="" /> Interrupt
+            <span class="space-long"></span> 
+            <input type="checkbox" class="filter" name="" /> Ignore errors+warnings
+            <span class="space-long"></span> 
+            <input type="checkbox" class="filter" name="" /> Do not delete date
+            <p>
+            Maximum errors: <input type="text" class="filter" size="4ch" name="max_errors" />
+            <span class="space-long"></span> 
+            Successful retries: <input type="text" class="filter" size="4ch" name="successful_retries" />
+            <span class="space-long"></span> 
+            Retry interval: <input type="text" class="filter" size="4ch" name="retry_interval" />
+            <p>
+            Keep connected: <input type="text" class="filter" size="4ch" name="keep_connected" />
+            <span class="space-short"></span> 
+            <input type="radio" class="filter" name="keep_connected_direction" value="both" checked /> Both
+            <span class="space-short"></span> 
+            <input type="radio" class="filter" name="keep_connected_direction" value="fetch" /> Fetch 
+            <span class="space-short"></span> 
+            <input type="radio" class="filter" name="keep_connected_direction" value="send" /> Send
+            <span class="space-short"></span> 
+            <input type="checkbox" class="filter" name="keep_connected_disconnect" /> Disconnect 
+            <span class="space-long"></span> 
+            Warn time:
+            <input type="text" class="filter" size="4ch" name="warn_time_days" /> days 
+            <input type="text" class="filter" size="2ch" name="warn_time_hours" /> hours
+            <input type="text" class="filter" size="2ch" name="warn_time_mins" /> mins
+            <input type="text" class="filter" size="2ch" name="warn_time_secs" /> secs
+            <hr/>
+            <p style="float:left;">
+            Transfer rate limit (in KiB): <input type="text" class="filter" size="4ch" name="transfer_rate_limit" />
+            <span class="space-long"></span> 
+            <div>
+                Socket send buffer size (in KiB): <input type="text" class="filter" size="4ch" name="socket_send_buffer" />
+                <p>
+                Socket receive buffer size (in KiB): <input type="text" class="filter" size="4ch" name="socket_receive_buffer" />
+            </div>
+            <hr/>
+            <p>
+            Check for duplicates:
+            <span class="space-short"></span> 
+            <input type="radio" class="filter" name="dupcheck_flag" value="yes" /> Enabled
+            <span class="space-short"></span> 
+            <input type="radio" class="filter" name="dupcheck_flag" value="no" checked /> Disabled
+            <span class="space-long"></span>
+            Timeout:  <input type="text" class="filter" size="10ch" name="ttl" />
         </div>
     </div>
+    <span style="padding:1em;"></span>
     <div class="row">
     <!-- buttons -->
+        <div class="col-2" style="text-align: center;">
+            <button type="button" class="btn btn-secondary button-action" name="">New</button>
+        </div>
         <div class="col-2" style="text-align: center;">
             <button type="button" class="btn btn-success button-action" name="">Update</button>
         </div>

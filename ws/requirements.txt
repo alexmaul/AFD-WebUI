@@ -1,4 +1,4 @@
 flask
 six
 requests
-magic
+python-magic

@@ -13,9 +13,25 @@
 <script type="application/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/afd-gui.css">
 <script type="application/javascript">
+
 var AFDEDITHC = function() {
     return {
-    
+        ableAll:function(obj, class_filter){
+            console.log("ableAll", obj, class_filter);
+            if (obj.type == "radio") {
+                if (obj.value == "yes") {
+                    $("." + class_filter).removeAttr("disabled");
+                } else {
+                    $("." + class_filter).attr("disabled", true);
+                }
+            } else {
+                if (obj.checked == true) {
+                    $("." + class_filter).removeAttr("disabled");
+                } else {
+                    $("." + class_filter).attr("disabled", true);
+                }
+            }
+        }
     }; /* End returned object. */
 }();
 
@@ -36,13 +52,16 @@ var AFDEDITHC = function() {
         </div>
         <div class="col">
             <p>
-            <input type="checkbox" class="filter" name="host_switch_enable" /> Host switching          <!-- "no" muss die anderen toggle disablen -->
+            <input type="checkbox" class="filter" name="host_switch_enable" onChange="javascript:AFDEDITHC.ableAll(this, 'host_switch');" /> Host switching          <!-- "no" muss die anderen toggle disablen -->
             <span class="space-long"></span> 
-            Host toggle character 1: <input type="text" class="filter" size="1em" maxlength="1" name="host_switch_char1" />
+            Host toggle character 1: <input type="text" class="filter host_switch" size="1em" maxlength="1" name="host_switch_char1" />
             <span class="space-long"></span> 
-            Host toggle character 2: <input type="text" class="filter" size="1em" maxlength="1" name="host_switch_char2" />
+            Host toggle character 2: <input type="text" class="filter host_switch" size="1em" maxlength="1" name="host_switch_char2" />
             <span class="space-long"></span> 
-            <input type="checkbox" class="filter" name="host_switch_auto" /> Auto
+                
+            <input type="checkbox" class="form-check-input filter host_switch" id="host_switch_auto" name="host_switch_auto" value="yes" checked>
+            <label for="host_switch_auto" class="form-check-label elbow"> Auto</label>
+
             <hr/>
             <p>
             Host/IP
@@ -97,16 +116,16 @@ var AFDEDITHC = function() {
             <p>
             Check for duplicates:                                               <!-- TODO: radio muss alle .dupcheck en/disablen -->
             <span class="space-short"></span> 
-            <input type="radio" class="filter" name="dupcheck_flag" value="yes" onChange="javascript:AFDEDITHC.ableAll('dupcheck');" /> Enabled
+            <input type="radio" class="filter" name="dupcheck_flag" value="yes" onChange="javascript:AFDEDITHC.ableAll(this, 'dupcheck');" /> Enabled
             <span class="space-short"></span> 
-            <input type="radio" class="filter" name="dupcheck_flag" value="no" checked /> Disabled
+            <input type="radio" class="filter" name="dupcheck_flag" value="no" onChange="javascript:AFDEDITHC.ableAll(this, 'dupcheck');" checked /> Disabled
             <span class="space-long"></span>
             Timeout:  <input type="text" class="filter dupcheck" size="10ch" name="dupcheck_timeout" />     <!-- name setzen -->
             <input type="checkbox" class="filter dupcheck" name="dupcheck_timeout_fixed" value="fixed"/> Fixed
             <span class="space-long"></span>
             Reference:
             <span class="space-short"></span> 
-            <input type="radio" class="filter dupcheck" name="dupcheck_reference" value="alias" /> Alias
+            <input type="radio" class="filter dupcheck" name="dupcheck_reference" value="no" /> Alias
             <span class="space-short"></span> 
             <input type="radio" class="filter dupcheck" name="dupcheck_reference" value="recipient" /> Recipient
             <p>

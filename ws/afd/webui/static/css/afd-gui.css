@@ -19,11 +19,11 @@ body.form-page {
 }
 
 .space-long {
-    padding-right:      3em;
+    padding-right:      2em;
 }
 
 .space-short {
-    padding-right:      1em;
+    padding-right:      1ch;
 }
 
 #alias-list {
@@ -36,13 +36,17 @@ body.form-page {
     padding-right:      3px;
 }
 
+.form-row-pad {
+    padding-bottom:     5px;
+}
+
 /*** Modal select ***/
 
-div.row {
+.modal-body div.row {
     padding-bottom:     20px;
 }
 
-div.row .form-check {
+.modal-body div.row .form-check {
     padding-left:       20px;
 }
 

@@ -1,6 +1,7 @@
 """Functions to read and write AFD configuration files.
 """
 import os.path
+from subprocess import check_output
 
 HC_FIELD_NAME = 0
 HC_FIELD_RADIO = 1
@@ -81,8 +82,21 @@ HC_FIELDS = (
     ("warn_time", None, "", 22, -1),  # WT    = warn_time_days+warn_time_hours+warn_time_mins+warn_time_secs
 )
 
+PROTO_SCHEME = {
+    "FTP": ".scheme-remote.scheme-ftp",
+    "SFTP": ".scheme-remote.scheme-sftp",
+    "SCP": ".scheme-remote.scheme-sftp",
+    "HTTP": ".scheme-remote",
+    "SMTP": ".scheme-remote",
+    "FILE": ".scheme-local",
+    "LOC": ".scheme-local",
+    "WMO": ".scheme-remote",
+    "EXEC": ".scheme-local",
+    None: "",
+}
 
-def read_hostconfig(afd_work_dir):
+
+def read_hostconfig(afd_work_dir, alias=None):
     hc_order = []
     hc_data = {}
 
@@ -92,6 +106,15 @@ def read_hostconfig(afd_work_dir):
         except:
             return s
 
+    def get_proto(host):
+        try:
+            line = check_output("fsa_view {} | grep Protocol".format(host),
+                                encoding="latin-1",
+                                shell=True)
+            return line.split(":")[1].strip().split(" ")[0]
+        except:
+            return None
+
     with open(os.path.join(afd_work_dir, "etc", "HOST_CONFIG"), "rt") as fh_hc:
         for line in fh_hc:
             line = line.strip()
@@ -99,28 +122,29 @@ def read_hostconfig(afd_work_dir):
                 continue
             line_data = line.split(":")
             hc_order.append(line_data[HC_FIELD_NAME])
-            hc_data[line_data[HC_FIELD_NAME]] = {}
-            for hc_field in HC_FIELDS:
-                print(hc_field[HC_FIELD_COLUMN], line_data[hc_field[HC_FIELD_COLUMN]])
-                if hc_field[HC_FIELD_BIT] >= 0:
-                    if int(line_data[hc_field[HC_FIELD_COLUMN]]) & (1 << hc_field[HC_FIELD_BIT]):
-                        value = hc_field[HC_FIELD_RADIO] or "yes"
+            if alias is None or line_data[HC_FIELD_NAME] == alias:
+                hc_data[line_data[HC_FIELD_NAME]] = {}
+                hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(alias)]
+                for hc_field in HC_FIELDS:
+                    if hc_field[HC_FIELD_BIT] >= 0:
+                        if int(line_data[hc_field[HC_FIELD_COLUMN]]) & (1 << hc_field[HC_FIELD_BIT]):
+                            value = hc_field[HC_FIELD_RADIO] or "yes"
+                        else:
+                            value = "no"
+                    elif hc_field[3] == -2:
+                        if line_data[hc_field[HC_FIELD_COLUMN]] != "":
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "yes"
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = "yes" if line_data[hc_field[HC_FIELD_COLUMN]][0] == "{" else "no"
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = line_data[hc_field[HC_FIELD_COLUMN]][1]
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = line_data[hc_field[HC_FIELD_COLUMN]][2]
+                        else:
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "no"
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = "no"
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = ""
+                            hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = ""
                     else:
-                        value = "no"
-                elif hc_field[3] == -2:
-                    if line_data[hc_field[HC_FIELD_COLUMN]] != "":
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "yes"
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = "yes" if line_data[hc_field[HC_FIELD_COLUMN]][0] == "{" else "no"
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = line_data[hc_field[HC_FIELD_COLUMN]][1]
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = line_data[hc_field[HC_FIELD_COLUMN]][2]
-                    else:
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "no"
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = "no"
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = ""
-                        hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = ""
-                else:
-                    value = line_data[hc_field[HC_FIELD_COLUMN]]
-                hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value)
+                        value = line_data[hc_field[HC_FIELD_COLUMN]]
+                    hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value)
     return {"order":hc_order, "data":hc_data}
 
 

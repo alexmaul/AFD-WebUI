@@ -124,7 +124,7 @@ def collect_info(host):
         elif le[0] == "Retry interval":
             field_values["retrint"] = le[1]
         elif le[0].startswith("Protocol"):
-            field_values["protocol"] = le[1]
+            field_values["protocol"] = le[1].split(" ")[0]
     print(field_values)
 
     fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + field_values["hostname"])
@@ -136,9 +136,10 @@ def collect_info(host):
 
 
 @app.route("/afd/<command>", methods=["GET"])
+@app.route("/afd/<command>/<host>", methods=["GET"])
 @app.route("/afd/<command>/<action>", methods=["POST"])
-def afd(command=None, action=None):
-    app.logger.debug("command: %s   action: %s", command, action)
+def afd(command=None, action=None, host=None):
+    app.logger.debug("command=%s  action=%s  host=%s", command, action, host)
     app.logger.debug(request.form)
     cmd = "afdcmd"
     cmd_opt = ""
@@ -156,7 +157,7 @@ def afd(command=None, action=None):
             cmd_opt = ""
     elif command == "hc":
         if request.method == "GET":
-            hc_data = json.dumps(read_hostconfig(afd_work_dir))
+            hc_data = json.dumps(read_hostconfig(afd_work_dir, host))
             return make_response(hc_data, {"Content-type": CONTENT_JSON})
         elif request.method == "POST":
             if action == "update":

@@ -144,7 +144,8 @@ def read_hostconfig(afd_work_dir, alias=None):
                             hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = ""
                     else:
                         value = line_data[hc_field[HC_FIELD_COLUMN]]
-                    hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value)
+                    if hc_field[HC_FIELD_NAME] not in hc_data[line_data[HC_FIELD_NAME]]:
+                        hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value)
     return {"order":hc_order, "data":hc_data}
 
 

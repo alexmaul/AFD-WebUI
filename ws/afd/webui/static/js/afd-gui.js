@@ -147,7 +147,8 @@ var AFDCTRL = function() {
                     AFDCTRL.callAfdCmd("hc/update");
                     break;
                 case "Edit HOST_CONFIG":
-                    window.open("/static/html/afd-hcedit.html");
+                    window.open("/static/html/afd-hcedit.html"
+                            + AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true));
                     break;
                 case "Startup AFD":
                     AFDCTRL.callAfdCmd("afd/start");

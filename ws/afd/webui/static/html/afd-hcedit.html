@@ -23,8 +23,7 @@
         <div class="col-2 form-row-pad">
             <!-- alias-list -->
             Alias Hostname:<br/>
-            <select class="filter" id="alias-list">
-            
+            <select class="filter" id="alias-list" size="40" onChange="javascript:AFDEDIT.readHostconfig($('#alias-list')[0].value);">
             </select>
         </div>
         <div class="col">
@@ -127,16 +126,16 @@
 
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction_both" name="keep_connected_direction" value="both">
-                        <label for="keep_connected_direction_both" class="form-check-label elbow">Both</label>
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-both" name="keep_connected_direction" value="both">
+                        <label for="keep_connected_direction-both" class="form-check-label elbow">Both</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction_fetch" name="keep_connected_direction" value="fetch">
-                        <label for="keep_connected_direction_fetch" class="form-check-label elbow">Fetch</label>
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-fetch" name="keep_connected_direction" value="fetch">
+                        <label for="keep_connected_direction-fetch" class="form-check-label elbow">Fetch</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction_send" name="keep_connected_direction" value="send">
-                        <label for="keep_connected_direction_send" class="form-check-label elbow">Send</label>
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-send" name="keep_connected_direction" value="send">
+                        <label for="keep_connected_direction-send" class="form-check-label elbow">Send</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
@@ -188,12 +187,12 @@
                 <div class="col-auto form-inline">
                     <span class="space-short">Check for duplicates:</span>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" id="dupcheck_flag_enable" name="dupcheck_flag" value="yes" onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');">
-                        <label for="dupcheck_flag_enable" class="form-check-label elbow">Enabled</label>
+                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" id="dupcheck_flag-enable" name="dupcheck_flag" value="yes" onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');">
+                        <label for="dupcheck_flag-enable" class="form-check-label elbow">Enabled</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" id="dupcheck_flag_disable" name="dupcheck_flag" value="no" onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');">
-                        <label for="dupcheck_flag_disable" class="form-check-label elbow">Disabled</label>
+                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" id="dupcheck_flag-disable" name="dupcheck_flag" value="no" onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');">
+                        <label for="dupcheck_flag-disable" class="form-check-label elbow">Disabled</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
@@ -207,12 +206,12 @@
                 <div class="col-auto form-inline">
                     <span class="space-short">Reference:</span>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_reference_alias" name="dupcheck_reference" value="no">
-                        <label for="dupcheck_reference_alias" class="form-check-label elbow">Alias</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_reference-alias" name="dupcheck_reference" value="no">
+                        <label for="dupcheck_reference-alias" class="form-check-label elbow">Alias</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_reference_recipient" name="dupcheck_reference" value="recipient">
-                        <label for="dupcheck_reference_recipient" class="form-check-label elbow">Recipient</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_reference-recipient" name="dupcheck_reference" value="recipient">
+                        <label for="dupcheck_reference-recipient" class="form-check-label elbow">Recipient</label>
                     </div>
                 </div>
             </div>
@@ -220,32 +219,32 @@
             <div class="form-row form-row-pad">
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type_name" name="dupcheck_type" value="name">
-                        <label for="dupcheck_type_name" class="form-check-label elbow">Name</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type-name" name="dupcheck_type" value="name">
+                        <label for="dupcheck_type-name" class="form-check-label elbow">Name</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type_name-size" name="dupcheck_type" value="name-size">
-                        <label for="dupcheck_type_name-size" class="form-check-label elbow">Name+size</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type-name-size" name="dupcheck_type" value="name-size">
+                        <label for="dupcheck_type-name-size" class="form-check-label elbow">Name+size</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type_name-no-suffix" name="dupcheck_type" value="name-no-suffix">
-                        <label for="dupcheck_type_name-no-suffix" class="form-check-label elbow">Name, no suffix</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type-name-no-suffix" name="dupcheck_type" value="name-no-suffix">
+                        <label for="dupcheck_type-name-no-suffix" class="form-check-label elbow">Name, no suffix</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type_content" name="dupcheck_type" value="content">
-                        <label for="dupcheck_type_content" class="form-check-label elbow">Content</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type-content" name="dupcheck_type" value="content">
+                        <label for="dupcheck_type-content" class="form-check-label elbow">Content</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type_name-content" name="dupcheck_type" value="name-content">
-                        <label for="dupcheck_type_name-content" class="form-check-label elbow">Name+content</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_type-name-content" name="dupcheck_type" value="name-content">
+                        <label for="dupcheck_type-name-content" class="form-check-label elbow">Name+content</label>
                     </div>
                 </div>
             </div>
@@ -272,14 +271,14 @@
                 <div class="col-auto form-inline">
                     <span class="space-short">CRC-type:</span>
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_crc_a" name="dupcheck_crc" value="crc32">
-                        <label for="dupcheck_crc_a" class="form-check-label elbow">CRC-32</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_crc-crc32" name="dupcheck_crc" value="crc32">
+                        <label for="dupcheck_crc-crc32" class="form-check-label elbow">CRC-32</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_crc_B" name="dupcheck_crc" value="crc32c">
-                        <label for="dupcheck_crc_b" class="form-check-label elbow">CRC-32c</label>
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" id="dupcheck_crc-crc32c" name="dupcheck_crc" value="crc32c">
+                        <label for="dupcheck_crc-crc32c" class="form-check-label elbow">CRC-32c</label>
                     </div>
                 </div>
             </div>
@@ -350,14 +349,14 @@
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-ftp" id="ftp_mode_passive_no" name="ftp_mode_passive" value="no">
-                        <label for="ftp_mode_passive_no" class="form-check-label elbow">Active</label>
+                        <input type="radio" class="form-check-input filter scheme-ftp" id="ftp_mode_passive-no" name="ftp_mode_passive" value="no">
+                        <label for="ftp_mode_passive-no" class="form-check-label elbow">Active</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">
                     <div class="form-check">
-                        <input type="radio" class="form-check-input filter scheme-ftp" id="ftp_mode_passive_yes" name="ftp_mode_passive" value="yes">
-                        <label for="ftp_mode_passive_yes" class="form-check-label elbow">Passive</label>
+                        <input type="radio" class="form-check-input filter scheme-ftp" id="ftp_mode_passive-yes" name="ftp_mode_passive" value="yes">
+                        <label for="ftp_mode_passive-yes" class="form-check-label elbow">Passive</label>
                     </div>
                 </div>
                 <div class="col-auto form-inline">

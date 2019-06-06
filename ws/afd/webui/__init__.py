@@ -163,12 +163,9 @@ def afd(command=None, action=None, host=None):
             if action == "update":
                 cmd = "uhc"
                 cmd_opt = ""
-            elif action == "save":
-                r = save_hostconfig(afd_work_dir, request.form)
+                r = save_hostconfig(afd_work_dir, request.json)
                 if r:
                     return make_response(r, 500, {"Content-type": CONTENT_PLAIN})
-                else:
-                    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
     elif command == "afd":
         if action == "start":
             cmd = "afd"

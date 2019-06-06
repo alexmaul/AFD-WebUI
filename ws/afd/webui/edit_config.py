@@ -149,22 +149,22 @@ def read_hostconfig(afd_work_dir, alias=None):
     return {"order":hc_order, "data":hc_data}
 
 
-def save_hostconfig(afd_work_dir, form):
+def save_hostconfig(afd_work_dir, form_json):
     tmp_fn_hc = os.path.join(afd_work_dir, "etc", ".HOST_CONFIG")
     # Read current content of HOST_CONFIG
-    hc = read_hostconfig()
-    if form.get("submit") == "order":
-        # Replace the host order
-        hc["order"] = form["order"]
-    if form.get("submit") == "data":
-        # Replace all values for one host with those from the request.form
-        hc["data"][form["alias"]] = {n[0]:form.get(n[0], "")
-                                     for n
-                                     in HC_FIELDS}
+    hc = read_hostconfig(afd_work_dir)
+    # Replace the host order
+    hc["order"] = form_json["order"]
+    if "data" in form_json:
+        for alias, alias_data in form_json["data"].items():
+            # Replace all values for one host with those from the request.json
+            hc["data"][alias] = {n[0]:alias_data.get(n[0], "")
+                                 for n
+                                 in HC_FIELDS}
     with open(tmp_fn_hc, "wt") as fh_hc:
         # Write a new HOST_CONFIG to a temporary file.
         for alias in hc["order"]:
-            line_data = [None * 23]
+            line_data = [None] * 23
             hc_toggle = {}
             for tuplevalue_field, tuplevalue_radio, tuplevalue_default, tuplevalue_column, tuplevalue_bit in HC_FIELDS:
                 if tuplevalue_bit >= 0:
@@ -187,6 +187,8 @@ def save_hostconfig(afd_work_dir, form):
                     line_data[3] = "[{host_switch_char1}{host_switch_char2}]".format(**hc_toggle)
             else:
                 line_data[3] = ""
-            fh_hc.write(":".join(line_data), end="\n")
+            fh_hc.write(":".join(str(x) for x in line_data))
+            fh_hc.write("\n")
+
     # TODO: Replace original HOST_CONFIG with our temporary one
 

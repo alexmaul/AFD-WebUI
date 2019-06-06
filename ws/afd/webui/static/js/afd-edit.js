@@ -1,3 +1,4 @@
+"use strict";
 var AFDEDIT = function() {
     return {
         /** urlBase. */
@@ -26,12 +27,60 @@ var AFDEDIT = function() {
             }
         },
 
+        updateHostconfig : function() {
+            console.log("updateHostconfig");
+            let alias = $("#alias-list")[0].value;
+            let ol = $("#alias-list option");
+            let aliasList = [];
+            for (let i = 0; i < ol.length; i++) {
+                aliasList.push(ol[i].value);
+            }
+            let formData = {
+                order : aliasList,
+                data : {}
+            };
+            if (alias != null && alias != "") {
+                formData["data"][alias] = {};
+                $.each($(".filter"), function(i, obj) {
+                    if (obj.type == "radio") {
+                        if (obj.checked) {
+                            formData["data"][alias][obj.id.split("-", 1)[0]] = obj.value;
+                        }
+                    } else {
+                        formData["data"][alias][obj.id] = obj.value;
+                    }
+                });
+                formData["data"][alias]["alias"] = alias;
+                delete formData["data"][alias]["alias-list"];
+            }
+            console.log(formData);
+            console.log(JSON.stringify(formData));
+            $.ajax({
+                type : "POST",
+                url : AFDEDIT.urlBase + AFDEDIT.urlHc + "/update",
+                dataType : 'JSON',
+                data : JSON.stringify(formData),
+                contentType : "application/json; charset=utf-8",
+                traditional : true,
+                success : function(data, status, jqxhr) {
+                    AFDEDIT.readHostconfig(alias);
+                },
+                complete : function(jqxhr, status) {
+                    console.log(status);
+                },
+                error : function(jqxhr, status, errStr) {
+                    console.log(jqxhr, status, errStr);
+                }
+            });
+        },
+
         /**
          * Exec general AFD command, handle ajax call.
          */
         readHostconfig : function(alias) {
             console.log("readHostconfig: " + alias);
-            if (alias == null) {
+            let afdUrl;
+            if (!alias) {
                 afdUrl = AFDEDIT.urlBase + AFDEDIT.urlHc;
             } else {
                 afdUrl = AFDEDIT.urlBase + AFDEDIT.urlHc + "/" + alias;
@@ -42,21 +91,21 @@ var AFDEDIT = function() {
                 success : function(data, status, jqxhr) {
                     console.log(status);
                     AFDEDIT.changeHostconfigAliasList(data["order"], alias);
-                    if (alias != null) {
+                    if (alias != null && alias != "") {
                         AFDEDIT.changeHostconfigFormValues(data["data"], alias);
                     } else {
                         AFDEDIT.changeHostconfigFormValues(data["data"], data["order"][0]);
                     }
                 },
-                error : function(status, jqxhr) {
-                    console.log(status, jqxhr);
+                error : function(jqxhr, status, errStr) {
+                    console.log(status, errStr);
                 }
             });
         },
 
         changeHostconfigAliasList : function(aliasList, selectedAlias) {
             console.log("changeHostconfigAliasList: " + aliasList + " - " + selectedAlias);
-            data = "";
+            let data = "";
             for (let i = 0; i < aliasList.length; i++) {
                 if (aliasList[i] == selectedAlias) {
                     data = data + "<option selected>" + aliasList[i] + "</option>";
@@ -93,6 +142,45 @@ var AFDEDIT = function() {
             });
             AFDEDIT.ableAll($("#host_switch_enable")[0], "host_switch");
             AFDEDIT.ableAll($("#dupcheck_flag-enable")[0], "dupcheck");
+        },
+
+        moveHostconfigAlias : function(direction) {
+            console.log("moveHostconfigAlias", direction);
+            let alias = $("#alias-list")[0].value;
+            if (!alias) {
+                return;
+            }
+            let aliasList = $("#alias-list option");
+            console.log("aliasList -------");
+            $.each(aliasList, function(i, v) {
+                console.log(v.value);
+            });
+            let is = 0;
+            let ie = aliasList.length;
+            if (direction == -1) {
+                is = 1;
+            } else if (direction == 1) {
+                ie = ie - 1;
+            }
+            for (let i = is; i < ie; i++) {
+                console.log("test", i, aliasList[i].value)
+                if (alias == aliasList[i].value) {
+                    if (direction) {
+                        console.log("move", i, aliasList[i].value);
+                        let buf = aliasList[i];
+                        aliasList[i] = aliasList[i + direction];
+                        aliasList[i + direction] = buf;
+                    } else {
+                        aliasList.splice(i, 1);
+                    }
+                    $("#alias-list").html(aliasList);
+                    break;
+                }
+            }
+            console.log("aliasList -------");
+            $.each(aliasList, function(i, v) {
+                console.log(v.value);
+            });
         }
 
     }; /* End returned object. */

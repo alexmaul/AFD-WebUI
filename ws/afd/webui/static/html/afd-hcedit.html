@@ -23,7 +23,7 @@
         <div class="col-2 form-row-pad">
             <!-- alias-list -->
             Alias Hostname:<br/>
-            <select class="filter" id="alias-list" size="40" onChange="javascript:AFDEDIT.readHostconfig($('#alias-list')[0].value);">
+            <select class="custom-select filter" id="alias-list" size="40" onChange="javascript:AFDEDIT.readHostconfig($('#alias-list')[0].value);">
             </select>
         </div>
         <div class="col">
@@ -482,15 +482,14 @@
     <div class="row">
     <!-- buttons -->
         <div class="col-2" style="text-align: center;">
-            <button type="button" class="btn btn-secondary button-action" name="">New</button>
+            <button type="button" class="btn btn-secondary" onClick="javascript:AFDEDIT.moveHostconfigAlias(-1);">Up</button>
+            <button type="button" class="btn btn-secondary" onClick="javascript:AFDEDIT.moveHostconfigAlias(1);">Down</button>
+            <button type="button" class="btn btn-warning" onClick="javascript:AFDEDIT.moveHostconfigAlias(0);">Remove</button>
         </div>
         <div class="col-2" style="text-align: center;">
-            <button type="button" class="btn btn-success button-action" name="">Update</button>
+            <button type="button" class="btn btn-success button-action" onClick="javascript:AFDEDIT.updateHostconfig();">Update</button>
         </div>
-        <div class="col-2" style="text-align: center;">
-            <button type="button" class="btn btn-warning button-action" name="">Remove</button>
-        </div>
-        <div class="col" style="text-align: center;">
+        <div class="col">
         </div>
     </div>
 </div>

@@ -58,6 +58,10 @@ Some examples:
 - Development server, pure Flask::
 
     python3 -m afd.webui -vv -p 8040 -w $HOME/afd
+    
+  Option ``-vv`` sets log-level to DEBUG. The AFD-work-dir is set with ``-w``,
+  although this could be left out, in which case the environment variable
+  ``$AFD_WORK_DIR`` is used.
 
 - Start *AFD Web-UI* as a WSGI application in `Twisted Web
   <https://twistedmatrix.com/documents/current/web/howto/>`_::
@@ -65,3 +69,5 @@ Some examples:
     export AFD_WORK_DIR=$HOME/afd
     twistd --pidfile=twistd.pid web --listen tcp:8040 --wsgi afd.webui.app
 
+  The export of the environment variable ``$AFD_WORK_DIR`` is neccessary.
+ 

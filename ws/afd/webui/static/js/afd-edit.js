@@ -30,6 +30,10 @@ var AFDEDIT = function() {
         updateHostconfig : function() {
             console.log("updateHostconfig");
             let alias = $("#alias-list")[0].value;
+            if (alias == null || alias == "") {
+                console.log("nothing to do.");
+                return;
+            }
             let ol = $("#alias-list option");
             let aliasList = [];
             for (let i = 0; i < ol.length; i++) {
@@ -39,22 +43,19 @@ var AFDEDIT = function() {
                 order : aliasList,
                 data : {}
             };
-            if (alias != null && alias != "") {
-                formData["data"][alias] = {};
-                $.each($(".filter"), function(i, obj) {
-                    if (obj.type == "radio") {
-                        if (obj.checked) {
-                            formData["data"][alias][obj.id.split("-", 1)[0]] = obj.value;
-                        }
-                    } else {
-                        formData["data"][alias][obj.id] = obj.value;
+            formData["data"][alias] = {};
+            $.each($(".filter"), function(i, obj) {
+                if (obj.type == "radio") {
+                    if (obj.checked) {
+                        formData["data"][alias][obj.id.split("-", 1)[0]] = obj.value;
                     }
-                });
-                formData["data"][alias]["alias"] = alias;
-                delete formData["data"][alias]["alias-list"];
-            }
+                } else {
+                    formData["data"][alias][obj.id] = obj.value;
+                }
+            });
+            formData["data"][alias]["alias"] = alias;
+            delete formData["data"][alias]["alias-list"];
             console.log(formData);
-            console.log(JSON.stringify(formData));
             $.ajax({
                 type : "POST",
                 url : AFDEDIT.urlBase + AFDEDIT.urlHc + "/update",
@@ -64,9 +65,6 @@ var AFDEDIT = function() {
                 traditional : true,
                 success : function(data, status, jqxhr) {
                     AFDEDIT.readHostconfig(alias);
-                },
-                complete : function(jqxhr, status) {
-                    console.log(status);
                 },
                 error : function(jqxhr, status, errStr) {
                     console.log(jqxhr, status, errStr);
@@ -89,7 +87,7 @@ var AFDEDIT = function() {
                 type : "GET",
                 url : afdUrl,
                 success : function(data, status, jqxhr) {
-                    console.log(status);
+                    console.log(status, "alias:", alias);
                     AFDEDIT.changeHostconfigAliasList(data["order"], alias);
                     if (alias != null && alias != "") {
                         AFDEDIT.changeHostconfigFormValues(data["data"], alias);

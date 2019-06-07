@@ -2,6 +2,7 @@ import os.path
 import requests
 import re
 import magic
+from os import environ
 from shlex import split as shlex_split
 from flask import (Flask, request, url_for, render_template,
                    redirect, Markup, json, make_response, abort)
@@ -10,7 +11,8 @@ from builtins import enumerate
 from .edit_config import read_hostconfig, save_hostconfig
 
 app = Flask(__name__)
-afd_work_dir = None
+
+afd_work_dir = environ.get("AFD_WORK_DIR")
 
 CONTENT_PLAIN = "text/plain"
 CONTENT_JSON = "application/json"
@@ -346,10 +348,3 @@ def exec_cmd(cmd, read=False):
         app.logger.exception(e)
     return  result
 
-
-def run():
-    app.run()
-
-
-if __name__ == "__main__":
-    app.run()

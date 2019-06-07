@@ -1,6 +1,12 @@
 """
 AFD browser-based UI WebService
 ===============================
+
+Command-line program, starts simple stand-alone Flask server.
+
+For operational use consider a WSGI server,
+e.g. Twistd:
+twistd --pidfile=twistd.pid web --listen tcp:8040 --wsgi afd.webui.app
 """
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter

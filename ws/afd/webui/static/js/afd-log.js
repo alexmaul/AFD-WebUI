@@ -182,7 +182,7 @@ var AFDLOG = function() {
                 alert("Select archived log entry first!");
                 return;
             }
-            mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
+            let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
             console.log("view", mode, selectedLogAreaLines);
             $.each(selectedLogAreaLines, function(i, v) {
                 window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);

@@ -407,6 +407,5 @@ def save_hostconfig(afd_work_dir, form_json):
                 line_data[3] = ""
             fh_hc.write(":".join(str(x) for x in line_data))
             fh_hc.write("\n")
-
-    # TODO: Replace original HOST_CONFIG with our temporary one
+    os.rename(tmp_fn_hc, os.path.join(afd_work_dir, "etc", "HOST_CONFIG"))
 

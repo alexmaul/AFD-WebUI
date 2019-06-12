@@ -158,16 +158,17 @@ def afd(command=None, action=None, host=None):
             cmd = "udc"
             cmd_opt = ""
     elif command == "hc":
-        if request.method == "GET":
-            hc_data = json.dumps(read_hostconfig(afd_work_dir, host))
-            return make_response(hc_data, {"Content-type": CONTENT_JSON})
-        elif request.method == "POST":
-            if action == "update":
-                cmd = "uhc"
-                cmd_opt = ""
-                r = save_hostconfig(afd_work_dir, request.json)
-                if r:
-                    return make_response(r, 500, {"Content-type": CONTENT_PLAIN})
+        try:
+            if request.method == "GET":
+                hc_data = json.dumps(read_hostconfig(afd_work_dir, host))
+                return make_response(hc_data, {"Content-type": CONTENT_JSON})
+            elif request.method == "POST":
+                if action == "update":
+                    cmd = "uhc"
+                    cmd_opt = ""
+                    save_hostconfig(afd_work_dir, request.json)
+        except Exception as e:
+            return make_response(e, 500, {"Content-type": CONTENT_PLAIN})
     elif command == "afd":
         if action == "start":
             cmd = "afd"

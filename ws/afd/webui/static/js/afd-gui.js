@@ -323,7 +323,7 @@ var AFDCTRL = function() {
          * Methods to load data and update display.
          */
         /**
-         * 
+         * Load FSA data and start update on all aliases in afd_ctrl-window.
          */
         loadData : function() {
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
@@ -338,7 +338,7 @@ var AFDCTRL = function() {
         },
 
         /**
-         * 
+         * Insert new alias row if yet not present in afd_ctrl-window.
          */
         addRow : function(rowNum, val) {
             let lastCol = Math.floor(rowNum / AFDCTRL.maxRowsPerCol);
@@ -365,14 +365,14 @@ var AFDCTRL = function() {
         },
 
         /**
-         * 
+         * Remove alias row from afd_ctrl-window.
          */
         removeRow : function(rowAlias) {
 
         },
 
         /**
-         * 
+         * Update all changed data in an alias row.
          */
         setRowData : function(val) {
             let typ = null, j, jid, x, y, radd, rmod;

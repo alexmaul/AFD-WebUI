@@ -45,7 +45,7 @@ bookmarks). They are all accessible via the menu-bar on the *AFD-control* page.
         ``input``, ``output``, ``delete``, ``queue``
     
     The parameter ``?alias-list``, where the *alias-list* is a comma-seperated 
-    (**no whitespace!**) list of hostnames pre-set in the *recipient* filter 
+    (**no whitespace!**) list of hostnames, pre-set in the *recipient* filter 
     field.
     
     Example:
@@ -81,6 +81,10 @@ The following REST-methods are supported.
     - `/alias/config/<name> <#al-cfg>`_
 
     - `/alias/<action> <#al-act>`_
+
+    - `/afd/<command> <#afd-cmd>`_
+
+    - `/afd/<command>/<name> <#afd-cmd>`_
 
     - `/afd/<command>/<action> <#afd-cmd>`_
 
@@ -176,18 +180,34 @@ All HTML-Responses have the MIME-type *"text/plain"*, except if noted otherwise.
 
 .. _afd-cmd:
 
+- ``/afd/<command>`` and ``/afd/<command>/<host>``
+    
+    List of *command/host*:
+
+    - ``hc`` : read full HOST_CONFIG, returning JSON formatted data
+    - ``hc/<hostname>`` : read HOST_CONFIG, returns JSON formatted data for
+      given hostname.
+
+    Request-method: GET
+
+    HTTP-Status-code: 200, 500
+
+    Content-type: *application/json*
+    
+    HTTP-Response:
+        ``{"order": [], "data": {alias: {...}}}``
+
+
 - ``/afd/<command>/<action>``
     
     List of *command/action*:
+    
     ``amg/toggle``, ``fd/toggle``, ``dc/update``, ``afd/start``, ``afd/stop``
     
     ``hc/update``
-        Trigger HOST_CONFIG re-read.
-    
-    ``hc/save``
         Save edited configuration in HOST_CONFIG.
         
-        Request-body: *key:value* list.
+        Request-body: ``{"order": [], "data": {alias: {...}}}``
 
     Request-method: POST
 
@@ -263,6 +283,8 @@ automaticaly from the browser. There's no reason to access them expicitly.
     - ``afd-gui.js``
 
     - ``afd-log.js``
+
+    - ``afd-edit.js``
 
     - ``bootstrap.bundle.min.js``
 

@@ -8,7 +8,7 @@ var AFDEDIT = function() {
         urlHc : "afd/hc",
 
         /**
-         * 
+         * Enable/disable form-input-tags which have CSS-class as filter.
          */
         ableAll : function(obj, class_filter) {
             console.log("ableAll", class_filter);
@@ -27,6 +27,9 @@ var AFDEDIT = function() {
             }
         },
 
+        /**
+         * Send host configuration data for the selected host for saving.
+         */
         updateHostconfig : function() {
             console.log("updateHostconfig");
             let alias = $("#alias-list")[0].value;
@@ -101,6 +104,9 @@ var AFDEDIT = function() {
             });
         },
 
+        /**
+         * Re-build the hostname list to reflect any change in the order.
+         */
         changeHostconfigAliasList : function(aliasList, selectedAlias) {
             console.log("changeHostconfigAliasList: " + aliasList + " - " + selectedAlias);
             let data = "";
@@ -114,6 +120,9 @@ var AFDEDIT = function() {
             $("#alias-list").html(data);
         },
 
+        /**
+         * Update the form-input-tag values with retrieved values.
+         */
         changeHostconfigFormValues : function(data, selectedAlias) {
             console.log("changeHostconfigFormValues: " + selectedAlias);
             if (data[selectedAlias]["keep_connected_direction"] != "send"
@@ -142,6 +151,9 @@ var AFDEDIT = function() {
             AFDEDIT.ableAll($("#dupcheck_flag-enable")[0], "dupcheck");
         },
 
+        /**
+         * Move a hostname up/down in the hostname-list.
+         */
         moveHostconfigAlias : function(direction) {
             console.log("moveHostconfigAlias", direction);
             let alias = $("#alias-list")[0].value;
@@ -188,10 +200,19 @@ var AFDEDIT = function() {
     $(document).ready(function() {
         console.log(window.location);
         if (window.location.pathname.endsWith("afd-hcedit.html")) {
+            /*
+             * Document-ready actions for Host-Config-Editor.
+             */
             if (window.location.search != "") {
+                /*
+                 * In case there's "?<alias>" in URL, load this alias ...
+                 */
                 let al = window.location.search.substring(1).split(",");
                 AFDEDIT.readHostconfig(al[0]);
             } else {
+                /*
+                 * ... otherwise load the first one.
+                 */
                 AFDEDIT.readHostconfig(null);
             }
         } else {

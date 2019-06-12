@@ -11,6 +11,13 @@ AFD Browser-based UI
 
 Welcome to *AFD Browser-based UI*'s documentation!
 
+This documentation covers the installation and API of *AFD Web-UI*.
+
+If you are looking for information about using AFD in general and/or how to 
+interact with any AFD UI, please read the `AFD documentation <https://download.dwd.de/pub/afd/doc/>`_.
+
+AFD source: `<https://github.com/holger24/AFD>`_ .
+
 .. toctree::
     :maxdepth: 2
 

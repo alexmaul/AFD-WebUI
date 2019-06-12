@@ -91,19 +91,6 @@ var AFDLOG = function() {
         },
 
         /**
-         * 
-         */
-        toggleModal : function(modal) {
-            $.each($("#" + modal + " input.form-check-input"), function(i, obj) {
-                if (obj.checked == true) {
-                    obj.checked = false;
-                } else {
-                    obj.checked = true;
-                }
-            });
-        },
-
-        /**
          * Set input fields for start- and end-time according to range.
          */
         setDate : function(logName, timeRange) {
@@ -155,7 +142,20 @@ var AFDLOG = function() {
         },
 
         /**
-         * 
+         * Show or hide modal with selection form.
+         */
+        toggleModal : function(modal) {
+            $.each($("#" + modal + " input.form-check-input"), function(i, obj) {
+                if (obj.checked == true) {
+                    obj.checked = false;
+                } else {
+                    obj.checked = true;
+                }
+            });
+        },
+
+        /**
+         * Update selection form in modal on any change, for event-handler.
          */
         updateModal : function(modalId) {
             let checkedList = [];
@@ -168,7 +168,7 @@ var AFDLOG = function() {
         },
 
         /**
-         * 
+         * View file content for each selected one in a new window.
          */
         callView : function(logName) {
             console.log("callView " + logName);

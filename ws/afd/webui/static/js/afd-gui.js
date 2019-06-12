@@ -1,3 +1,4 @@
+"use strict";
 var AFDCTRL = function() {
     return {
         /** urlBase. */
@@ -326,8 +327,7 @@ var AFDCTRL = function() {
          */
         loadData : function() {
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
-                thisData = data["data"];
-                $.each(thisData, function(i, v) {
+                $.each(data["data"], function(i, v) {
                     if ($("#row-" + v.alias).length == 0) {
                         AFDCTRL.addRow(AFDCTRL.rowNum, v);
                         AFDCTRL.rowNum += 1;
@@ -375,7 +375,7 @@ var AFDCTRL = function() {
          * 
          */
         setRowData : function(val) {
-            let typ = null, j, x, y;
+            let typ = null, j, jid, x, y, radd, rmod;
             let row = $("#row-" + val.alias);
             for (typ in val) {
                 if (!val.hasOwnProperty(typ)) {

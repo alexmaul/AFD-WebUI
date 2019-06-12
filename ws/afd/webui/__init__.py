@@ -183,7 +183,7 @@ def afd(command=None, action=None, host=None):
 
 
 @app.route("/log/<typ>", methods=["POST"])
-def alda(typ=None):
+def log(typ=None):
     app.logger.debug("log-info: %s", typ)
     app.logger.debug(request.form)
     from_file = {
@@ -217,7 +217,7 @@ def log_from_alda(typ):
     alda_output_format = {
         "input": "-o \"<tr><td class='clst-dd'>%ITm.%ITd.</td>"
                     +"<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
-                    +"<td class='clst-fs'>%OSB</td></tr>\"",
+                    +"<td class='clst-fs'>%ISB</td></tr>\"",
         "output": "-o \"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
                     +"<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
                     +"%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"

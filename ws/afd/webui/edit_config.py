@@ -345,7 +345,7 @@ def read_hostconfig(afd_work_dir, alias=None):
                             value = hc_field[HC_FIELD_RADIO] or "yes"
                         else:
                             value = "no"
-                    elif hc_field[3] == -2:
+                    elif hc_field[HC_FIELD_BIT] == -2:
                         if line_data[hc_field[HC_FIELD_COLUMN]] != "":
                             hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "yes"
                             hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = "yes" if line_data[hc_field[HC_FIELD_COLUMN]][0] == "{" else "no"

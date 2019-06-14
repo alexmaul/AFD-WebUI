@@ -335,7 +335,7 @@ def exec_cmd(cmd, read=False):
                    stdout=PIPE,
                    stderr=PIPE,
                    universal_newlines=True,
-                   encoding="latin-1"
+                   # encoding="latin-1"  # not available in Py<3.5
                    ) as xh_proc:
             if read:
                 result = xh_proc.stdout.read()

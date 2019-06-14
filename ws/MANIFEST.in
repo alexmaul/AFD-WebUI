@@ -1,0 +1,2 @@
+recursive-include afd *.html *.css* *.js*
+include requirements.txt

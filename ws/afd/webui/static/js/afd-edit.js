@@ -52,6 +52,10 @@ var AFDEDIT = function() {
                     if (obj.checked) {
                         formData["data"][alias][obj.id.split("-", 1)[0]] = obj.value;
                     }
+                } else if (obj.type == "checkbox") {
+                    if (obj.checked) {
+                        formData["data"][alias][obj.id] = "yes";
+                    }
                 } else {
                     formData["data"][alias][obj.id] = obj.value;
                 }
@@ -141,6 +145,13 @@ var AFDEDIT = function() {
                         objList = $("#" + k + "-" + v);
                         if (objList.length > 0) {
                             objList[0].checked = true;
+                        }
+                    } else if (objList[0].type == "checkbox") {
+                        objList = $("#" + k);
+                        if (objList.length > 0 && v == "yes") {
+                            objList[0].checked = true;
+                        } else {
+                            objList[0].checked = false;
                         }
                     } else {
                         objList[0].value = v;

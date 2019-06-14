@@ -322,6 +322,8 @@ def read_hostconfig(afd_work_dir, alias=None):
 
     def get_proto(host):
         try:
+            if host is None:
+                host = ""
             line = check_output("fsa_view {} | grep Protocol".format(host),
                                 encoding="latin-1",
                                 shell=True)
@@ -377,6 +379,7 @@ def save_hostconfig(afd_work_dir, form_json):
     if "data" in form_json:
         # Update values for all submitted host with those from the request.json
         for alias, alias_data in form_json["data"].items():
+            hc["data"][alias] = {t[HC_FIELD_NAME]:t[HC_FIELD_RADIO] or t[HC_FIELD_DEFAULT] for t in HC_FIELDS}
             hc["data"][alias].update(alias_data)
     with open(tmp_fn_hc, "wt") as fh_hc:
         # Write a new HOST_CONFIG to a temporary file.
@@ -400,7 +403,7 @@ def save_hostconfig(afd_work_dir, form_json):
                     hc_toggle[tuplevalue_field] = hc["data"][alias][tuplevalue_field]
             if hc_toggle["host_switch_enable"] == "yes":
                 if hc_toggle["host_switch_auto"] == "yes":
-                    line_data[3] = "\{{host_switch_char1}{host_switch_char2}\}".format(**hc_toggle)
+                    line_data[3] = "{{{host_switch_char1}{host_switch_char2}}}".format(**hc_toggle)
                 else:
                     line_data[3] = "[{host_switch_char1}{host_switch_char2}]".format(**hc_toggle)
             else:

@@ -33,4 +33,5 @@ setup(name="afd-webui-ws",
                                ]},
       include_package_data=True,
       python_requires=">=3.4",
+      install_requires=["flask", "six", "requests", "python-magic"],
       )

@@ -324,9 +324,25 @@ var AFDCTRL = function() {
          */
         /**
          * Load FSA data and start update on all aliases in afd_ctrl-window.
+         * 
+         * TODO: improve insert/remove of rows. Now rows are inserted/removed
+         * with simple append/remove, changes in host-order are not reflected.
          */
         loadData : function() {
             $.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
+                if (data["data"].length < AFDCTRL.rowNum) {
+                    let dataAliasSet = {};
+                    $.each(data["data"], function(i, v) {
+                        dataAliasSet["row-" + v.alias] = v.ord;
+                    });
+                    $.each($(".tab-row"), function(i, o) {
+                        if (o.id != "template-row") {
+                            if (dataAliasSet[o.id] == undefined) {
+                                AFDCTRL.removeRow(o.id);
+                            }
+                        }
+                    });
+                }
                 $.each(data["data"], function(i, v) {
                     if ($("#row-" + v.alias).length == 0) {
                         AFDCTRL.addRow(AFDCTRL.rowNum, v);
@@ -368,7 +384,8 @@ var AFDCTRL = function() {
          * Remove alias row from afd_ctrl-window.
          */
         removeRow : function(rowAlias) {
-
+            $("#" + rowAlias).remove();
+            AFDCTRL.rowNum -= 1;
         },
 
         /**

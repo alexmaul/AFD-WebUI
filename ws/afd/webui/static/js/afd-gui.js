@@ -160,8 +160,9 @@ var AFDCTRL = function() {
                 /*
                  * Menu: Setup
                  */
-                // case "":
-                // break;
+                case "Refresh":
+                    AFDCTRL.setMaxRows(AFDCTRL.maxRowsPerCol);
+                    break;
                 default:
                     break;
             }

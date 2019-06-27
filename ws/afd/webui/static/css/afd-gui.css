@@ -114,7 +114,10 @@ body.form-page {
 
 /*** Log-content list, column definition ***/
 
-.log_content-list td,th {
+.log_content-list th {
+    padding-right:      2ex;
+}
+.log_content-list td {
     padding-right:      2ex;
 }
 .log_content-list .clst-dd {

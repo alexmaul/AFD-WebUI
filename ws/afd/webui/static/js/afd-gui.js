@@ -401,29 +401,29 @@ var AFDCTRL = function() {
                 }
                 if (typ == "host_status") {
                     if (val.host_status.indexOf("HOST_IN_DIR_CONFIG") >= 0) {
+                        let status_str = "";
                         if (val.host_status.indexOf("HOST_CONFIG_HOST_DISABLED") >= 0) {
-                            row.children(".status-run").removeClass().addClass(
-                                    "alias status-run HOST_CONFIG_HOST_DISABLED");
+                            status_str = "HOST_CONFIG_HOST_DISABLED";
                         } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE") >= 0) {
-                            row.children(".status-run").removeClass().addClass("alias status-run HOST_ERROR_OFFLINE");
+                            if (val.host_status.indexOf("HOST_ERROR_OFFLINE_STATIC") >= 0) {
+                                status_str = "HOST_ERROR_OFFLINE_STATIC";
+                            } else {
+                                status_str = "HOST_ERROR_OFFLINE";
+                            }
                         } else if (val.host_status.indexOf("HOST_ERROR_ACKNOWLEDGED") >= 0) {
-                            row.children(".status-run").removeClass().addClass(
-                                    "alias status-run HOST_ERROR_ACKNOWLEDGED");
+                            status_str = "HOST_ERROR_ACKNOWLEDGED";
                         } else if (val.host_status.indexOf("DANGER_PAUSE_QUEUE_STAT") >= 0) {
-                            row.children(".status-run").removeClass().addClass(
-                                    "alias status-run DANGER_PAUSE_QUEUE_STAT");
-                        } else if (val.host_status.indexOf("HOST_ERROR_OFFLINE_STATIC") >= 0) {
-                            row.children(".status-run").removeClass().addClass(
-                                    "alias status-run HOST_ERROR_OFFLINE_STATIC");
+                            status_str = "DANGER_PAUSE_QUEUE_STAT";
                         } else if (val.host_status.indexOf("HOST_ACTION_SUCCESS") >= 0) {
-                            row.children(".status-run").removeClass().addClass("alias status-run HOST_ACTION_SUCCESS");
+                            status_str = "HOST_ACTION_SUCCESS";
                         } else if (val.host_status.indexOf("TRANSFER_ACTIVE") >= 0) {
-                            row.children(".status-run").removeClass().addClass("alias status-run TRANSFER_ACTIVE");
+                            status_str = "TRANSFER_ACTIVE";
                         } else if (val.host_status.indexOf("HOST_DISABLED") >= 0) {
-                            row.children(".status-run").removeClass().addClass("alias status-run HOST_DISABLED");
+                            status_str = "HOST_DISABLED";
                         } else if (val.host_status.indexOf("NORMAL_STATUS") >= 0) {
-                            row.children(".status-run").removeClass().addClass("alias status-run NORMAL_STATUS");
+                            status_str = "NORMAL_STATUS";
                         }
+                        row.children(".status-run").removeClass().addClass("alias status-run " + status_str);
                     } else { /* HOST_NOT_IN_DIR_CONFIG */
                         row.children(".status-run").removeClass().addClass("HOST_NOT_IN_DIR_CONFIG");
                     }

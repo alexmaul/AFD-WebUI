@@ -282,7 +282,7 @@ td.status-led {
 }
 
 .HOST_ERROR_OFFLINE_STATIC {
-    background:         yellow;
+    background:         #63B8FF; /* SteelBlue1 */
 }
 
 .HOST_ACTION_SUCCESS {

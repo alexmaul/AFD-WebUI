@@ -324,15 +324,16 @@ PROTO_SCHEME = {
 }
 
 
+def int_or_str(s):
+    try:
+        return int(s)
+    except:
+        return s
+
+
 def read_hostconfig(afd_work_dir, alias=None):
     hc_order = []
     hc_data = {}
-
-    def int_or_str(s):
-        try:
-            return int(s)
-        except:
-            return s
 
     def get_proto(host):
         try:
@@ -403,11 +404,9 @@ def save_hostconfig(afd_work_dir, form_json):
             hc_toggle = {}
             for tuplevalue_field, tuplevalue_radio, tuplevalue_default, tuplevalue_column, tuplevalue_bit in HC_FIELDS:
                 if tuplevalue_bit >= 0:
-                    column_value = line_data[tuplevalue_column]
+                    column_value = int_or_str(line_data[tuplevalue_column])
                     if column_value is None:
                         column_value = 0
-                    if isinstance(column_value, str):
-                        column_value = int(column_value)
                     if hc["data"][alias].get(tuplevalue_field, "no") in ("yes", tuplevalue_radio):
                         column_value = column_value | 1 << tuplevalue_bit
                     else:

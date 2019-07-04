@@ -396,6 +396,9 @@ def save_hostconfig(afd_work_dir, form_json):
         for alias, alias_data in form_json["data"].items():
             hc["data"][alias] = {t[HC_FIELD_NAME]:t[HC_FIELD_RADIO] or t[HC_FIELD_DEFAULT] for t in HC_FIELDS}
             hc["data"][alias].update(alias_data)
+            #
+            # TODO: improve setting default-values without overriding host-status.
+            #
     with open(tmp_fn_hc, "wt") as fh_hc:
         # Write a new HOST_CONFIG to a temporary file.
         fh_hc.write(HC_COMMENT)

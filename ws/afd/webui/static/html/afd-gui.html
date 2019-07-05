@@ -41,7 +41,7 @@
                             <a class="dropdown-item" href="#">Debug: Full trace</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item disabled" href="#">Simulate mode</a>
-                        <a class="dropdown-item disabled" href="#">Search + (De)Select</a>
+                        <a class="dropdown-item" href="#">Search + (De)Select</a>
                         <div class="dropdown-divider"></div>
                             <a class="dropdown-item disabled" href="#">Test: Ping</a>
                             <a class="dropdown-item disabled" href="#">Test: Traceroute</a>
@@ -88,7 +88,7 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Edit HOST_CONFIG</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Directory Control</a>
+                        <a class="dropdown-item disabled" href="#">Directory Control</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">Startup AFD</a>
                         <a class="dropdown-item" href="#">Shutdown AFD</a>
@@ -181,5 +181,102 @@
         </div>
     </div>
     <!-- End modal INFO -->
+
+    <!-- Begin modal SELECT -->
+    <div class="modal fade" id="modalSelect" tabindex="-1" role="dialog" aria-labelledby="modalSelectLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+            <div class="modal-content select-box">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSelectLabel">Search Host</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body form" id="modalSelectBody">
+                    <div class="form-row form-row-padpad">
+                        <span class="space-short">Search in</span>
+                        <div class="col-auto form-inline">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input filter" id="modal_select_hostname" name="modal_select_where" value="hostname" checked>
+                                <label for="modal_select_hostname" class="form-check-label elbow"> Hostname</label>
+                            </div>
+                        </div>
+                        <div class="col-auto form-inline">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input filter" id="modal_select_info" name="modal_select_where" value="info">
+                                <label for="modal_select_info" class="form-check-label elbow"> Information</label>
+                            </div>
+                        </div>
+                        <div class="col-1"></div>
+                        <div class="col-auto form-inline">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input filter" id="modal_select_alias" name="modal_select_hostname" value="alias" checked>
+                                <label for="modal_select_alias" class="form-check-label elbow"> Alias</label>
+                            </div>
+                        </div>
+                        <div class="col-auto form-inline">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input filter" id="modal_select_real" name="modal_select_hostname" value="real">
+                                <label for="modal_select_real" class="form-check-label elbow"> Real</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-padpad">
+                        <div class="col-1 form-inline" style="text-align:right;">
+                            Regex:
+                        </div>
+                        <div class="col-10 form-inline">
+                            <input type="text" class="form-control filter" style="width:100%" id="modal_select_string" name="modal_select_string" maxlength="100">
+                        </div>
+                        <div class="col-1 form-inline">
+                            <button type="button" class="btn btn-secondary button-action" onClick="javascript:$('#modal_select_string').val('');">Clr</button>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-padpad">
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_ftp" name="modal_select_protocol" value="FTP" checked>
+                                <label for="modal_select_protocol_ftp" class="form-check-label elbow"> FTP</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_http" name="modal_select_protocol" value="HTTP" checked>
+                                <label for="modal_select_protocol_http" class="form-check-label elbow"> HTTP</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_smtp" name="modal_select_protocol" value="SMTP" checked>
+                                <label for="modal_select_protocol_smtp" class="form-check-label elbow"> SMTP</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_file" name="modal_select_protocol" value="LOC" checked>
+                                <label for="modal_select_protocol_file" class="form-check-label elbow"> FILE</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_exec" name="modal_select_protocol" value="EXEC" checked>
+                                <label for="modal_select_protocol_exec" class="form-check-label elbow"> EXEC</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_sftp" name="modal_select_protocol" value="SFTP" checked>
+                                <label for="modal_select_protocol_sftp" class="form-check-label elbow"> SFTP</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_scp" name="modal_select_protocol" value="SCP" checked>
+                                <label for="modal_select_protocol_scp" class="form-check-label elbow"> SCP</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_wmo" name="modal_select_protocol" value="WMO" checked>
+                                <label for="modal_select_protocol_wmo" class="form-check-label elbow"> WMO</label>
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div style="width:100%; text-align:center;">
+                        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.callAliasSelect('select');">Select</button>
+                        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.callAliasSelect('deselect');">Deselect</button>
+                        <button type="button" class="btn btn-primary button-action" data-dismiss="modal">Hide Dialog</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End modal SELECT -->
 
 </body>

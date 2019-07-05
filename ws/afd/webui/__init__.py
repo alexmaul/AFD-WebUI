@@ -48,27 +48,76 @@ def alias_info_post(host):
 def alias_post(action):
     app.logger.debug("action: %s", action)
     app.logger.debug(request.form)
-    cmd = "afdcmd"
-    cmd_opt = ""
-    alias_list = request.form["alias"].split(",")
-    if action == "start":
-        cmd_opt = "-t -q"
-    elif action == "stop":
-        cmd_opt = "-T -Q"
-    elif action == "able":
-        cmd_opt = "-X"
-    elif action == "debug":
-        cmd_opt = "-d"
-    elif action == "trace":
-        cmd_opt = "-c"
-    elif action == "fulltrace":
-        cmd_opt = "-C"
-    elif action == "switch":
-        cmd_opt = "-s"
-    elif action == "retry":
-        cmd_opt = "-r"
-    exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
-    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
+    if action in ("select", "deselect"):
+        return make_response(
+            json.dumps(
+                search_host(action, request.json)
+                ),
+            {"Content-type": CONTENT_JSON}
+            )
+    else:
+        cmd = "afdcmd"
+        cmd_opt = ""
+        alias_list = request.form["alias"].split(",")
+        if action == "start":
+            cmd_opt = "-t -q"
+        elif action == "stop":
+            cmd_opt = "-T -Q"
+        elif action == "able":
+            cmd_opt = "-X"
+        elif action == "debug":
+            cmd_opt = "-d"
+        elif action == "trace":
+            cmd_opt = "-c"
+        elif action == "fulltrace":
+            cmd_opt = "-C"
+        elif action == "switch":
+            cmd_opt = "-s"
+        elif action == "retry":
+            cmd_opt = "-r"
+        exec_cmd("{} {} {}".format(cmd, cmd_opt, " ".join(alias_list)), False)
+        return make_response("", 204, {"Content-type": CONTENT_PLAIN})
+
+
+def search_host(action, form_json):
+    host_list = []
+
+    def test_protocol(host):
+        raw = exec_cmd("fsa_view {}".format(host), True)
+        for l in raw.split("\n"):
+            le = [x.strip() for x in l.split(":")]
+            if le[0].startswith("Protocol"):
+                return any(
+                        p in form_json["modal_select_protocol"]
+                        for p in le[1].split(" ")
+                        if p.isupper()
+                    )
+
+    if "modal_select_string" in form_json:
+        re_matcher = re.compile(form_json["modal_select_string"])
+    else:
+        re_matcher = re.compile(".*")
+    hc_data = read_hostconfig(afd_work_dir)["data"]
+    for hc_key, hc_set in hc_data.items():
+        if not test_protocol(hc_key):
+            continue
+        if form_json["modal_select_where"][0] == "info":
+            fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + hc_key)
+            if os.path.exists(fn_info):
+                with open(fn_info, "rt") as fh_info:
+                    info_text = fh_info.read()
+                if re_matcher.search(info_text):
+                    host_list.append(hc_key)
+        else:
+            if form_json["modal_select_hostname"] == "alias":
+                if re_matcher.match(hc_set["alias"]):
+                    host_list.append(hc_key)
+            else:
+                if (re_matcher.match(hc_set["host_name_real1"])
+                    or re_matcher.match(hc_set["host_name_real1"])
+                ):
+                    host_list.append(hc_key)
+    return {action:host_list}
 
 
 @app.route("/alias/<action>/<host>", methods=["GET"])

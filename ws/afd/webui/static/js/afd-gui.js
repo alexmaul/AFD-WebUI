@@ -24,8 +24,8 @@ var AFDCTRL = function() {
         /**
          * Select/deselect alias row.
          */
-        toggleMark : function(row) {
-            if (this.markedRows[row.attr("id")]) {
+        toggleMark : function(row, how) {
+            if (how <= 0 && this.markedRows[row.attr("id")]) {
                 console.log("alias-click-deselect:", row.attr("id"));
                 row.addClass("tab-row");
                 row.removeClass("tab-row-mark");
@@ -33,7 +33,7 @@ var AFDCTRL = function() {
                 row.children(".numval-mark").addClass("numval");
                 row.children(".numval-mark").removeClass("numval-mark");
                 delete this.markedRows[row.attr("id")];
-            } else {
+            } else if (how >= 0) {
                 console.log("alias-click-select:", row.attr("id"));
                 row.addClass("tab-row-mark");
                 row.removeClass("tab-row");
@@ -94,6 +94,9 @@ var AFDCTRL = function() {
                     break;
                 case "Retry":
                     AFDCTRL.callAliasCmd("retry", Object.keys(this.markedRows));
+                    break;
+                case "Search + (De)Select":
+                    AFDCTRL.viewModalSelect(Object.keys(this.markedRows));
                     break;
                 /*
                  * Menu: View
@@ -321,6 +324,75 @@ var AFDCTRL = function() {
 
         /*
          * ====================================================================
+         * Methods for de-/select hosts.
+         */
+        /**
+         * Show modal dialog for host selection.
+         */
+        viewModalSelect : function(aliasList) {
+            console.log("viewModalSelect:", aliasList);
+            $("#modalSelect").modal("show");
+        },
+
+        /**
+         * Close modal dialog.
+         */
+        closeModalSelect : function(infoHost) {
+            console.log("closeModalSelect:", infoHost);
+            $("#modalSelect").modal("hide");
+        },
+
+        /**
+         * Send selection criteria with POST, select or de-select alias rows
+         * according the returned list.
+         */
+        callAliasSelect : function(cmd) {
+            console.log("callAliasSelect:");
+            /* Declare and collect form parameters. */
+            let paramSet = {
+                what : cmd
+            };
+            $.each($("#modalSelect .filter"), function(i, obj) {
+                if (obj.type == "checkbox" || obj.type == "radio") {
+                    /* Make lists for checkbox+radio values. */
+                    if (obj.checked == true) {
+                        if (paramSet[obj.name] == null) {
+                            paramSet[obj.name] = [];
+                        }
+                        paramSet[obj.name].push(obj.value);
+                    }
+                } else if (obj.value != "") {
+                    paramSet[obj.name] = obj.value;
+                }
+            });
+            /* Call REST with parameter ... */
+            $.ajax({
+                type : "POST",
+                url : AFDCTRL.urlBase + "alias/" + cmd,
+                dataType : 'JSON',
+                data : JSON.stringify(paramSet),
+                contentType : "application/json; charset=utf-8",
+                traditional : true,
+                success : function(data, status, jqxhr) {
+                    console.log(status, data);
+                    /* ... then select+deselect all hosts in returned lists. */
+                    $.each(data["select"], function(i, v) {
+                        let row = $("#row-" + v);
+                        AFDCTRL.toggleMark(row, 1);
+                    });
+                    $.each(data["deselect"], function(i, v) {
+                        let row = $("#row-" + v);
+                        AFDCTRL.toggleMark(row, -1);
+                    });
+                },
+                error : function(status, jqxhr) {
+                    console.log(status, jqxhr);
+                },
+            });
+        },
+
+        /*
+         * ====================================================================
          * Methods to load data and update display.
          */
         /**
@@ -376,7 +448,7 @@ var AFDCTRL = function() {
             row.show();
             row.removeAttr("style");
             row.on("click", function(event) {
-                AFDCTRL.toggleMark($(this));
+                AFDCTRL.toggleMark($(this), 0);
             });
             $("#tbdy-" + lastCol).append(row);
         },

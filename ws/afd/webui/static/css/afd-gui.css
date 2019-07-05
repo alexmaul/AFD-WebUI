@@ -40,6 +40,10 @@ body.form-page {
     padding-bottom:     5px;
 }
 
+.form-row-padpad {
+    padding-bottom:     20px;
+}
+
 /*** Modal select ***/
 
 .modal-body div.row {

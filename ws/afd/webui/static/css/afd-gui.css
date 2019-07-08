@@ -325,6 +325,71 @@ td.status-led {
     background:         green;
 } 
 
+.FTP_retrieve_active {
+    color:              white;
+    background:         #00CD00;
+} 
+
+.SFTP_burst_active {
+    color:              black;
+    background:         #FFEBCD;
+}
+
+.SFTP_active {
+    color:              black;
+    background:         #FFDEAD;
+} 
+
+.SFTP_retrieve_active {
+    color:              black;
+    background:         #CD853F;
+} 
+
+.SCP_burst_active {
+    color:              white;
+    background:         #CD3333;
+}
+
+.SCP_active {
+    color:              black;
+    background:         #8B4513;
+} 
+
+.SMTP_burst_active {
+    color:              black;
+    background:         #00FFFF;
+}
+
+.SMTP_active {
+    color:              black;
+    background:         #FFC0CB;
+} 
+
+.WMO_burst_active {
+    color:              black;
+    background:         #FFFF00;
+}
+
+.WMO_active {
+    color:              black;
+    background:         #FFD700;
+} 
+
+.EXEC_burst_active {
+    color:              white;
+    background:         blue;
+}
+
+.EXEC_active {
+    color:              black;
+    background:         #63B8FF;
+} 
+
+.EXEC_retrieve_active {
+    color:              black;
+    background:         #5E5E5E;
+} 
+
 /*** Queue status: ***/
 
 .PAUSE_QUEUE {

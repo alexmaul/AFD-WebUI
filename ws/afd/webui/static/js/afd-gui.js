@@ -588,7 +588,7 @@ var AFDCTRL = function() {
                             row.children(".jobs").append(radd);
                             radd.show();
                         }
-                        x = val.jobs[j].number_of_files;
+                        x = val.jobs[j].number_of_files - val.jobs[j].number_of_files_done;
                         if (x < 10) {
                             x = "0" + x;
                         }

@@ -5,7 +5,7 @@ var AFDCTRL = function() {
         urlBase : "/",
 
         /** Interval [msec] for display update. */
-        updateInterval : 5000,
+        updateInterval : 3210,
 
         /** Initial number of alias rows. */
         rowNum : 0,
@@ -586,7 +586,7 @@ var AFDCTRL = function() {
                     );
                 } else if (typ == "bytes_send") {
                     let ftr = row.children(".transfer_rate").first();
-                    if (ftr.bytes_send == null) {
+                    if (ftr.attr("bytes_send") == null) {
                         ftr.attr("bytes_send", val.bytes_send);
                     }
                     row.children(".transfer_rate").html(

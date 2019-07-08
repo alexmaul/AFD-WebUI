@@ -4,6 +4,9 @@ var AFDCTRL = function() {
         /** urlBase. */
         urlBase : "/",
 
+        /** Interval [msec] for display update. */
+        updateInterval : 5000,
+
         /** Initial number of alias rows. */
         rowNum : 0,
 
@@ -59,6 +62,21 @@ var AFDCTRL = function() {
                 }
             });
             return aliasCommaList;
+        },
+
+        bytes_to_human_str : function(bytes) {
+            let factor = 'B';
+            if (bytes >= 1073741824) {
+                bytes = ~~(bytes/1073741824);
+                factor = 'G';
+            } else if (bytes >= 1048576) {
+                bytes = ~~(bytes/1048576);
+                factor = 'M';
+            } else if (bytes >= 1024) {
+                bytes = ~~(bytes/1024);
+                factor = 'K';
+            }
+            return bytes + factor;
         },
 
         /**
@@ -563,21 +581,20 @@ var AFDCTRL = function() {
                             break;
                     }
                 } else if (typ == "file_size") {
-                    x = eval("val." + typ) + 0;
-                    y = 'B';
-                    if (x >= 1073741824) {
-                        x %= 1073741824;
-                        y = 'G';
+                    row.children(".file_size").html(
+                            AFDCTRL.bytes_to_human_str(val.file_size)
+                    );
+                } else if (typ == "bytes_send") {
+                    let ftr = row.children(".transfer_rate").first();
+                    if (ftr.bytes_send == null) {
+                        ftr.attr("bytes_send", val.bytes_send);
                     }
-                    if (x >= 1048576) {
-                        x %= 1048576;
-                        y = 'M';
-                    }
-                    if (x >= 1024) {
-                        x %= 1024;
-                        y = 'K';
-                    }
-                    row.children("." + typ).html(x + y);
+                    row.children(".transfer_rate").html(
+                            AFDCTRL.bytes_to_human_str(
+                                    (val.bytes_send - ftr.attr("bytes_send")) / (AFDCTRL.updateInterval/1000)
+                            )
+                    );
+                    ftr.attr("bytes_send", val.bytes_send);
                 } else if (typ == "jobs") {
                     j = -1;
                     for (j in val.jobs) {
@@ -634,6 +651,6 @@ var AFDCTRL = function() {
          */
         setInterval(function() {
             AFDCTRL.loadData();
-        }, 5000);
+        }, AFDCTRL.updateInterval);
     });
 })();

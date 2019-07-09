@@ -483,13 +483,10 @@ var AFDCTRL = function() {
          * Update all changed data in an alias row.
          */
         setRowData : function(val) {
-            let typ = null, j, jid, x, y, radd, rmod;
+            let key = null, j, jid, x, y, radd, rmod;
             let row = $("#row-" + val.alias);
-            for (typ in val) {
-                if (!val.hasOwnProperty(typ)) {
-                    next;
-                }
-                if (typ == "host_status") {
+            for (key in val) {
+                if (key == "host_status") {
                     if (val.host_status.indexOf("HOST_IN_DIR_CONFIG") >= 0) {
                         let status_str = "";
                         if (val.host_status.indexOf("HOST_CONFIG_HOST_DISABLED") >= 0) {
@@ -513,9 +510,11 @@ var AFDCTRL = function() {
                         } else if (val.host_status.indexOf("NORMAL_STATUS") >= 0) {
                             status_str = "NORMAL_STATUS";
                         }
-                        row.children(".status-run").removeClass().addClass("alias status-run " + status_str);
+                        if (!row.children(".status-run").hasClass(status_str)){
+                            row.children(".status-run").removeClass().addClass("alias status-run " + status_str);
+                        }
                     } else { /* HOST_NOT_IN_DIR_CONFIG */
-                        row.children(".status-run").removeClass().addClass("HOST_NOT_IN_DIR_CONFIG");
+                        row.children(".status-run").removeClass().addClass("alias status-run HOST_NOT_IN_DIR_CONFIG");
                     }
                     if (val.host_status.indexOf("PAUSE_QUEUE") >= 0) {
                         row.children(".status-queue").removeClass().addClass("status-led status-queue PAUSE_QUEUE");
@@ -525,25 +524,7 @@ var AFDCTRL = function() {
                     } else {
                         row.children(".status-queue").removeClass().addClass("status-led status-queue NORMAL_STATUS");
                     }
-                    if (val.host_status.indexOf("STOP_TRANSFER") >= 0) {
-                        if (val.direction.indexOf("S") >= 0) {
-                            row.children(".status-send").removeClass().addClass("status-led status-send STOP_TRANSFER");
-                        }
-                        if (val.direction.indexOf("R") >= 0) {
-                            row.children(".status-retrieve").removeClass().addClass(
-                                    "status-led status-retrieve STOP_TRANSFER");
-                        }
-                    } else {
-                        if (val.direction.indexOf("S") >= 0) {
-                            row.children(".status-send").removeClass().addClass(
-                                    "status-led status-send TRANSFER_NORMAL");
-                        }
-                        if (val.direction.indexOf("R") >= 0) {
-                            row.children(".status-retrieve").removeClass().addClass(
-                                    "status-led status-retrieve TRANSFER_NORMAL");
-                        }
-                    }
-                } else if (typ == "debug_mode") {
+                } else if (key == "debug_mode") {
                     let ctx = row.find(".debug-canvas").get(0).getContext("2d");
                     switch (val.debug_mode) {
                         case "debug":
@@ -559,32 +540,38 @@ var AFDCTRL = function() {
                             ctx.fillStyle = "#d0f8ff";
                     }
                     ctx.fillRect(1, 1, 5, 5);
-                } else if (typ == "direction") {
+                } else if (key == "direction") {
+                    let status_transfer;
+                    if (val.host_status.indexOf("STOP_TRANSFER") >= 0) {
+                        status_transfer="STOP_TRANSFER";
+                    } else {
+                        status_transfer="TRANSFER_NORMAL";
+                    }
                     row.children(".status-send").removeClass().addClass("status-led status-send");
                     row.children(".status-retrieve").removeClass().addClass("status-led status-retrieve");
                     switch (val.direction) {
                         case "S":
-                            row.children(".status-send").addClass("TRANSFER_NORMAL");
+                            row.children(".status-send").addClass(status_transfer);
                             row.children(".status-retrieve").addClass("TRANSFER_DISABLED");
                             break;
                         case "R":
                             row.children(".status-send").addClass("TRANSFER_DISABLED");
-                            row.children(".status-retrieve").addClass("TRANSFER_NORMAL");
+                            row.children(".status-retrieve").addClass(status_transfer);
                             break;
                         case "SR":
-                            row.children(".status-send").addClass("TRANSFER_NORMAL");
-                            row.children(".status-retrieve").addClass("TRANSFER_NORMAL");
+                            row.children(".status-send").addClass(status_transfer);
+                            row.children(".status-retrieve").addClass(status_transfer);
                             break;
                         default:
                             row.children(".status-send").addClass("TRANSFER_DISABLED");
                             row.children(".status-retrieve").addClass("TRANSFER_DISABLED");
                             break;
                     }
-                } else if (typ == "file_size") {
+                } else if (key == "file_size") {
                     row.children(".file_size").html(
                             AFDCTRL.bytes_to_human_str(val.file_size)
                     );
-                } else if (typ == "bytes_send") {
+                } else if (key == "bytes_send") {
                     let ftr = row.children(".transfer_rate").first();
                     if (ftr.attr("bytes_send") == null) {
                         ftr.attr("bytes_send", val.bytes_send);
@@ -595,7 +582,7 @@ var AFDCTRL = function() {
                             )
                     );
                     ftr.attr("bytes_send", val.bytes_send);
-                } else if (typ == "jobs") {
+                } else if (key == "jobs") {
                     j = -1;
                     for (j in val.jobs) {
                         jid = row.attr("id") + "_job_" + val.jobs[j].job_num;
@@ -615,7 +602,7 @@ var AFDCTRL = function() {
                         rmod.html(x);
                     }
                 } else {
-                    row.children("." + typ).html(eval("val." + typ));
+                    row.children("." + key).html(eval("val." + key));
                 }
             }
         } /* setRowData */

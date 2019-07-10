@@ -38,18 +38,6 @@ HC_FIELDS = (
     ("host_status", None, "0", 13, -1),  #                   HS - Mostly irrelevant for HC-edit page!
     ("ignore_error_warning", None, "no", 13, 4),  #          HS:5  - Error status offline
     ("do_not_delete", None, "no", 13, 15),  #                HS:16 - Do not delete files due age-limit and 'delete queued files'
-
-#                          1 (1)     - If set transfer is stopped for this host.
-#                          2 (2)     - If set queue is stopped for this host.
-#                          3 (4)     - If set host is NOT in DIR_CONFIG.
-# ignore_error_warning     5 (16)    - Error status offline.
-#                          6 (32)    - If set this host is disabled.
-#                          7 (64)    - If set and host switching is used
-#                                      this tells that host two is active.
-# do_not_delete            16(32768) - If set do not delete files due to
-#                                      age-limit and 'delete queued files'
-#                                      option.
-
     ("ftp_mode_passive", None, "no", 14, 0),  #              SF:1 - FTP passive mode
     ("ftp_idle_time", None, "no", 14, 1),  #                 SF:2 - Set FTP idle time to transfer timeout
     ("ftp_keep_alive", None, "no", 14, 2),  #                SF:3 - Send STAT command to keep control connection alive.

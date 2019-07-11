@@ -210,6 +210,12 @@ var AFDEDIT = function() {
 (function() {
     $(document).ready(function() {
         console.log(window.location);
+        if (!String.prototype.hasOwnProperty("endsWith")) {
+            console.log("IE<12: mock-up endsWith()");
+            String.prototype.endsWith = function(suffix) {
+                return this.indexOf(suffix, this.length - suffix.length) !== -1;
+            };
+        }
         if (window.location.pathname.endsWith("afd-hcedit.html")) {
             /*
              * Document-ready actions for Host-Config-Editor.

@@ -18,7 +18,9 @@ var AFDLOG = function() {
          */
         callAldaCmd : function(ctx, paramSet) {
             console.log("callAldaCmd: " + ctx + ": " + paramSet);
-            $("#" + ctx + " .log_content-area-scroll .spinner-border").removeClass("d-none");
+            $("#" + ctx + " *").css({
+                "cursor" : "progress"
+            });
             $.ajax({
                 type : "POST",
                 url : AFDLOG.urlBase + AFDLOG.urlLog + ctx,
@@ -29,13 +31,15 @@ var AFDLOG = function() {
                     $(this).find("tr").on("click", function(event) {
                         $(this).toggleClass("selected");
                     });
-                    $(this).scrollTop($(this)[0].scrollHeight);
+                    $("." + ctx + "-area-scroll").scrollTop($(this)[0].scrollHeight);
                 },
                 error : function(status, jqxhr) {
                     console.log(status, jqxhr);
                 },
                 complete : function(a, b) {
-                    $("#" + ctx + " .log_content-area-scroll .spinner-border").addClass("d-none");
+                    $("#" + ctx + " *").css({
+                        "cursor" : "auto"
+                    });
                 },
                 context : $("#" + ctx + "-area")
             });

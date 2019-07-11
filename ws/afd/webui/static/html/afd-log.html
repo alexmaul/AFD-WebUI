@@ -72,7 +72,7 @@
         </select>  </td>
         <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('system');">Update</button>
         </tr></table>
-        <textarea id="system-area" class="log_content-area-file" readonly></textarea>
+        <textarea id="system-area" class="log_content-area-file system-area-scroll" readonly></textarea>
     </div>
     <!--
     EVENT-LOG
@@ -104,7 +104,7 @@
         </td>
         <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('receive');">Update</button>
         </tr></table>
-        <textarea id="receive-area" class="log_content-area-file" readonly></textarea>
+        <textarea id="receive-area" class="log_content-area-file receive-area-scroll" readonly></textarea>
     </div>
     <!--
     TRANSFER-LOG
@@ -132,7 +132,7 @@
         </td>
         <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Update</button>
         </tr></table>
-        <textarea id="transfer-area" class="log_content-area-file" readonly></textarea>
+        <textarea id="transfer-area" class="log_content-area-file transfer-area-scroll" readonly></textarea>
     </div>
     <!--
     transfer_debug-LOG
@@ -160,7 +160,7 @@
         </td>
         <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer_debug');">Update</button>
         </tr></table>
-        <textarea id="transfer_debug-area" class="log_content-area-file" readonly></textarea>
+        <textarea id="transfer_debug-area" class="log_content-area-file transfer_debug-area-scroll" readonly></textarea>
     </div>
     <!--
     INPUT-LOG
@@ -210,8 +210,7 @@
                     </tr>
                 </thead>
             </table>
-            <div class="log_content-area-scroll">
-                <div class="text-center"><div class="spinner-border d-none" style="text" role="status"></div></div>
+            <div class="log_content-area-scroll input-area-scroll">
                 <table class="log_content-list">
                     <tbody id="input-area">
                     </tbody>
@@ -367,7 +366,6 @@
                 </thead>
             </table>
             <div class="log_content-area-scroll">
-                <div class="text-center"><div class="spinner-border d-none" style="text" role="status"></div></div>
                 <table class="log_content-list">
                     <tbody id="output-area">
                     </tbody>
@@ -568,7 +566,6 @@
                 </thead>
             </table>
             <div class="log_content-area-scroll">
-                <div class="text-center"><div class="spinner-border d-none" style="text" role="status"></div></div>
                 <table class="log_content-list">
                     <tbody id="delete-area">
                     </tbody>
@@ -680,7 +677,6 @@
                 </thead>
             </table>
             <div class="log_content-area-scroll">
-                <div class="text-center"><div class="spinner-border d-none" style="text" role="status"></div></div>
                 <table class="log_content-list">
                     <tbody id="queue-area">
                     </tbody>

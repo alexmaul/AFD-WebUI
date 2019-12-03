@@ -51,12 +51,26 @@ var AFDCTRL = function() {
         },
 
         /**
+         * Show or hide modal with selection form.
+         */
+        toggleModal : function(modal) {
+            $.each($("#" + modal + " input.form-check-input"), function(i, obj) {
+                if (obj.checked == true) {
+                    obj.checked = false;
+                } else {
+                    obj.checked = true;
+                }
+            });
+        },
+
+        /**
          * Join all hostnames from aliasList to comma-seperated string.
          * 
          * prefix==true: a "?" is prepended for using the list as GET parameter.
          */
         aliasCommaList : function(aliasList, prefix) {
-            let aliasCommaList = "";
+            let aliasCommaList;
+            aliasCommaList = "";
             $.each(aliasList, function(i, v) {
                 if (i > 0) {
                     aliasCommaList += "," + v.replace(/row-/, "");
@@ -75,7 +89,8 @@ var AFDCTRL = function() {
          * Reduce numeric value by some factor and add letter B/K/M/G.
          */
         bytes_to_human_str : function(bytes) {
-            let factor = 'B';
+            let factor;
+            factor = 'B';
             if (bytes >= 1073741824) {
                 /* The bit-operation "~~" truncates to unsigned integer. */
                 bytes = ~~(bytes/1073741824);

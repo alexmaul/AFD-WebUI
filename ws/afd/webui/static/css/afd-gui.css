@@ -114,6 +114,7 @@ body.form-page {
 
 .log_content-list thead {
     background:         wheat;
+    white-space:        nowrap;
 }
 
 /*** Log-content list, column definition ***/
@@ -199,6 +200,7 @@ tr.tab-row-mark * {
 
 td.alias {
     width:              12ex;
+    white-space:        nowrap;
 }
 
 td.status-led {

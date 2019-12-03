@@ -308,6 +308,7 @@ PROTO_SCHEME = {
     "LOC": ".scheme-local",
     "WMO": ".scheme-remote",
     "EXEC": ".scheme-local",
+    "": "",
     None: "",
 }
 

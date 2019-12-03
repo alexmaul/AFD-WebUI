@@ -125,11 +125,11 @@
             <thead class="tabcol-head">
                 <tr>
                     <th>Host</th>
-                    <th />
+                    <th></th>
                     <th>Q</th>
                     <th>R</th>
                     <th>S</th>
-                    <th />
+                    <th></th>
                     <th>fc</th>
                     <th>fs</th>
                     <th>tr</th>
@@ -142,20 +142,20 @@
         <table style="display: none;">
             <tbody>
                 <tr id="template-row" class="tab-row">
-                    <td class="alias status-run" />
+                    <td class="alias status-run"></td>
                     <td class="mrkbl debug_mode">
                        <canvas class="debug-canvas" width="7" height="7" style="background: black;"></canvas>
                     </td>
-                    <td class="status-led status-queue" />
-                    <td class="status-led status-retrieve" />
-                    <td class="status-led status-send" />
+                    <td class="status-led status-queue"></td>
+                    <td class="status-led status-retrieve"></td>
+                    <td class="status-led status-send"></td>
                     <td class="jobs mrkbl">
                         <span id="template-job" class="DISCONNECT" style="display: none;">00</span>
                     </td>
-                    <td class="file_count numval" />
-                    <td class="file_size numval" />
-                    <td class="transfer_rate numval" />
-                    <td class="error_count numval" />
+                    <td class="file_count numval"></td>
+                    <td class="file_size numval"></td>
+                    <td class="transfer_rate numval"></td>
+                    <td class="error_count numval"></td>
                 </tr>
             </tbody>
         </table>
@@ -232,7 +232,7 @@
                             <button type="button" class="btn btn-secondary button-action" onClick="javascript:$('#modal_select_string').val('');">Clr</button>
                         </div>
                     </div>
-                    <div class="form-row form-row-padpad">
+                    <div class="form-row form-row-padpad" id="modalSelectProtocolList">
                             <div class="form-check form-inline">
                                 <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_ftp" name="modal_select_protocol" value="FTP" checked>
                                 <label for="modal_select_protocol_ftp" class="form-check-label elbow"> FTP</label>
@@ -264,6 +264,9 @@
                             <div class="form-check form-inline">
                                 <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_wmo" name="modal_select_protocol" value="WMO" checked>
                                 <label for="modal_select_protocol_wmo" class="form-check-label elbow"> WMO</label>
+                            </div>
+                            <div class="form-check form-inline">
+                                <button type="button" class="btn btn-secondary" onClick="javascript:AFDCTRL.toggleModal('modalSelectProtocolList');">Toggle</button>
                             </div>
                     </div>
                 </div>

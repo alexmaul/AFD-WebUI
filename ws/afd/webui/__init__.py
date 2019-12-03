@@ -87,11 +87,14 @@ def search_host(action, form_json):
         for l in raw.split("\n"):
             le = [x.strip() for x in l.split(":")]
             if le[0].startswith("Protocol"):
-                return any(
+                return (
+                    le[1] == "" 
+                    or any(
                         p in form_json["modal_select_protocol"]
                         for p in le[1].split(" ")
                         if p.isupper()
                     )
+                )
 
     if "modal_select_string" in form_json:
         re_matcher = re.compile(form_json["modal_select_string"])
@@ -180,7 +183,7 @@ def collect_info(host):
 
     fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + field_values["hostname"])
     if os.path.exists(fn_info):
-        with open(fn_info, "rt") as fh_info:
+        with open(fn_info, "rt", encoding="latin-1") as fh_info:
             field_values["info"] = fh_info.read()
 
     return render_template("info.html", **field_values)

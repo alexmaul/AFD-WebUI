@@ -52,12 +52,42 @@
     //-->
     <div class="tab-pane fade show active" id="system" role="tabpanel" aria-labelledby="system-tab">
         <table><tr>
-        <td><input type="checkbox" class="system-level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="system-level" value="config" checked /> Config  </td>
-        <td><input type="checkbox" class="system-level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="system-level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="system-level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="system-level" value="debug" /> Debug  </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-info" value="info" checked />
+                <label for="system-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-config" value="config" checked />
+                <label for="system-level-config" class="form-check-label elbow"> Config </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-warn" value="warn" checked />
+                <label for="system-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-error" value="error" checked />
+                <label for="system-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-offline" value="offline">
+                <label for="system-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-debug" value="debug">
+                <label for="system-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
         <td><select id="system-logfile">
@@ -83,11 +113,36 @@
     //-->
     <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">        
         <table><tr>
-        <td><input type="checkbox" class="receive-level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="receive-level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="receive-level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="receive-level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="receive-level" value="debug" /> Debug  </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-info" value="info" checked />
+                <label for="receive-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-warn" value="warn" checked />
+                <label for="receive-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-error" value="error" checked />
+                <label for="receive-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-offline" value="offline">
+                <label for="receive-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-debug" value="debug">
+                <label for="receive-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
         <td>
@@ -111,11 +166,36 @@
     //-->
     <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">        
         <table><tr>
-        <td><input type="checkbox" class="transfer-level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="transfer-level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="transfer-level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="transfer-level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="transfer-level" value="debug" /> Debug  </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-info" value="info" checked />
+                <label for="transfer-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-warn" value="warn" checked />
+                <label for="transfer-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-error" value="error" checked />
+                <label for="transfer-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-offline" value="offline">
+                <label for="transfer-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-debug" value="debug">
+                <label for="transfer-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
         <td>
@@ -139,11 +219,36 @@
     //-->
     <div class="tab-pane fade" id="transfer_debug" role="tabpanel" aria-labelledby="transfer_debug-tab">        
         <table><tr>
-        <td><input type="checkbox" class="transfer_debug-level" value="info" checked /> Info </td>
-        <td><input type="checkbox" class="transfer_debug-level" value="warn" checked /> Warn  </td>
-        <td><input type="checkbox" class="transfer_debug-level" value="error" checked /> Error  </td>
-        <td><input type="checkbox" class="transfer_debug-level" value="offline" /> Offline  </td>
-        <td><input type="checkbox" class="transfer_debug-level" value="debug" /> Debug  </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-info" value="info" checked />
+                <label for="transfer_debug-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-warn" value="warn" checked />
+                <label for="transfer_debug-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-error" value="error" checked />
+                <label for="transfer_debug-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-offline" value="offline">
+                <label for="transfer_debug-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-debug" value="debug">
+                <label for="transfer_debug-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
         <td> &nbsp; </td>
         <td> Log-file: </td>
         <td>
@@ -319,8 +424,18 @@
                     </div>
                     <!-- End modal protocol -->
                 </td>
-                <td><input type="checkbox" class="filter" name="archived-only" value="true" /> Only archived </td>
-                <td><input type="checkbox" class="filter" name="received-only" value="true" /> Received only </td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="archived-only" id="archived-only">
+                        <label class="custom-control-label archived-only" for="archived-only">Only archived</label>
+                    </div>
+                </td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="received-only" id="received-only">
+                        <label class="custom-control-label received-only" for="received-only">Received only</label>
+                    </div>
+                </td>
                 <td></td>
                 <td>
                     <div class="custom-control custom-switch">

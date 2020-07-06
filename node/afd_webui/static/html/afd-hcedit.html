@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9">
+<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-control" content="no-cache">
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+<script type="application/javascript" src="/static/js/jquery-3.4.0.min.js"></script>
+<script type="application/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/afd-gui.css">
+<script type="application/javascript" src="/static/js/afd-edit.js"></script>
+<title>Host Config Editor</title>
+</head>
+<body class="form-page">
+<h3 align="center">Host Config Editor</h3>
+<span style="padding:1em;"></span>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2 form-row-pad">
+            <!-- alias-list -->
+            Alias Hostname:<br/>
+            <select class="custom-select filter" id="alias-list" size="40" 
+                    onChange="javascript:AFDEDIT.readHostconfig($('#alias-list')[0].value);">
+            </select>
+        </div>
+        <div class="col">
+
+            <input type="hidden" id="host_status" name="host_status" class="filter" value="0">
+            
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-remote" 
+                                id="host_switch_enable" name="host_switch_enable" 
+                                onChange="javascript:AFDEDIT.ableAll(this, 'host_switch');">
+                        <label for="host_switch_enable" class="form-check-label elbow">Host switching</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="host_switch_char1" class="elbow">Host toggle character 1:</label>
+                    <input type="text" class="form-control filter scheme-remote host_switch" 
+                            id="host_switch_char1" name="host_switch_char1" size="1ch" maxlength="1">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="host_switch_char2" class="elbow">Host toggle character 2:</label>
+                    <input type="text" class="form-control filter scheme-remote host_switch" 
+                            id="host_switch_char2" name="host_switch_char2" size="1ch" maxlength="1">
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-remote host_switch" 
+                                id="host_switch_auto" name="host_switch_auto" value="yes">
+                        <label for="host_switch_auto" class="form-check-label elbow"> Auto</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <span class="space-short">Host/IP</span>
+                    <label for="host_name_real1" class="elbow">1:</label>
+                    <input type="text" class="form-control filter scheme-remote" id="host_name_real1" name="host_name_real1">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="host_name_real2" class="elbow">2:</label>
+                    <input type="text" class="form-control filter scheme-remote host_switch" id="host_name_real2" name="host_name_real2">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="proxy_name" class="elbow">Proxy Name:</label>
+                    <input type="text" class="form-control filter scheme-remote" id="proxy_name" name="proxy_name">
+                </div>
+            </div>
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-remote" 
+                                id="use_local_scheme" name="use_local_scheme">
+                        <label for="use_local_scheme" class="form-check-label elbow">Use scheme &quot;file&quot; when hostname matches local nodename</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <label for="transfer_timeout" class="elbow">Transfer timeout:</label>
+                    <input type="text" class="form-control filter scheme-remote" id="transfer_timeout" 
+                            name="transfer_timeout" size="4ch">
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="transfer_interrupt" name="transfer_interrupt">
+                        <label for="transfer_interrupt" class="form-check-label elbow">Interrupt</label>
+                    </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="ignore_error_warning" name="ignore_error_warning">
+                        <label for="ignore_error_warning" class="form-check-label elbow">Ignore errors+warnings</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="do_not_delete" name="do_not_delete">
+                        <label for="do_not_delete" class="form-check-label elbow">Do not delete data</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <label for="max_errors" class="elbow">Maximum errors:</label>
+                    <input type="text" class="form-control filter scheme-local scheme-remote" 
+                            id="max_errors" name="max_errors" size="4ch">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="successful_retries" class="elbow">Successful retries:</label>
+                    <input type="text" class="form-control filter scheme-remote" 
+                            id="successful_retries" name="successful_retries" size="4ch">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="retry_interval" class="elbow">Retry interval:</label>
+                    <input type="text" class="form-control filter scheme-local scheme-remote" 
+                            id="retry_interval" name="retry_interval" size="4ch">
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <label for="keep_connected" class="elbow">Keep connected:</label>
+                    <input type="text" class="form-control filter scheme-remote" 
+                            id="keep_connected" name="keep_connected" size="4ch">
+                </div>
+
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-both" 
+                                name="keep_connected_direction" value="both">
+                        <label for="keep_connected_direction-both" class="form-check-label elbow">Both</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-fetch" 
+                                name="keep_connected_direction" value="fetch">
+                        <label for="keep_connected_direction-fetch" class="form-check-label elbow">Fetch</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-remote" id="keep_connected_direction-send" 
+                                name="keep_connected_direction" value="send">
+                        <label for="keep_connected_direction-send" class="form-check-label elbow">Send</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-remote" id="keep_connected_disconnect"
+                                name="keep_connected_disconnect">
+                        <label for="keep_connected_disconnect" class="form-check-label elbow">Disconnect</label>
+                    </div>
+                </div>
+
+                <div class="col-auto form-inline">
+                    <span class="space-short">Warn time:</span>
+                    <input type="text" class="form-control filter scheme-local scheme-remote" id="warn_time" 
+                            name="warn_time" size="10ch" maxlength="10">
+                    <label for="warn_time" class="elbow">secs</label>
+                </div>
+                <!--
+                <div class="col-auto form-inline">
+                    <input type="text" class="form-control filter" id="warn_time_dayCheck for duplicates:s" name="warn_time_days" size="4ch">
+                    <label for="warn_time_days" class="elbow">days</label>
+                    <input type="text" class="form-control filter" id="warn_time_hours" name="warn_time_hours" size="2ch" maxlength="2">
+                    <label for="warn_time_hours" class="elbow">hours</label>
+                    <input type="text" class="form-control filter" id="warn_time_mins" name="warn_time_mins" size="2ch" maxlength="2">
+                    <label for="warn_time_mins" class="elbow">mins</label>
+                    <input type="text" class="form-control filter" id="warn_time_secs" name="warn_time_secs" size="2ch" maxlength="2">
+                    <label for="warn_time_secs" class="elbow">secs</label>
+                </div>
+                -->
+            </div>
+
+            <hr/>
+
+            <div class="form-row">
+                <div class="col-4 form-inline">
+                    <label for="transfer_rate_limit" class="elbow">Transfer rate limit (in KiB):</label>
+                    <input type="text" class="form-control filter scheme-remote" id="transfer_rate_limit" 
+                            name="transfer_rate_limit" size="4ch">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="socket_send_buffer" class="elbow">Socket send buffer size (in KiB):</label>
+                    <input type="text" class="form-control filter scheme-remote" id="socket_send_buffer" 
+                            name="socket_send_buffer" size="4ch">
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="socket_receive_buffer" class="elbow">Socket receive buffer size (in KiB):</label>
+                    <input type="text" class="form-control filter scheme-remote" id="socket_receive_buffer" 
+                            name="socket_receive_buffer" size="4ch">
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <span class="space-short">Check for duplicates:</span>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" 
+                                id="dupcheck_flag-enable" name="dupcheck_flag" value="yes" 
+                                onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');$('#dupcheck_timeout')[0].value='60';">
+                        <label for="dupcheck_flag-enable" class="form-check-label elbow">Enabled</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-local scheme-remote" 
+                                id="dupcheck_flag-disable" name="dupcheck_flag" value="no" 
+                                onChange="javascript:AFDEDIT.ableAll(this, 'dupcheck');$('#dupcheck_timeout')[0].value='0';">
+                        <label for="dupcheck_flag-disable" class="form-check-label elbow">Disabled</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="dupcheck_timeout" class="elbow">Timeout:</label>
+                    <input type="text" class="form-control filter dupcheck scheme-remote" 
+                            id="dupcheck_timeout" name="dupcheck_timeout" size="10ch">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter dupcheck scheme-remote" 
+                                id="dupcheck_timeout_fixed" name="dupcheck_timeout_fixed">
+                        <label for="dupcheck_timeout_fixed" class="form-check-label elbow">Fixed</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <span class="space-short">Reference:</span>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_reference-alias" name="dupcheck_reference" value="no">
+                        <label for="dupcheck_reference-alias" class="form-check-label elbow">Alias</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_reference-recipient" name="dupcheck_reference" value="recipient">
+                        <label for="dupcheck_reference-recipient" class="form-check-label elbow">Recipient</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_type-name" name="dupcheck_type" value="name">
+                        <label for="dupcheck_type-name" class="form-check-label elbow">Name</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_type-name-size" name="dupcheck_type" value="name-size">
+                        <label for="dupcheck_type-name-size" class="form-check-label elbow">Name+size</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_type-name-no-suffix" name="dupcheck_type" value="name-no-suffix">
+                        <label for="dupcheck_type-name-no-suffix" class="form-check-label elbow">Name, no suffix</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_type-content" name="dupcheck_type" value="content">
+                        <label for="dupcheck_type-content" class="form-check-label elbow">Content</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_type-name-content" name="dupcheck_type" value="name-content">
+                        <label for="dupcheck_type-name-content" class="form-check-label elbow">Name+content</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_delete" name="dupcheck_delete">
+                        <label for="dupcheck_delete" class="form-check-label elbow">Delete</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_store" name="dupcheck_store">
+                        <label for="dupcheck_store" class="form-check-label elbow">Store</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_warn" name="dupcheck_warn">
+                        <label for="dupcheck_warn" class="form-check-label elbow">Warn</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <span class="space-short">CRC-type:</span>
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_crc-crc32" name="dupcheck_crc" value="crc32">
+                        <label for="dupcheck_crc-crc32" class="form-check-label elbow">CRC-32</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter dupcheck scheme-local scheme-remote" 
+                                id="dupcheck_crc-crc32c" name="dupcheck_crc" value="crc32c">
+                        <label for="dupcheck_crc-crc32c" class="form-check-label elbow">CRC-32c</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="form-row">
+                <div class="col-auto form-inline">
+                    <label for="max_parallel_transfer" class="elbow">Max. parallel transfer:</label>
+                    <select class="form-control filter scheme-local scheme-remote" 
+                            id="max_parallel_transfer" name="max_parallel_transfer">
+                        <option>1</option>
+                        <option selected>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                    </select>
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="transfer_block_size" class="elbow">Transfer Blocksize:</label>
+                    <select class="form-control filter scheme-remote" id="transfer_block_size" 
+                            name="transfer_block_size">
+                        <option value="256">256 B</option>
+                        <option value="512">512 B</option>
+                        <option value="1024">1 KiB</option>
+                        <option value="2048">2 KiB</option>
+                        <option value="4096" selected>4 KiB</option>
+                        <option value="8192">8 KiB</option>
+                        <option value="16384">16 KiB</option>
+                        <option value="65536">64 KiB</option>
+                        <option value="131072">128 KiB</option>
+                        <option value="262144">256 KiB</option>
+                        <option value="524288">512 KiB</option>
+                        <option value="1048576">1 MiB</option>
+                        <option value="2097152">2 MiB</option>
+                        <option value="4194304">4 MiB</option>
+                        <option value="8388608">8 MiB</option>
+                    </select>
+                </div>
+                <div class="col-auto form-inline">
+                    <label for="filesize_offset_for_append" class="elbow">File size offset for append:</label>
+                    <select class="form-control filter scheme-remote" id="filesize_offset_for_append" 
+                            name="filesize_offset_for_append">
+                        <option value="-1">None</option>
+                        <option value="-2" selected>Auto</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr/>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <span class="space-short">FTP Mode:</span>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp"
+                                id="ftp_mode_epsv" name="ftp_mode_epsv">
+                        <label for="ftp_mode_epsv" class="form-check-label elbow">Extended</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-ftp" 
+                                id="ftp_mode_passive-no" name="ftp_mode_passive" value="no">
+                        <label for="ftp_mode_passive-no" class="form-check-label elbow">Active</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="radio" class="form-check-input filter scheme-ftp" 
+                                id="ftp_mode_passive-yes" name="ftp_mode_passive" value="yes">
+                        <label for="ftp_mode_passive-yes" class="form-check-label elbow">Passive</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_allow_redirect" name="ftp_allow_redirect">
+                        <label for="ftp_allow_redirect" class="form-check-label elbow">Redirect</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_use_list" name="ftp_use_list">
+                        <label for="ftp_use_list" class="form-check-label elbow">Use LIST</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_disable_mlst" name="ftp_disable_mlst">
+                        <label for="ftp_disable_mlst" class="form-check-label elbow">Disable MLST</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <span class="space-short">FTPS:</span>
+                        <input type="checkbox" class="form-check-input filter scheme-ftps" 
+                                id="ftps_clear_ctrlcon" name="ftps_clear_ctrlcon">
+                        <label for="ftps_clear_ctrlcon" class="form-check-label elbow">Clear Control Connection</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_idle_time" name="ftp_idle_time">
+                        <label for="ftp_idle_time" class="form-check-label elbow">Set idle time</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_keep_alive" name="ftp_keep_alive">
+                        <label for="ftp_keep_alive" class="form-check-label elbow">STAT Keepalive</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_fast_rename" name="ftp_fast_rename">
+                        <label for="ftp_fast_rename" class="form-check-label elbow">Fast rename</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_fast_cd" name="ftp_fast_cd">
+                        <label for="ftp_fast_cd" class="form-check-label elbow">Fast cd</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp" 
+                                id="ftp_no_type_i" name="ftp_no_type_i">
+                        <label for="ftp_no_type_i" class="form-check-label elbow">Ignore TYPE I</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="disable_burst" name="disable_burst">
+                        <label for="disable_burst" class="form-check-label elbow">Disable burst</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-remote" 
+                                id="tcp_keep_alive" name="tcp_keep_alive">
+                        <label for="tcp_keep_alive" class="form-check-label elbow">TCP Keepalive</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row form-row-pad">
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter" 
+                                id="sequence_locking" name="sequence_locking">
+                        <label for="sequence_locking" class="form-check-label elbow">Seq. locking</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter" 
+                                id="enable_compress" name="enable_compress">
+                        <label for="enable_compress" class="form-check-label elbow">Compression</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-sftp" 
+                                id="tls_strict_verification" name="tls_strict_verification">
+                        <label for="tls_strict_verification" class="form-check-label elbow">Strict Host-key</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local" 
+                                id="keep_timestamp" name="keep_timestamp">
+                        <label for="keep_timestamp" class="form-check-label elbow">Keep time stamp</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="sort_names" name="sort_names">
+                        <label for="sort_names" class="form-check-label elbow">Sort file names</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-local scheme-remote" 
+                                id="no_ageing_jobs" name="no_ageing_jobs">
+                        <label for="no_ageing_jobs" class="form-check-label elbow">No ageing jobs</label>
+                    </div>
+                </div>
+                <div class="col-auto form-inline">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input filter scheme-ftp scheme-sftp" 
+                                id="check_local_remote_match_size" name="check_local_remote_match_size">
+                        <label for="check_local_remote_match_size" class="form-check-label elbow">Match size</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <span style="padding:1em;"></span>
+    <div class="row">
+    <!-- buttons -->
+        <div class="col-2" style="text-align: center;">
+            <button type="button" class="btn btn-secondary" onClick="javascript:AFDEDIT.moveHostconfigAlias(-1);">Up</button>
+            <button type="button" class="btn btn-secondary" onClick="javascript:AFDEDIT.moveHostconfigAlias(1);">Down</button>
+            <button type="button" class="btn btn-warning" onClick="javascript:AFDEDIT.moveHostconfigAlias(0);">Remove</button>
+        </div>
+        <div class="col-2" style="text-align: center;">
+            <button type="button" class="btn btn-success button-action" onClick="javascript:AFDEDIT.updateHostconfig();">Update</button>
+        </div>
+        <div class="col">
+        </div>
+    </div>
+</div>
+</body>
+</html>

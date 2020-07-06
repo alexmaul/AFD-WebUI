@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9">
+<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-control" content="no-cache">
+<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+<script type="application/javascript" src="/static/js/jquery-3.4.0.min.js"></script>
+<script type="application/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/afd-gui.css">
+<script type="application/javascript" src="/static/js/afd-log.js"></script>
+<title>AFD - Test</title>
+</head>
+<body class="form-page" style="padding:20px">
+<h3 align="center">AFD log window</h3>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="system-tab" data-toggle="tab" href="#system" role="tab" aria-controls="system" aria-selected="false">System</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="event-tab" data-toggle="tab" href="#event" role="tab" aria-controls="event" aria-selected="false">Event</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="receive-tab" data-toggle="tab" href="#receive" role="tab" aria-controls="receive" aria-selected="false">Receive</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">Transfer</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="transfer_debug-tab" data-toggle="tab" href="#transfer_debug" role="tab" aria-controls="transfer_debug" aria-selected="false">Transfer Debug</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="input-tab" data-toggle="tab" href="#input" role="tab" aria-controls="input" aria-selected="false">Input</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="false">Output</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="delete-tab" data-toggle="tab" href="#delete" role="tab" aria-controls="delete" aria-selected="false">Delete</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="queue-tab" data-toggle="tab" href="#queue" role="tab" aria-controls="delete" aria-selected="false">Queue</a>
+    </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <!--
+    SYSTEM-LOG
+    //-->
+    <div class="tab-pane fade show active" id="system" role="tabpanel" aria-labelledby="system-tab">
+        <table><tr>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-info" value="info" checked />
+                <label for="system-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-config" value="config" checked />
+                <label for="system-level-config" class="form-check-label elbow"> Config </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-warn" value="warn" checked />
+                <label for="system-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-error" value="error" checked />
+                <label for="system-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-offline" value="offline">
+                <label for="system-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input system-level" id="system-level-debug" value="debug">
+                <label for="system-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td><select id="system-logfile">
+            <option selected>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>all</option>
+        </select>  </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('system');">Update</button>
+        </tr></table>
+        <textarea id="system-area" class="log_content-area-file system-area-scroll" readonly></textarea>
+    </div>
+    <!--
+    EVENT-LOG
+    //-->
+    <div class="tab-pane fade" id="event" role="tabpanel" aria-labelledby="event-tab">...event</div>
+    <!--
+    RECEIVE-LOG
+    //-->
+    <div class="tab-pane fade" id="receive" role="tabpanel" aria-labelledby="receive-tab">        
+        <table><tr>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-info" value="info" checked />
+                <label for="receive-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-warn" value="warn" checked />
+                <label for="receive-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-error" value="error" checked />
+                <label for="receive-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-offline" value="offline">
+                <label for="receive-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input receive-level" id="receive-level-debug" value="debug">
+                <label for="receive-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td>
+            <select id="receive-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('receive');">Update</button>
+        </tr></table>
+        <textarea id="receive-area" class="log_content-area-file receive-area-scroll" readonly></textarea>
+    </div>
+    <!--
+    TRANSFER-LOG
+    //-->
+    <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">        
+        <table><tr>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-info" value="info" checked />
+                <label for="transfer-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-warn" value="warn" checked />
+                <label for="transfer-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-error" value="error" checked />
+                <label for="transfer-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-offline" value="offline">
+                <label for="transfer-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer-level" id="transfer-level-debug" value="debug">
+                <label for="transfer-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td>
+            <select id="transfer-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>  
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer');">Update</button>
+        </tr></table>
+        <textarea id="transfer-area" class="log_content-area-file transfer-area-scroll" readonly></textarea>
+    </div>
+    <!--
+    transfer_debug-LOG
+    //-->
+    <div class="tab-pane fade" id="transfer_debug" role="tabpanel" aria-labelledby="transfer_debug-tab">        
+        <table><tr>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-info" value="info" checked />
+                <label for="transfer_debug-level-info" class="form-check-label elbow"> Info </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-warn" value="warn" checked />
+                <label for="transfer_debug-level-warn" class="form-check-label elbow"> Warn </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-error" value="error" checked />
+                <label for="transfer_debug-level-error" class="form-check-label elbow"> Error </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-offline" value="offline">
+                <label for="transfer_debug-level-offline" class="form-check-label elbow"> Offline </label>
+            </div>
+        </td>
+        <td>
+            <div class="form-check form-inline">
+                <input type="checkbox" class="form-check-input transfer_debug-level" id="transfer_debug-level-debug" value="debug">
+                <label for="transfer_debug-level-debug" class="form-check-label elbow"> Debug </label>
+            </div>
+        </td>
+        <td> &nbsp; </td>
+        <td> Log-file: </td>
+        <td>
+            <select id="transfer_debug-logfile">
+                <option selected>0</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>all</option>
+            </select>
+        </td>
+        <td><button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaLevel('transfer_debug');">Update</button>
+        </tr></table>
+        <textarea id="transfer_debug-area" class="log_content-area-file transfer_debug-area-scroll" readonly></textarea>
+    </div>
+    <!--
+    INPUT-LOG
+    //-->
+    <div class="tab-pane fade" id="input" role="tabpanel" aria-labelledby="input-tab">
+        <table>
+            <tr>
+                <td> Start time: </td>
+                <td><input type="text" class="filter" name="start" size="8" /></td>
+                <td align="right">End time: </td>
+                <td align="right"><input type="text" class="filter" name="end" size="8" /></td>
+                <td />
+                <td>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'today');">Today</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('input', 'clear');">Clr</button>
+                </td>
+            </tr>
+            <tr>
+                <td> File name: </td>
+                <td colspan="3"><input type="text" class="filter" name="filename" size="40" /></td>
+                <td> File size: </td>
+                <td><input type="text" class="filter" name="filesize" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Directory: </td>
+                <td colspan="3"><input type="text" class="filter" name="directory" size="40" /></td>
+                <td> Recipient: </td>
+                <td><input type="text" class="filter" name="recipient" size="20" /></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('input');">Search</button>
+                </td>
+            </tr>
+        </table>
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
+                <thead class="tabcol-head">
+                    <tr>
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th width="1em"></th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="log_content-area-scroll input-area-scroll">
+                <table class="log_content-list">
+                    <tbody id="input-area">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--
+    OUTPUT-LOG
+    //-->
+    <div class="tab-pane fade" id="output" role="tabpanel" aria-labelledby="output-tab">
+        <table>
+            <tr>
+                <td> Start time: </td>
+                <td><input type="text" class="filter" name="start" size="8" /></td>
+                <td align="right">End time: </td>
+                <td align="right"><input type="text" class="filter" name="end" size="8" /></td>
+                <td />
+                <td>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'today');">Today</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('output', 'clear');">Clr</button>
+                </td>
+            </tr>
+            <tr>
+                <td> File name: </td>
+                <td colspan="3"><input type="text" class="filter" name="filename" size="40" /></td>
+                <td> File size: </td>
+                <td><input type="text" class="filter" name="filesize" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Directory: </td>
+                <td colspan="3"><input type="text" class="filter" name="directory" size="40" /></td>
+                <td> Recipient: </td>
+                <td><input type="text" class="filter" name="recipient" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Job ID: </td>
+                <td colspan="3"><input type="text" class="filter" name="job-id" size="40" /></td>
+                <td> Trans time: </td>
+                <td><input type="text" class="filter" name="trans-time" size="20" /></td>
+            </tr>
+            <tr>
+                <td />
+                <td>
+                    <!-- Begin modal protocol -->
+                    <button type="button" id="modalProtocolButton" class="btn btn-secondary" data-toggle="modal" data-target="#modalProtocol">Protocol</button>
+                    <input type="hidden" id="modalProtocolValue" class="filter" name="protocol" value="" />
+                    <div class="modal fade" id="modalProtocol" tabindex="-1" role="dialog" aria-labelledby="modalProtocolLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalProtocolLabel">Protocols:</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-ftp" value="ftp" checked>
+                                                <label for="protocol-select-ftp" class="form-check-label">FTP</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-sftp" value="sftp" checked>
+                                                <label for="protocol-select-sftp" class="form-check-label">SFTP</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-scp" value="scp" checked>
+                                                <label for="protocol-select-scp" class="form-check-label">SCP</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-http" value="http" checked>
+                                                <label for="protocol-select-http" class="form-check-label">HTTP</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-smtp" value="mailto" checked>
+                                                <label for="protocol-select-smtp" class="form-check-label">SMTP</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-file" value="file" checked>
+                                                <label for="protocol-select-file" class="form-check-label">FILE</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-wmo" value="wmo" checked>
+                                                <label for="protocol-select-wmo" class="form-check-label">WMO</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="protocol-select-exec" value="exec" checked>
+                                                <label for="protocol-select-exec" class="form-check-label">EXEC</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.toggleModal('modalProtocol');">Toggle all</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End modal protocol -->
+                </td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="archived-only" id="archived-only">
+                        <label class="custom-control-label archived-only" for="archived-only">Only archived</label>
+                    </div>
+                </td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="received-only" id="received-only">
+                        <label class="custom-control-label received-only" for="received-only">Received only</label>
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input filter" name="output-filename-remote" 
+                                id="output-filename-remote" onChange="javascript:$('.output-filename-remote').toggleClass('d-none')">
+                        <label class="custom-control-label output-filename-remote" for="output-filename-remote">Local</label>
+                        <label class="custom-control-label output-filename-remote d-none" for="output-filename-remote">Remote</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('output');">Search</button>
+                    <!-- Begin selector view mode -->
+                    <div class="btn-group button-action">
+                        <button type="button" class="btn btn-primary" id="output-view-mode" onClick="javascript:AFDLOG.callView('output');">View Auto</button>
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#output-view-mode').text('View Auto');">Auto</a>
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#output-view-mode').text('View hexdump');">hexdump</a>
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#output-view-mode').text('View bufr');">bufr</a>
+                        </div>
+                    </div>
+                    <!-- End selector view mode -->
+                </td>
+            </tr>
+        </table>
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
+                <thead class="tabcol-head">
+                    <tr>
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-tr">Type</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-tt">TT</th>
+                        <th class="clst-aa">A</th>
+                        <th width="1em"></th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="log_content-area-scroll">
+                <table class="log_content-list">
+                    <tbody id="output-area">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--
+    DELETE-LOG
+    //-->
+    <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+        <table>
+            <tr>
+                <td> Start time: </td>
+                <td><input type="text" class="filter" name="start" size="8" /></td>
+                <td align="right">End time: </td>
+                <td align="right"><input type="text" class="filter" name="end" size="8" /></td>
+                <td />
+                <td>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'today');">Today</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('delete', 'clear');">Clr</button>
+                </td>
+            </tr>
+            <tr>
+                <td> File name: </td>
+                <td colspan="3"><input type="text" class="filter" name="filename" size="40" /></td>
+                <td> File size: </td>
+                <td><input type="text" class="filter" name="filesize" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Directory: </td>
+                <td colspan="3"><input type="text" class="filter" name="directory" size="40" /></td>
+                <td> Recipient: </td>
+                <td><input type="text" class="filter" name="recipient" size="20" /></td>
+            </tr>
+            <tr>
+                <td />
+                <td>
+                    <!-- Begin modal delete reason -->
+                    <button type="button" id="modalDeleteButton" class="btn btn-secondary" data-toggle="modal" data-target="#modalDelete">Delete reason</button>
+                    <input type="hidden" id="modalDeleteValue" class="filter" name="delete-reason" value="" />
+                    <div class="modal fade" id="modalDelete" tabindex="-1" role="dialog" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalDeleteLabel">Delete reasons:</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-0" value="0" checked>
+                                                <label for="delete-reason-0" class="form-check-label">Age-limit(O)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-1" value="1" checked>
+                                                <label for="delete-reason-1" class="form-check-label">Age-limit(I)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-2" value="2" checked>
+                                                <label for="delete-reason-2" class="form-check-label">User delete</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-3" value="3" checked>
+                                                <label for="delete-reason-3" class="form-check-label">Exec delete</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-4" value="4" checked>
+                                                <label for="delete-reason-4" class="form-check-label">Missing msg</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-5" value="5" checked>
+                                                <label for="delete-reason-5" class="form-check-label">Duplicate(I)</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-6" value="6" checked>
+                                                <label for="delete-reason-6" class="form-check-label">Duplicate(O)</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-7" value="7" checked>
+                                                <label for="delete-reason-7" class="form-check-label">Unknown file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-8" value="8" checked>
+                                                <label for="delete-reason-8" class="form-check-label">Job ID error</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-9" value="9" checked>
+                                                <label for="delete-reason-9" class="form-check-label">Old lock file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-10" value="10" checked>
+                                                <label for="delete-reason-10" class="form-check-label">Queued file</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-11" value="11" checked>
+                                                <label for="delete-reason-11" class="form-check-label">Delete option</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-12" value="12" checked>
+                                                <label for="delete-reason-12" class="form-check-label">Del stale job</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-13" value="13" checked>
+                                                <label for="delete-reason-13" class="form-check-label">Update DB del</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-14" value="14" checked>
+                                                <label for="delete-reason-14" class="form-check-label">Other proc</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-15" value="15" checked>
+                                                <label for="delete-reason-15" class="form-check-label">Del pool dir</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-16" value="16" checked>
+                                                <label for="delete-reason-16" class="form-check-label">Exec stored</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-17" value="17" checked>
+                                                <label for="delete-reason-17" class="form-check-label">Host disabled</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-18" value="18" checked>
+                                                <label for="delete-reason-18" class="form-check-label">Convert fail</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-19" value="19" checked>
+                                                <label for="delete-reason-19" class="form-check-label">Rename overwr</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-20" value="20" checked>
+                                                <label for="delete-reason-20" class="form-check-label">Mail recp rej</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-check form-check-inline col-md-3" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-21" value="21" checked>
+                                                <label for="delete-reason-21" class="form-check-label">Mirror delete</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-22" value="22" checked>
+                                                <label for="delete-reason-22" class="form-check-label">Queue error</label>
+                                            </div>
+                                            <div class="form-check form-check-inline col-md-4" style="padding-left:20px;">
+                                                <input type="checkbox" class="form-check-input" id="delete-reason-23" value="23" checked>
+                                                <label for="delete-reason-23" class="form-check-label">Int. link err</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.toggleModal('modalDelete');">Toggle all</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End modal delete reason -->
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('delete');">Search</button>
+                </td>
+            </tr>
+        </table>
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
+                <thead class="tabcol-head">
+                    <tr>
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-rn">Reason</th> 
+                        <th class="clst-pu">Process/User</th> 
+                        <th width="1em"></th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="log_content-area-scroll">
+                <table class="log_content-list">
+                    <tbody id="delete-area">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!--
+    QUEUE
+    //-->
+    <div class="tab-pane fade" id="queue" role="tabpanel" aria-labelledby="queue-tab">
+        <table>
+            <tr>
+                <td> Start time: </td>
+                <td><input type="text" class="filter" name="start" size="8" /></td>
+                <td align="right">End time: </td>
+                <td align="right"><input type="text" class="filter" name="end" size="8" /></td>
+                <td />
+                <td>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'today');">Today</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'yesterday');">Yesterday</button>
+                    <button type="button" class="btn btn-secondary" onClick="javascript:AFDLOG.setDate('queue', 'clear');">Clr</button>
+                </td>
+            </tr>
+            <tr>
+                <td> File name: </td>
+                <td colspan="3"><input type="text" class="filter" name="filename" size="40" /></td>
+                <td> File size: </td>
+                <td><input type="text" class="filter" name="filesize" size="20" /></td>
+            </tr>
+            <tr>
+                <td> Directory: </td>
+                <td colspan="3"><input type="text" class="filter" name="directory" size="40" /></td>
+                <td> Recipient: </td>
+                <td><input type="text" class="filter" name="recipient" size="20" /></td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <div class="row">
+                        <span style="width:1em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-output" id="queue-switch-output" checked>
+                            <label class="custom-control-label" for="queue-switch-output">Output</label>
+                        </div>
+                        <span style="width:1em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-out-unsent" id="queue-switch-out-unsent">
+                            <label class="custom-control-label" for="queue-switch-out-unsent">Unsent</label>
+                        </div>
+                        <span style="width:3em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-input" id="queue-switch-input" checked>
+                            <label class="custom-control-label" for="queue-switch-input">Input</label>
+                        </div>
+                        <span style="width:1em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-in-unsent" id="queue-switch-in-unsent">
+                            <label class="custom-control-label" for="queue-switch-in-unsent">Unsent</label>
+                        </div>
+                        <span style="width:3em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-retrieve" id="queue-switch-retrieve">
+                            <label class="custom-control-label" for="queue-switch-retrieve">Retrieve</label>
+                        </div>
+                        <span style="width:1em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-pending" id="queue-switch-pending" checked>
+                            <label class="custom-control-label" for="queue-switch-pending">Pending</label>
+                        </div>
+                        <span style="width:3em;"></span>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input filter" name="queue-switch-time" id="queue-switch-time" checked>
+                            <label class="custom-control-label" for="queue-switch-time">Time</label>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="5">
+                    <button type="submit" class="btn btn-primary button-action" onClick="javascript:AFDLOG.callAldaFilter('queue');">Search</button>
+                    <!-- Begin selector view mode -->
+                    <div class="btn-group button-action">
+                        <button type="button" class="btn btn-primary" id="queue-view-mode" onClick="javascript:AFDLOG.callView('queue');">View Auto</button>
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#queue-view-mode').text('View Auto');">Auto</a>
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#queue-view-mode').text('View od');">od</a>
+                            <a class="dropdown-item" href="#" onClick="javascript:$('#queue-view-mode').text('View bufr');">bufr</a>
+                        </div>
+                    </div>
+                    <!-- End selector view mode -->
+                </td>
+            </tr>
+        </table>
+        <div class="log_content-area-filter">
+            <table class="log_content-list">
+                <thead class="tabcol-head">
+                    <tr>
+                        <th class="clst-dd">mm.dd.</th>
+                        <th class="clst-hh">HH:MM:SS</th> 
+                        <th>File name</th> 
+                        <th class="clst-hn">Hostname</th> 
+                        <th class="clst-tr">Type</th> 
+                        <th class="clst-fs">File size</th> 
+                        <th class="clst-tt">TT</th>
+                        <th width="1em"></th>
+                    </tr>
+                </thead>
+            </table>
+            <div class="log_content-area-scroll">
+                <table class="log_content-list">
+                    <tbody id="queue-area">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

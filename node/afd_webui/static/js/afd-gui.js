@@ -15,7 +15,7 @@ var AFDCTRL = function() {
 
 		/** Set of selected alias rows. */
 		markedRows: {},
-		
+
 		/** Hold Websocket connection. */
 		ws: {},
 
@@ -125,7 +125,7 @@ var AFDCTRL = function() {
 						"STOP_TRANSFER", "STOP_TRANSFER"], "start", "stop", Object.keys(this.markedRows));
 					break;
 				case "Enable/Disable host":
-					AFDCTRL.ajaxCallAliasCmd("able", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("able", Object.keys(this.markedRows));
 					break;
 				case "Debug: Debug":
 					AFDCTRL.ajaxCallAliasCmd("debug", Object.keys(this.markedRows));
@@ -149,7 +149,7 @@ var AFDCTRL = function() {
                  * Menu: View
                  */
 				case "Info":
-					AFDCTRL.viewModalInfo(Object.keys(this.markedRows));
+					AFDCTRL.wsViewModalInfo(Object.keys(this.markedRows));
 					break;
 				case "Configuration":
 					AFDCTRL.callAliasWindow("config", Object.keys(this.markedRows));
@@ -225,47 +225,57 @@ var AFDCTRL = function() {
 		*/
 		wsConnectionOpen: function() {
 			AFDCTRL.ws = new WebSocket('ws://localhost:8040', ['json']),
-			AFDCTRL.ws.addEventListener('open', function() {
-				const message = { 
-					user: "test",
-					class: "fsa",
-					command: "view",
-					action: "start"
+				AFDCTRL.ws.addEventListener('open', function() {
+					const message = {
+						user: "test",
+						class: "fsa",
+						command: "fsa",
+						action: "start"
 					};
-				AFDCTRL.ws.send(JSON.stringify(message));
-			});
+					AFDCTRL.ws.send(JSON.stringify(message));
+				});
 			AFDCTRL.ws.addEventListener("close", function() {
 				alert("AFD closed connection!");
+			});
+			AFDCTRL.ws.addEventListener("error", function(event) {
+				// error handler -> reconnect.
 			});
 			AFDCTRL.ws.addEventListener('message', function(event) {
 				const data = JSON.parse(event.data);
 				console.log(data);
-				// evaluate message
-				if (data.class == "fsa") {
-					AFDCTRL.wsLoadData(data.data)
-				}
-				else {
+				/* evaluate incoming message */
+				switch (data.class) {
+					case "fsa":
+						AFDCTRL.wsLoadData(data.data);
+						break;
+					case "info":
+						$("#modalInfoBody").append(data.html);
+						break;
+					case "select":
+						break;
+					default:
+						break;
 				}
 			});
 		},
 		wsConnctionClose: function() {
-			const message = { 
+			const message = {
 				user: "test",
 				class: "fsa",
-				command: "view",
+				command: "fsa",
 				action: "stop"
-				};
+			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},
         /**
          * Exec general AFD command, handle ajax call.
          */
 		wsCallAfdCmd: function(cmd) {
-			const message = { 
+			const message = {
 				user: "test",
 				class: "afd",
 				command: cmd
-				};
+			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},
 		/**
@@ -278,12 +288,12 @@ var AFDCTRL = function() {
 				return;
 			}
 			console.log("callAliasCmd:", cmd, aliasList);
-			const message = { 
+			const message = {
 				user: "test",
 				class: "alias",
-				command: cmd,
+				action: cmd,
 				alias: aliasList
-				};
+			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},
 
@@ -387,7 +397,29 @@ var AFDCTRL = function() {
 		 * Retrieve host information (incl. INFO-file) for all hosts in
 		 * aliasList.
 		 */
-		viewModalInfo: function(aliasList) {
+		wsViewModalInfo: function(aliasList) {
+			console.log("viewModalInfo:", aliasList);
+			if (!AFDCTRL.isAliasSelected(aliasList)) {
+				return;
+			}
+			$.each(aliasList, function(i, v) {
+				let aliasName = v.replace(/row-/, "");
+				const message = {
+					user: "test",
+					class: "alias",
+					action: "info",
+					command: "read",
+					alias: aliasName
+				};
+				AFDCTRL.ws.send(JSON.stringify(message));
+			});
+			$("#modalInfo").modal("show");
+		},
+		/**
+		 * Retrieve host information (incl. INFO-file) for all hosts in
+		 * aliasList.
+		 */
+		ajaxViewModalInfo: function(aliasList) {
 			console.log("viewModalInfo:", aliasList);
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
@@ -463,7 +495,7 @@ var AFDCTRL = function() {
 		 * Send selection criteria with POST, select or de-select alias rows
 		 * according the returned list.
 		 */
-		callAliasSelect: function(cmd) {
+		ajaxCallAliasSelect: function(cmd) {
 			console.log("callAliasSelect:");
 			/* Declare and collect form parameters. */
 			let paramSet = {
@@ -821,11 +853,8 @@ var AFDCTRL = function() {
         /*
          * Set interval-handler to regularly load data and update display.
          */
-		//setInterval(function() {
-		//	AFDCTRL.ajaxLoadData();
-		//}, AFDCTRL.updateInterval);
 		AFDCTRL.wsConnectionOpen();
-		$(document).on("close", function(event){
+		$(document).on("close", function(event) {
 			AFDCTRL.wsConnctionClose();
 		});
 	});

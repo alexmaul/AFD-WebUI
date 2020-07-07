@@ -7,6 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const https = require("http");
 const node_static = require("node-static");
+const ejs = require('ejs');
 const WebSocket = require("ws");
 const { execFile } = require("child_process");
 
@@ -48,8 +49,6 @@ const argv = yargs
 	.argv;
 const AFD_WEBUI_DIR = path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
-console.log(process.argv);
-console.log(argv);
 /*
 TODO: currently only "start" is implemented, server automatically starts.
 implement:
@@ -75,12 +74,21 @@ const server = https.createServer(/*{
 );
 const wss = new WebSocket.Server({ server });
 
+/*
+	Setup template engine.
+*/
+let html_info = fs.readFileSync(
+	path.join(AFD_WEBUI_DIR, "templates", "info.html"),
+	{ encoding: "utf8" }
+);
+const template_info = ejs.compile(html_info);
+
 wss.on("connection", function connection(ws) {
 	console.log("connection open.");
 	let fsaLoop = null;
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.log("received: %s %s", message, message.class);
+		console.log("RCVD: %s", message);
 		if (message.class == "fsa") {
 			fsaLoop = startFsaLoop(ws);
 		}
@@ -88,7 +96,64 @@ wss.on("connection", function connection(ws) {
 
 		}
 		else if (message.class == "alias") {
-			ws.send(JSON.stringify(alias_cmd(message, ws)));
+			if (message.action in ["select", "deselect"]) {
+				ws.send(JSON.stringify(
+					search_host(message.action, message)
+				));
+			}
+			else if (message.action === "info") {
+				if (message.command === "read") {
+					collect_info(message.alias, (alias, html) => {
+						let reply = {
+							class: "info",
+							alias: alias,
+							html: html
+						}
+						console.log("SEND %s", reply);
+						ws.send(JSON.stringify(reply));
+					});
+				}
+				else if (message.command === "save") {
+
+				}
+			}
+			else if (massage.action === "config") {
+				ws.send(JSON.stringify(
+					exec_cmd("get_dc_data", ["-h"].concat(message.alias), null)
+				));
+			}
+			else {
+				let cmd = "afdcmd";
+				let cmd_opt = [];
+				switch (message.action) {
+					case "start":
+						cmd_opt = ["-t", "-q"];
+						break;
+					case "stop":
+						cmd_opt = ["-T", "-Q"];
+						break;
+					case "able":
+						cmd_opt = ["-X"];
+						break;
+					case "debug":
+						cmd_opt = ["-d"];
+						break;
+					case "trace":
+						cmd_opt = ["-c"];
+						break;
+					case "fulltrace":
+						cmd_opt = ["-C"];
+						break;
+					case "switch":
+						cmd_opt = ["-s"];
+						break;
+					case "retry":
+						cmd_opt = ["-r"];
+				}
+				exec_cmd(cmd, cmd_opt.concat(message.alias), null);
+				message["status"] = 204;
+				ws.send(JSON.stringify(message));
+			}
 		}
 		else if (message.class == "log") {
 
@@ -120,62 +185,6 @@ function startFsaLoop(ws) {
 	return fsaLoop;
 }
 
-/** Evaluate message for alias realted commands.
-	:param: message : json message received.
-	:param: ws : websocket object for sending reply.
- */
-function alias_cmd(message, ws) {
-	console.debug("message.action: %s", message.action);
-	console.debug(message);
-	if (message.action in ["select", "deselect"]) {
-		return search_host(message.action, message);
-	}
-	else if (message.action === "info") {
-		return collect_info(message.alias, (alias, html) => {
-			msg = {
-				class: "info",
-				alias: alias,
-				html: html
-			}
-			ws.send(msg);
-		});
-	}
-	else if (massage.action === "config") {
-		return exec_cmd("get_dc_data", ["-h"].concat(message.alias), null);
-	}
-	else {
-		let cmd = "afdcmd";
-		let cmd_opt = [];
-		switch (message.action) {
-			case "start":
-				cmd_opt = ["-t", "-q"];
-				break;
-			case "stop":
-				cmd_opt = ["-T", "-Q"];
-				break;
-			case "able":
-				cmd_opt = ["-X"];
-				break;
-			case "debug":
-				cmd_opt = ["-d"];
-				break;
-			case "trace":
-				cmd_opt = ["-c"];
-				break;
-			case "fulltrace":
-				cmd_opt = ["-C"];
-				break;
-			case "switch":
-				cmd_opt = ["-s"];
-				break;
-			case "retry":
-				cmd_opt = ["-r"];
-		}
-		exec_cmd(cmd, cmd_opt.concat(message.alias), null);
-		message["status"] = 204;
-		return message;
-	}
-}
 
 /** Collect information for one host.
 	Details are inserted in rendered html template, which is send via callback.
@@ -188,8 +197,8 @@ function collect_info(host, callback) {
 		HOST_TWO: "",
 		info: "No information available."
 	}
-	exec_cmd("fsa_view", [host], (raw) => {
-		console.debug("INFO TEXT: %s >> %s <<", typeof raw, raw);
+	mock_fsa_cmd("fsa_view", [host], (raw) => {
+		//exec_cmd("fsa_view", [host], (raw) => {
 		raw.split("\n").forEach((l) => {
 			if (!l.length || l[0] == " ") {
 				return;
@@ -202,11 +211,8 @@ function collect_info(host, callback) {
 				field_values["host1"] = field_values["hostname"];
 				field_values["host2"] = field_values["hostname"];
 			}
-			let le = [];
-			for (let x in l.split(":")) {
-				le.append(x.trim());
-			}
-			if (len(le) < 2) {
+			let le = l.split(":").map(x => x.trim());
+			if (le.length < 2) {
 				return;
 			}
 			switch (le[0]) {
@@ -230,7 +236,7 @@ function collect_info(host, callback) {
 					field_values["bytetransf"] = le[1];
 					break;
 				case "Last connection":
-					field_values["lastcon"] = ":".join(le.substring(1));
+					field_values["lastcon"] = le.slice(1).join(":");
 					break;
 				case "Connections":
 					field_values["connects"] = le[1];
@@ -241,7 +247,7 @@ function collect_info(host, callback) {
 				case "Retry interval":
 					field_values["retrint"] = le[1];
 			}
-			if (le[0].startswith("Protocol")) {
+			if (le[0].startsWith("Protocol")) {
 				field_values["protocol"] = le[1].split(" ")[0];
 			}
 		});
@@ -251,14 +257,22 @@ function collect_info(host, callback) {
 			if (err) {
 				if (err.code === "ENOENT") {
 					console.error("File does not exist: %s", fn_info);
-					return;
 				}
-				throw err;
+				else {
+					throw err;
+				}
 			}
-			field_values["info"] = data;
-			callback(host, render_template("info.html", field_values))
+			else {
+				field_values["info"] = data;
+			}
+			callback(host, template_info(field_values))
 		});
 	});
+}
+
+let mock_fsa_text = fs.readFileSync("./fsa_view_dummy_wettinfo.txt", { encoding: "utf8" });
+function mock_fsa_cmd(cmd, args, callback) {
+	callback(mock_fsa_text);
 }
 
 function exec_cmd(cmd, args, callback) {

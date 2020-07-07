@@ -114,7 +114,19 @@ wss.on("connection", function connection(ws) {
 					});
 				}
 				else if (message.command === "save") {
-
+/* @app.route("/alias/info/<host>", methods=["POST"])
+def alias_info_post(host):
+    app.logger.debug("save info %s", host)
+    app.logger.debug(request.form)
+    try:
+        fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + host)
+        with open(fn_info, "wt") as fh_info:
+            fh_info.write(request.form.get("text", ""))
+    except Exception as e:
+        app.logger.warning(e)
+        return abort(500)
+    return make_response("", 204, {"Content-type": CONTENT_PLAIN})
+ */
 				}
 			}
 			else if (massage.action === "config") {

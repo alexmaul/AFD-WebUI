@@ -40,9 +40,9 @@
     <hr />
     <div style="width:100%; text-align:center;">Protocols : <span class="info-field"><%= protocol %></span></div>
     <hr />
-    <textarea class="info-area" id="infoArea_<%= hostname %>"><%= info %></textarea>
+    <textarea class="info-area" id="infoArea_<%= hostname %>"><%= info_text %></textarea>
     <div style="width:100%; text-align:center;">
-        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.saveInfoText('<%= hostname %>');">Save</button>
+        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.wsSaveInfoText('<%= hostname %>');">Save</button>
         <button type="button" class="btn btn-primary button-action" onClick="javascript:AFDCTRL.closeInfo('<%= hostname %>');">Close</button>
     </div>
     <hr style="border-width:3px;"/>

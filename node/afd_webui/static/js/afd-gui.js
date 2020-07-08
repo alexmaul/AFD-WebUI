@@ -221,8 +221,9 @@ var AFDCTRL = function() {
          * ====================================================================
          * Handle Websocket communication with AFD.
          */
-		/** 
-		*/
+		/**
+         * 
+         */
 		wsConnectionOpen: function() {
 			AFDCTRL.ws = new WebSocket('ws://localhost:8040', ['json']),
 				AFDCTRL.ws.addEventListener('open', function() {
@@ -252,12 +253,18 @@ var AFDCTRL = function() {
 						$("#modalInfoBody").append(data.html);
 						break;
 					case "select":
+					case "deselect":
+					    AFDCTRL.applyAliasSelect(data.data);
 						break;
 					default:
 						break;
 				}
 			});
 		},
+		
+		/**
+         * 
+         */
 		wsConnctionClose: function() {
 			const message = {
 				user: "test",
@@ -267,59 +274,48 @@ var AFDCTRL = function() {
 			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},
-        /**
-         * Exec general AFD command, handle ajax call.
-         */
-		wsCallAfdCmd: function(cmd) {
-			const message = {
-				user: "test",
-				class: "afd",
-				command: cmd
-			};
-			AFDCTRL.ws.send(JSON.stringify(message));
-		},
-		/**
-		 * Exec command for selected alias.
-		 * 
-		 * Expects empty response (http 204).
-		 */
-		wsCallAliasCmd: function(cmd, aliasList) {
-			if (!AFDCTRL.isAliasSelected(aliasList)) {
-				return;
-			}
-			console.log("callAliasCmd:", cmd, aliasList);
-			const message = {
-				user: "test",
-				class: "alias",
-				action: cmd,
-				alias: aliasList
-			};
-			AFDCTRL.ws.send(JSON.stringify(message));
-		},
 
 		/*
          * ====================================================================
          * Methods building and sending commands to AFD.
          */
-        /**J
-         * Exec general AFD command, handle ajax call.
+        /**
+         * Send general AFD command.
          */
-		ajaxCallAfdCmd: function(cmd) {
-			console.log("callAfdCmd:", cmd);
-			$.ajax({
-				type: "POST",
-				url: AFDCTRL.urlBase + "afd/" + cmd,
-				complete: function(a, b) {
-					console.log(b);
-				}
-			});
-		},
-		/**
-		 * Decide and exec command for selected alias.
-		 * 
-		 * Decission is made by testing if any of the nodes with ID from lookFor
-		 * has the corresponding class from testFor.
-		 */
+        wsCallAfdCmd: function(cmd) {
+            const message = {
+                user: "test",
+                class: "afd",
+                command: cmd
+            };
+            AFDCTRL.ws.send(JSON.stringify(message));
+        },
+
+        /**
+         * Exec command for selected alias.
+         * 
+         * Expects empty response (http 204).
+         */
+        wsCallAliasCmd: function(cmd, aliasList) {
+            if (!AFDCTRL.isAliasSelected(aliasList)) {
+                return;
+            }
+            console.log("callAliasCmd:", cmd, aliasList);
+            const message = {
+                user: "test",
+                class: "alias",
+                action: cmd,
+                alias: aliasList
+            };
+            AFDCTRL.ws.send(JSON.stringify(message));
+        },
+
+        /**
+         * Decide and exec command for selected alias.
+         * 
+         * Decission is made by testing if any of the nodes with ID from lookFor
+         * has the corresponding class from testFor.
+         */
 		callAliasToggle: function(lookFor, testFor, swon, swoff, aliasList) {
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
@@ -336,38 +332,15 @@ var AFDCTRL = function() {
 				} else {
 					sw = swon;
 				}
-				AFDCTRL.ajaxCallAliasCmd(sw, [alias]);
-			});
-		},
-
-		/**J
-		 * Exec command for selected alias.
-		 * 
-		 * Expects empty response (http 204).
-		 */
-		ajaxCallAliasCmd: function(cmd, aliasList) {
-			if (!AFDCTRL.isAliasSelected(aliasList)) {
-				return;
-			}
-			console.log("callAliasCmd:", cmd, aliasList);
-			let aliasCommaList = AFDCTRL.aliasCommaList(aliasList, false);
-			$.ajax({
-				type: "POST",
-				url: AFDCTRL.urlBase + "alias/" + cmd,
-				data: {
-					alias: aliasCommaList
-				},
-				complete: function(a, b) {
-					console.log(b);
-				}
+				AFDCTRL.wsCallAliasCmd(sw, [alias]);
 			});
 		},
 
 		/**
-		 * Open new window with command response.
-		 * 
-		 * Best suited for e.g. alias configuration.
-		 */
+         * Open new window with command response.
+         * 
+         * Best suited for e.g. alias configuration.
+         */
 		callAliasWindow: function(cmd, aliasList) {
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
@@ -379,8 +352,8 @@ var AFDCTRL = function() {
 		},
 
 		/**
-		 * Test if any alias is selected, popup alert if not.
-		 */
+         * Test if any alias is selected, popup alert if not.
+         */
 		isAliasSelected: function(aliasList) {
 			if (aliasList.length == 0) {
 				alert("You must first select a host!");
@@ -390,13 +363,17 @@ var AFDCTRL = function() {
 		},
 
 		/*
-		 * ====================================================================
-		 * Methods for load/save host information (INFO-files).
-		 */
+         * ====================================================================
+         * Methods for load/save host information (INFO-files).
+         */
 		/**
-		 * Retrieve host information (incl. INFO-file) for all hosts in
-		 * aliasList.
-		 */
+         * Retrieve host information (incl. INFO-file) for all hosts in
+         * aliasList.
+         */
+		/*
+         * TODO: change rendering info. receive data as json and render template
+         * in browser instead on server.
+         */
 		wsViewModalInfo: function(aliasList) {
 			console.log("viewModalInfo:", aliasList);
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
@@ -415,32 +392,10 @@ var AFDCTRL = function() {
 			});
 			$("#modalInfo").modal("show");
 		},
-		/**
-		 * Retrieve host information (incl. INFO-file) for all hosts in
-		 * aliasList.
-		 */
-		ajaxViewModalInfo: function(aliasList) {
-			console.log("viewModalInfo:", aliasList);
-			if (!AFDCTRL.isAliasSelected(aliasList)) {
-				return;
-			}
-			$.each(aliasList, function(i, v) {
-				let aliasName = v.replace(/row-/, "");
-				$.ajax({
-					type: "GET",
-					url: AFDCTRL.urlBase + "alias/info/" + aliasName,
-					success: function(data, status, jqxhr) {
-						console.log(status, jqxhr);
-						$("#modalInfoBody").append(data);
-					}
-				});
-			});
-			$("#modalInfo").modal("show");
-		},
 
 		/**
-		 * Remove host info from modal. Close modal if removing last info.
-		 */
+         * Remove host info from modal. Close modal if removing last info.
+         */
 		closeInfo: function(infoHost) {
 			console.log("closeInfo:", infoHost);
 			$("#infoBox_" + infoHost).remove();
@@ -452,50 +407,49 @@ var AFDCTRL = function() {
 		},
 
 		/**
-		 * Send POST to save edited text in INFO-file.
-		 */
-		saveInfoText: function(infoHost) {
+         * Send edited text for saving in INFO-file.
+         */
+		wsSaveInfoText: function(infoHost) {
 			console.log("saveInfoText");
 			let infoText = $("#infoArea_" + infoHost)[0];
 			console.log(infoHost);
 			console.log(infoText.value);
-			$.ajax({
-				type: "POST",
-				url: AFDCTRL.urlBase + "alias/info/" + infoHost,
-				data: {
-					text: infoText.value
-				},
-				complete: function(a, b) {
-					console.log(b);
-				}
-			});
+            const message = {
+                user: "test",
+                class: "alias",
+                action: "info",
+                command: "save",
+                alias: infoHost,
+                info_text: infoText.value
+            };
+            AFDCTRL.ws.send(JSON.stringify(message));
 		},
 
 		/*
-		 * ====================================================================
-		 * Methods for de-/select hosts.
-		 */
+         * ====================================================================
+         * Methods for de-/select hosts.
+         */
 		/**
-		 * Show modal dialog for host selection.
-		 */
+         * Show modal dialog for host selection.
+         */
 		viewModalSelect: function(aliasList) {
 			console.log("viewModalSelect:", aliasList);
 			$("#modalSelect").modal("show");
 		},
 
 		/**
-		 * Close modal dialog.
-		 */
+         * Close modal dialog.
+         */
 		closeModalSelect: function(infoHost) {
 			console.log("closeModalSelect:", infoHost);
 			$("#modalSelect").modal("hide");
 		},
 
 		/**
-		 * Send selection criteria with POST, select or de-select alias rows
-		 * according the returned list.
-		 */
-		ajaxCallAliasSelect: function(cmd) {
+         * Send selection criteria, select or de-select alias rows according the
+         * returned list.
+         */
+		wsCallAliasSelect: function(cmd) {
 			console.log("callAliasSelect:");
 			/* Declare and collect form parameters. */
 			let paramSet = {
@@ -514,49 +468,47 @@ var AFDCTRL = function() {
 					paramSet[obj.name] = obj.value;
 				}
 			});
-			/* Call REST with parameter ... */
-			$.ajax({
-				type: "POST",
-				url: AFDCTRL.urlBase + "alias/" + cmd,
-				dataType: 'JSON',
-				data: JSON.stringify(paramSet),
-				contentType: "application/json; charset=utf-8",
-				traditional: true,
-				success: function(data, status, jqxhr) {
-					console.log(status, data);
-					/* ... then select+deselect all hosts in returned lists. */
-					$.each(data["select"], function(i, v) {
-						let row = $("#row-" + v);
-						AFDCTRL.toggleMark(row, 1);
-					});
-					$.each(data["deselect"], function(i, v) {
-						let row = $("#row-" + v);
-						AFDCTRL.toggleMark(row, -1);
-					});
-				},
-				error: function(status, jqxhr) {
-					console.log(status, jqxhr);
-				},
+			let message = {
+			        user: "test",
+			        class: "alias",
+			        action: paramSet.what,
+			        data: paramSet
+			};
+			AFDCTRL.ws.send(JSON.stringify(message));
+		},
+
+        /**
+         * Select+deselect all hosts in returned lists.
+         */
+		applyAliasSelect: function(data) {
+			console.log(status, data);
+			$.each(data.select, function(i, v) {
+				let row = $("#row-" + v);
+				AFDCTRL.toggleMark(row, 1);
+			});
+			$.each(data.deselect, function(i, v) {
+				let row = $("#row-" + v);
+				AFDCTRL.toggleMark(row, -1);
 			});
 		},
 
 		/*
-		 * ====================================================================
-		 * Methods to load data and update display.
-		 */
+         * ====================================================================
+         * Methods to load data and update display.
+         */
 		/**
-		 * Load FSA data and start update on all aliases in afd_ctrl-window.
-		 * 
-		 * TODO: improve insert/remove of rows. Now rows are inserted/removed
-		 * with simple append/remove, changes in host-order are not reflected.
-		 */
+         * Load FSA data and start update on all aliases in afd_ctrl-window.
+         * 
+         * TODO: improve insert/remove of rows. Now rows are inserted/removed
+         * with simple append/remove, changes in host-order are not reflected.
+         */
 		ajaxLoadData: function() {
 			$.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
 				if (data["data"].length < AFDCTRL.rowNum) {
 					/*
-					 * If display has more rows than in JSON, collect all alias-
-					 * names and remove surplus rows.
-					 */
+                     * If display has more rows than in JSON, collect all alias-
+                     * names and remove surplus rows.
+                     */
 					let dataAliasSet = {};
 					$.each(data["data"], function(i, v) {
 						dataAliasSet["row-" + v.alias] = v.ord;
@@ -581,14 +533,14 @@ var AFDCTRL = function() {
 			});
 		},
 		/**
-		 * Update on all aliases in afd_ctrl-window.
-		 */
+         * Update on all aliases in afd_ctrl-window.
+         */
 		wsLoadData: function(data) {
 			if (data.length < AFDCTRL.rowNum) {
 				/*
-				 * If display has more rows than in JSON, collect all alias-
-				 * names and remove surplus rows.
-				 */
+                 * If display has more rows than in JSON, collect all alias-
+                 * names and remove surplus rows.
+                 */
 				let dataAliasSet = {};
 				$.each(data, function(i, v) {
 					dataAliasSet["row-" + v.alias] = v.ord;
@@ -615,9 +567,9 @@ var AFDCTRL = function() {
 		applyFsaData: function(data) {
 			if (data["data"].length < AFDCTRL.rowNum) {
 				/*
-				 * If display has more rows than in JSON, collect all alias-
-				 * names and remove surplus rows.
-				 */
+                 * If display has more rows than in JSON, collect all alias-
+                 * names and remove surplus rows.
+                 */
 				let dataAliasSet = {};
 				$.each(data["data"], function(i, v) {
 					dataAliasSet["row-" + v.alias] = v.ord;
@@ -642,8 +594,8 @@ var AFDCTRL = function() {
 		},
 
 		/**
-		 * Insert new alias row if yet not present in afd_ctrl-window.
-		 */
+         * Insert new alias row if yet not present in afd_ctrl-window.
+         */
 		addRow: function(rowNum, val) {
 			/* Calculates the column in which the row should be placed. */
 			let lastCol = Math.floor(rowNum / AFDCTRL.maxRowsPerCol);
@@ -651,9 +603,9 @@ var AFDCTRL = function() {
 				$(".tabcol").length);
 			if ($(".tabcol").length <= lastCol) {
 				/*
-				 * If the row should be in column wich is not there yet, add a
-				 * new column.
-				 */
+                 * If the row should be in column wich is not there yet, add a
+                 * new column.
+                 */
 				let col = $("#template-tabcol").clone();
 				col.attr("id", "tabcol-" + lastCol);
 				col.addClass("tabcol");
@@ -675,16 +627,16 @@ var AFDCTRL = function() {
 		},
 
 		/**
-		 * Remove alias row from afd_ctrl-window.
-		 */
+         * Remove alias row from afd_ctrl-window.
+         */
 		removeRow: function(rowAlias) {
 			$("#" + rowAlias).remove();
 			AFDCTRL.rowNum -= 1;
 		},
 
 		/**
-		 * Update all changed data in an alias row.
-		 */
+         * Update all changed data in an alias row.
+         */
 		setRowData: function(val) {
 			let key = null, j, jid, x, y, radd, rmod;
 			let row = $("#row-" + val.alias);
@@ -799,9 +751,9 @@ var AFDCTRL = function() {
 						jid = row.attr("id") + "_job_" + val.jobs[j].job_num;
 						if ($("#" + jid).length == 0) {
 							/*
-							 * If display presents less jobs then there are, add
-							 * one.
-							 */
+                             * If display presents less jobs then there are, add
+                             * one.
+                             */
 							radd = $("#template-job").clone();
 							radd.attr("id", jid);
 							row.children(".jobs").append(radd);
@@ -849,7 +801,7 @@ var AFDCTRL = function() {
         /*
          * Initial load data.
          */
-		//AFDCTRL.loadData();
+		// AFDCTRL.loadData();
         /*
          * Set interval-handler to regularly load data and update display.
          */

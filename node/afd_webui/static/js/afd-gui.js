@@ -128,19 +128,19 @@ var AFDCTRL = function() {
 					AFDCTRL.wsCallAliasCmd("able", Object.keys(this.markedRows));
 					break;
 				case "Debug: Debug":
-					AFDCTRL.ajaxCallAliasCmd("debug", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("debug", Object.keys(this.markedRows));
 					break;
 				case "Debug: Trace":
-					AFDCTRL.ajaxCallAliasCmd("trace", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("trace", Object.keys(this.markedRows));
 					break;
 				case "Debug: Full trace":
-					AFDCTRL.ajaxCallAliasCmd("fulltrace", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("fulltrace", Object.keys(this.markedRows));
 					break;
 				case "Switch host":
-					AFDCTRL.ajaxCallAliasCmd("switch", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("switch", Object.keys(this.markedRows));
 					break;
 				case "Retry":
-					AFDCTRL.ajaxCallAliasCmd("retry", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("retry", Object.keys(this.markedRows));
 					break;
 				case "Search + (De)Select":
 					AFDCTRL.viewModalSelect(Object.keys(this.markedRows));
@@ -155,57 +155,57 @@ var AFDCTRL = function() {
 					AFDCTRL.callAliasWindow("config", Object.keys(this.markedRows));
 					break;
 				case "System Log":
-					window.open("/static/html/afd-log.html#system");
+					window.open("/html/afd-log.html#system");
 					break;
 				case "Receive Log":
-					window.open("/static/html/afd-log.html#receive");
+					window.open("/html/afd-log.html#receive");
 					break;
 				case "Transfer Log":
-					window.open("/static/html/afd-log.html#transfer");
+					window.open("/html/afd-log.html#transfer");
 					break;
 				case "Transfer Debug Log":
-					window.open("/static/html/afd-log.html#transfer-debug");
+					window.open("/html/afd-log.html#transfer-debug");
 					break;
 				case "Input Log":
-					window.open("/static/html/afd-log.html"
+					window.open("/html/afd-log.html"
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#input");
 					break;
 				case "Output Log":
-					window.open("/static/html/afd-log.html"
+					window.open("/html/afd-log.html"
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#output");
 					break;
 				case "Delete Log":
-					window.open("/static/html/afd-log.html"
+					window.open("/html/afd-log.html"
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#delete");
 					break;
 				case "Queue":
-					window.open("/static/html/afd-log.html"
+					window.open("/html/afd-log.html"
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#queue");
 					break;
                 /*
                  * Menu: Control
                  */
 				case "Start/Stop AMG":
-					AFDCTRL.ajaxCallAfdCmd("amg/toggle");
+					AFDCTRL.wsCallAfdCmd("amg", "toggle");
 					break;
 				case "Start/Stop FD":
-					AFDCTRL.ajaxCallAfdCmd("fd/toggle");
+					AFDCTRL.wsCallAfdCmd("fd", "toggle");
 					break;
 				case "Reread DIR_CONFIG":
-					AFDCTRL.ajaxCallAfdCmd("dc/update");
+					AFDCTRL.wsCallAfdCmd("dc", "update");
 					break;
 				case "Reread HOST_CONFIG":
-					AFDCTRL.ajaxCallAfdCmd("hc/update");
+					AFDCTRL.wsCallAfdCmd("hc", "update");
 					break;
 				case "Edit HOST_CONFIG":
-					window.open("/static/html/afd-hcedit.html"
+					window.open("/html/afd-hcedit.html"
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true));
 					break;
 				case "Startup AFD":
-					AFDCTRL.ajaxCallAfdCmd("afd/start");
+					AFDCTRL.wsCallAfdCmd("afd", "start");
 					break;
 				case "Shutdown AFD":
-					AFDCTRL.ajaxCallAfdCmd("afd/stop");
+					AFDCTRL.wsCallAfdCmd("afd", "stop");
 					break;
                 /*
                  * Menu: Setup
@@ -250,18 +250,18 @@ var AFDCTRL = function() {
 						AFDCTRL.wsLoadData(data.data);
 						break;
 					case "info":
-						$("#modalInfoBody").append(data.html);
+						$("#modalInfoBody").append(data.text);
 						break;
 					case "select":
 					case "deselect":
-					    AFDCTRL.applyAliasSelect(data.data);
+						AFDCTRL.applyAliasSelect(data.data);
 						break;
 					default:
 						break;
 				}
 			});
 		},
-		
+
 		/**
          * 
          */
@@ -282,33 +282,34 @@ var AFDCTRL = function() {
         /**
          * Send general AFD command.
          */
-        wsCallAfdCmd: function(cmd) {
-            const message = {
-                user: "test",
-                class: "afd",
-                command: cmd
-            };
-            AFDCTRL.ws.send(JSON.stringify(message));
-        },
+		wsCallAfdCmd: function(action, cmd) {
+			const message = {
+				user: "test",
+				class: "afd",
+				action: action,
+				command: cmd
+			};
+			AFDCTRL.ws.send(JSON.stringify(message));
+		},
 
         /**
          * Exec command for selected alias.
          * 
          * Expects empty response (http 204).
          */
-        wsCallAliasCmd: function(cmd, aliasList) {
-            if (!AFDCTRL.isAliasSelected(aliasList)) {
-                return;
-            }
-            console.log("callAliasCmd:", cmd, aliasList);
-            const message = {
-                user: "test",
-                class: "alias",
-                action: cmd,
-                alias: aliasList
-            };
-            AFDCTRL.ws.send(JSON.stringify(message));
-        },
+		wsCallAliasCmd: function(action, aliasList) {
+			if (!AFDCTRL.isAliasSelected(aliasList)) {
+				return;
+			}
+			console.log("callAliasCmd:", cmd, aliasList);
+			const message = {
+				user: "test",
+				class: "alias",
+				action: action,
+				alias: aliasList
+			};
+			AFDCTRL.ws.send(JSON.stringify(message));
+		},
 
         /**
          * Decide and exec command for selected alias.
@@ -414,15 +415,15 @@ var AFDCTRL = function() {
 			let infoText = $("#infoArea_" + infoHost)[0];
 			console.log(infoHost);
 			console.log(infoText.value);
-            const message = {
-                user: "test",
-                class: "alias",
-                action: "info",
-                command: "save",
-                alias: infoHost,
-                info_text: infoText.value
-            };
-            AFDCTRL.ws.send(JSON.stringify(message));
+			const message = {
+				user: "test",
+				class: "alias",
+				action: "info",
+				command: "save",
+				alias: infoHost,
+				text: infoText.value
+			};
+			AFDCTRL.ws.send(JSON.stringify(message));
 		},
 
 		/*
@@ -469,10 +470,10 @@ var AFDCTRL = function() {
 				}
 			});
 			let message = {
-			        user: "test",
-			        class: "alias",
-			        action: paramSet.what,
-			        data: paramSet
+				user: "test",
+				class: "alias",
+				action: paramSet.what,
+				data: paramSet
 			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},

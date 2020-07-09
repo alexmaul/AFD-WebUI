@@ -2,6 +2,27 @@
 "use strict";
 /* jslint node: true */
 
+/******************************************************************************
+	AFD WebUI Server
+	================
+All communication between WebUI server and client is done by exchanging JSON 
+via Websocket.
+
+The messages have these attributes:
+
+user:		string:			? user profile.
+class:		string:			<fsa|alias|afd|log|...>.
+action:		string:			depends on class.
+command:	string:			optional, only some actions have commands,
+							eg. read|save|start|stop.
+alias: 		[string, ...]:	optional, all alias related actions expect a list
+							of alias names.
+text: 		string:			optional, if plain text is send/received, eg. the
+							text for INFO.
+data: 		{}:				optional, general object for data. 
+
+******************************************************************************/
+
 const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
@@ -88,6 +109,7 @@ const wss = new WebSocket.Server({ server });
  */
 var template_info = null;
 fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
+	{ encoding: "utf8" },
 	(err, data) => {
 		if (!err) {
 			template_info = ejs.compile(data);
@@ -96,100 +118,64 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
 );
 
 /*
- * 
+ * When Websocket-Server establishes an incoming connection ...
  */
 wss.on("connection", function connection(ws) {
 	console.log("connection open.");
 	let fsaLoop = null;
+	/*
+	 * Evaluate incoming message, dispatch actions to functions.
+	 */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
 		console.debug("RCVD:");
 		console.debug(message);
+		/* */
 		switch (message.class) {
 			case "fsa":
-				fsaLoop = fsaLoopStart(ws);
-				break;
-			case "afd":
-				break;
-			case "alias":
+				/* About sending status to client. */
 				switch (message.action) {
-					case "select":
-					case "deselect":
-						ws.send(JSON.stringify(
-							search_host(message.action, message.data)
-						));
+					case "start":
+						fsaLoop = fsaLoopStart(ws);
 						break;
-					case "info":
-						if (message.command === "read") {
-							collect_info(message.alias, (alias, html) => {
-								let reply = {
-									class: "info",
-									alias: alias,
-									html: html
-								};
-								console.debug("SEND:");
-								console.debug(reply);
-								ws.send(JSON.stringify(reply));
-							});
-						}
-						else if (message.command === "save") {
-							let fn_info = path.join(AFD_WORK_DIR, "etc", "INFO-" + message.alias);
-							fs.writeFile(
-								fn_info,
-								message.info_text,
-								{ encoding: "latin1", flag: "w" },
-								(err) => {
-									if (err) {
-										console.error("Error writing INFO file: %s", err);
-									}
-								}
-							);
-						}
+					case "stop":
+						fsaLoop = fsaLoopStop(fsaLoop);
 						break;
-					case "config":
-						exec_cmd("get_dc_data",
-							["-h"].concat(message.alias),
-							(dc_data) => {
-								const msg = {
-									class: "alias",
-									action: "config",
-									alias: message.alias,
-									data: dc_data
-								};
-								ws.send(JSON.stringify(msg));
-							}
-						);
-					default:
-						if (message.action in AFDCMD_ARGS) {
-							exec_cmd(
-								"afdcmd",
-								AFDCMD_ARGS[message.action].concat(message.alias),
-								null
-							);
-							message["status"] = 204;
-							ws.send(JSON.stringify(message));
-						}
-						else {
-							message["status"] = 504;
-							ws.send(JSON.stringify(message));
-						}
 				}
 				break;
+			case "afd":
+				/* All actions controlling AFD itself. */
+				action_afd(message, ws);
+				break;
+			case "alias":
+				/* All alias/host related actions. */
+				action_alias(message, ws);
+				break;
 			case "log":
+				/* Retrieving log-information. */
 				break;
 			default:
 				console.warn("unknown class ...");
 		}
 	});
 
+	/*
+	 * When a connection is closed by the client ...
+	 */
 	ws.on("close", () => {
 		fsaLoopStop(fsaLoop);
 	});
+
+	/*
+	 * In case of any error, cutting a connection ...
+	 */
+	// TODO:
 });
 
 /** */
 function fsaLoopStart(ws) {
-	return fsaLoopStartReal(ws);
+	return fsaLoopStartMock(ws);
+	//return fsaLoopStartReal(ws);
 }
 
 /** */
@@ -237,6 +223,153 @@ function fsaLoopStartMock(ws) {
 	return fsaLoop;
 }
 
+/*
+@app.route("/afd/<command>", methods=["GET"])
+@app.route("/afd/<command>/<host>", methods=["GET"])
+@app.route("/afd/<command>/<action>", methods=["POST"])
+*/
+
+/**
+ * Dispatch to AFD controlling functions.
+ */
+function action_afd(message, ws) {
+	console.debug("command=%s  action=%s  host=%s", message.command, message.action, message.alias);
+	console.debug(request.form);
+	let cmd = "afdcmd";
+	let cmd_opt = "";
+	switch (message.action) {
+		case "amg":
+			if (message.command == "toggle") {
+				cmd = "afdcmd";
+				cmd_opt = "-Y";
+			}
+			break;
+		case "fd":
+			if (message.command == "toggle") {
+				cmd = "afdcmd";
+				cmd_opt = "-Z";
+			}
+			break;
+		case "dc":
+			if (message.command == "update") {
+				cmd = "udc";
+				cmd_opt = "";
+			}
+			break;
+		case "hc":
+			try {
+				switch (message.command) {
+					case "read":
+						hc_data = read_hostconfig(message.alias);
+						ws.send(JSON.stringify(hc_data));
+						break;
+					case "save":
+						save_hostconfig(message.data);
+						break;
+					case "update":
+						cmd = "uhc";
+						cmd_opt = "";
+						break;
+				}
+			}
+			catch (e) {
+				ws.send(JSON.stringify({
+					class: message.class,
+					command: message.command,
+					action: message.action,
+					status: 500,
+					message: `${e.name}: ${e.message}`
+				}));
+			}
+			break;
+		case "afd":
+			switch (message.command) {
+				case "start":
+					cmd = "afd";
+					cmd_opt = " -a";
+					break;
+				case "stop":
+					cmd = "afd"
+					cmd_opt = "-s"
+					break;
+				default:
+					console.log("Command unclear?");
+			}
+			break;
+		default:
+			console.log("Command unclear?");
+	}
+	exec_cmd(cmd, cmd_opt, null);
+}
+
+/**
+ * Dispatch to alias/host related functions.
+ */
+function action_alias(message, ws) {
+	switch (message.action) {
+		case "select":
+		case "deselect":
+			ws.send(JSON.stringify(
+				search_host(message.action, message.data)
+			));
+			break;
+		case "info":
+			if (message.command === "read") {
+				collect_info(message.alias, (alias, html) => {
+					let reply = {
+						class: "info",
+						alias: alias,
+						text: html
+					};
+					console.debug("SEND:");
+					console.debug(reply);
+					ws.send(JSON.stringify(reply));
+				});
+			}
+			else if (message.command === "save") {
+				let fn_info = path.join(AFD_WORK_DIR, "etc", "INFO-" + message.alias);
+				fs.writeFile(
+					fn_info,
+					message.text,
+					{ encoding: "latin1", flag: "w" },
+					(err) => {
+						if (err) {
+							console.error("Error writing INFO file: %s", err);
+						}
+					}
+				);
+			}
+			break;
+		case "config":
+			exec_cmd("get_dc_data",
+				["-h"].concat(message.alias),
+				(dc_data) => {
+					const msg = {
+						class: "alias",
+						action: "config",
+						alias: message.alias,
+						data: dc_data
+					};
+					ws.send(JSON.stringify(msg));
+				}
+			);
+			break;
+		default:
+			if (message.action in AFDCMD_ARGS) {
+				exec_cmd(
+					"afdcmd",
+					AFDCMD_ARGS[message.action].concat(message.alias),
+					null
+				);
+				message["status"] = 204;
+				ws.send(JSON.stringify(message));
+			}
+			else {
+				message["status"] = 504;
+				ws.send(JSON.stringify(message));
+			}
+	}
+}
 
 const mock_fsa_text = fs.readFileSync("./fsa_view_dummy_wettinfo.txt", { encoding: "utf8" });
 function mock_fsa_cmd(cmd, args, callback) {
@@ -255,8 +388,8 @@ function collect_info(host, callback) {
 		HOST_TWO: "",
 		info: "No information available."
 	};
-	// mock_fsa_cmd("fsa_view", [host], (raw) => {
-	exec_cmd("fsa_view", [host], (raw) => {
+	mock_fsa_cmd("fsa_view", [host], (raw) => {
+		//exec_cmd("fsa_view", [host], (raw) => {
 		raw.split("\n").forEach((l) => {
 			if (!l.length || l[0] == " ") {
 				return;
@@ -511,7 +644,7 @@ function int_or_str(s) {
 	return parsed;
 }
 
-function read_hostconfig(alias) {
+function read_hostconfig(alias = null) {
 	hc_order = [];
 	hc_data = {};
 
@@ -588,9 +721,9 @@ function read_hostconfig(alias) {
 function save_hostconfig(form_json) {
 	tmp_fn_hc = path.join(AFD_WORK_DIR, "etc", ".HOST_CONFIG");
 	/* Read current content of HOST_CONFIG */
-	hc = read_hostconfig(null);
+	hc = read_hostconfig();
 	/* Replace the host order */
-	hc["order"] = form_json["order"];
+	hc["order"] = form_json.order;
 	if ("data" in form_json) {
 		/* Update values for all submitted host with those from the request.json */
 		for (const alias in form_json.data) {
@@ -600,7 +733,7 @@ function save_hostconfig(form_json) {
 				hc.data[alias][t[HC_FIELD_NAME]] = t[HC_FIELD_RADIO] || t[HC_FIELD_DEFAULT];
 			}
 			hc.data[alias].assign(alias_data);
-            /*
+			/*
 			 * TODO: improve setting default-values without overriding host-status.
 			 */
 		}

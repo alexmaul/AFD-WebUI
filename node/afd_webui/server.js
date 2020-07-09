@@ -56,7 +56,16 @@ const AFD_WORK_DIR = argv.afd_work_dir;
  * 
  */
 
-
+const AFDCMD_ARGS = {
+	start: ["-t", "-q"],
+	stop: ["-T", "-Q"],
+	able: ["-X"],
+	debug: ["-d"],
+	trace: ["-c"],
+	fulltrace: ["-C"],
+	switch: ["-s"],
+	retry: ["-r"],
+};
 const static_server = new node_static.Server(path.join(AFD_WEBUI_DIR, "static"));
 
 /*
@@ -86,7 +95,9 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
 	}
 );
 
-
+/*
+ * 
+ */
 wss.on("connection", function connection(ws) {
 	console.log("connection open.");
 	let fsaLoop = null;
@@ -94,101 +105,100 @@ wss.on("connection", function connection(ws) {
 		const message = JSON.parse(message_raw);
 		console.debug("RCVD:");
 		console.debug(message);
-		if (message.class == "fsa") {
-			fsaLoop = startFsaLoop(ws);
-		}
-		else if (message.class == "afd") {
-
-		}
-		else if (message.class == "alias") {
-			if (["select", "deselect"].indexOf(message.action)) {
-				ws.send(JSON.stringify(
-					search_host(message.action, message.data)
-				));
-			}
-			else if (message.action === "info") {
-				if (message.command === "read") {
-					collect_info(message.alias, (alias, html) => {
-						let reply = {
-							class: "info",
-							alias: alias,
-							html: html
-						};
-						console.debug("SEND:");
-						console.debug(reply);
-						ws.send(JSON.stringify(reply));
-					});
-				}
-				else if (message.command === "save") {
-					let fn_info = path.join(AFD_WORK_DIR, "etc", "INFO-" + message.alias);
-					fs.writeFile(
-						fn_info,
-						message.info_text,
-						{ encoding: "latin1", flag: "w" },
-						(err) => {
-							if (err) {
-								console.error("Error writing INFO file: %s", err);
-							}
-						}
-					);
-				}
-			}
-			else if (message.action === "config") {
-				ws.send(JSON.stringify(
-					exec_cmd("get_dc_data", ["-h"].concat(message.alias), null)
-				));
-			}
-			else {
-				let cmd = "afdcmd";
-				let cmd_opt = [];
+		switch (message.class) {
+			case "fsa":
+				fsaLoop = fsaLoopStart(ws);
+				break;
+			case "afd":
+				break;
+			case "alias":
 				switch (message.action) {
-					case "start":
-						cmd_opt = ["-t", "-q"];
+					case "select":
+					case "deselect":
+						ws.send(JSON.stringify(
+							search_host(message.action, message.data)
+						));
 						break;
-					case "stop":
-						cmd_opt = ["-T", "-Q"];
+					case "info":
+						if (message.command === "read") {
+							collect_info(message.alias, (alias, html) => {
+								let reply = {
+									class: "info",
+									alias: alias,
+									html: html
+								};
+								console.debug("SEND:");
+								console.debug(reply);
+								ws.send(JSON.stringify(reply));
+							});
+						}
+						else if (message.command === "save") {
+							let fn_info = path.join(AFD_WORK_DIR, "etc", "INFO-" + message.alias);
+							fs.writeFile(
+								fn_info,
+								message.info_text,
+								{ encoding: "latin1", flag: "w" },
+								(err) => {
+									if (err) {
+										console.error("Error writing INFO file: %s", err);
+									}
+								}
+							);
+						}
 						break;
-					case "able":
-						cmd_opt = ["-X"];
-						break;
-					case "debug":
-						cmd_opt = ["-d"];
-						break;
-					case "trace":
-						cmd_opt = ["-c"];
-						break;
-					case "fulltrace":
-						cmd_opt = ["-C"];
-						break;
-					case "switch":
-						cmd_opt = ["-s"];
-						break;
-					case "retry":
-						cmd_opt = ["-r"];
+					case "config":
+						exec_cmd("get_dc_data",
+							["-h"].concat(message.alias),
+							(dc_data) => {
+								const msg = {
+									class: "alias",
+									action: "config",
+									alias: message.alias,
+									data: dc_data
+								};
+								ws.send(JSON.stringify(msg));
+							}
+						);
+					default:
+						if (message.action in AFDCMD_ARGS) {
+							exec_cmd(
+								"afdcmd",
+								AFDCMD_ARGS[message.action].concat(message.alias),
+								null
+							);
+							message["status"] = 204;
+							ws.send(JSON.stringify(message));
+						}
+						else {
+							message["status"] = 504;
+							ws.send(JSON.stringify(message));
+						}
 				}
-				exec_cmd(cmd, cmd_opt.concat(message.alias), null);
-				message["status"] = 204;
-				ws.send(JSON.stringify(message));
-			}
-		}
-		else if (message.class == "log") {
-
-		}
-		else {
-			console.warn("unknown class ...");
+				break;
+			case "log":
+				break;
+			default:
+				console.warn("unknown class ...");
 		}
 	});
 
-	ws.on("close", function close() {
-		console.log("fsa loop stop");
-		clearInterval(fsaLoop);
+	ws.on("close", () => {
+		fsaLoopStop(fsaLoop);
 	});
 });
-function startFsaLoop(ws) {
-	return startFsaLoopReal(ws);
+
+/** */
+function fsaLoopStart(ws) {
+	return fsaLoopStartReal(ws);
 }
 
-function startFsaLoopReal(ws) {
+/** */
+function fsaLoopStop(fsaLoop) {
+	console.log("fsa loop stop");
+	clearInterval(fsaLoop);
+}
+/** */
+function fsaLoopStartReal(ws) {
 	let counter = 0;
 	console.log("start fsa loop with real data.");
 	let fsaLoop = setInterval(() => {
@@ -211,7 +221,7 @@ function startFsaLoopReal(ws) {
 	return fsaLoop;
 }
 
-function startFsaLoopMock(ws) {
+function fsaLoopStartMock(ws) {
 	let counter = 0;
 	console.log("read fsa.json");
 	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/fsa.json"));
@@ -652,6 +662,9 @@ function save_hostconfig(form_json) {
 
 }
 
+/**
+ * Execute 'cmd' with arguments, callback function is called with stdoud as parameter.
+ */
 function exec_cmd(cmd, args, callback) {
 	console.debug("prepare command: %s %s", cmd, args)
 	execFile(cmd,
@@ -671,6 +684,9 @@ function exec_cmd(cmd, args, callback) {
 	);
 }
 
+/**
+ * Execute 'cmd' synchronous with arguments, stdout is returned.
+ */
 function exec_cmd_sync(cmd, args) {
 	console.debug("prepare command (sync): %s %s", cmd, args)
 	const stdout = execFileSync(cmd,

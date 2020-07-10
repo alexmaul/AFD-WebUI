@@ -128,8 +128,7 @@ wss.on("connection", function connection(ws) {
 	 */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.debug("RCVD:");
-		console.debug(message);
+		console.debug("RCVD:", message);
 		/* */
 		switch (message.class) {
 			case "fsa":
@@ -185,7 +184,6 @@ function fsaLoopStop(fsaLoop) {
 }
 /** */
 function fsaLoopStartReal(ws) {
-	let counter = 0;
 	console.log("start fsa loop with real data.");
 	let fsaLoop = setInterval(() => {
 		execFile("fsa_view_json",
@@ -197,9 +195,7 @@ function fsaLoopStartReal(ws) {
 					throw error;
 				}
 				else {
-					console.log("fsa send #%d", counter);
 					ws.send('{"class":"fsa","data":' + stdout + "}");
-					counter++;
 				}
 			}
 		);
@@ -233,8 +229,7 @@ function fsaLoopStartMock(ws) {
  * Dispatch to AFD controlling functions.
  */
 function action_afd(message, ws) {
-	console.debug("command=%s  action=%s  host=%s", message.command, message.action, message.alias);
-	console.debug(request.form);
+	console.debug(message);
 	let cmd = "afdcmd";
 	let cmd_opt = "";
 	switch (message.action) {
@@ -257,28 +252,29 @@ function action_afd(message, ws) {
 			}
 			break;
 		case "hc":
-			try {
-				switch (message.command) {
-					case "read":
-						hc_data = read_hostconfig(message.alias);
-						ws.send(JSON.stringify(hc_data));
-						break;
-					case "save":
+			switch (message.command) {
+				case "read":
+					const hc_data = read_hostconfig(message.alias);
+					ws.send(JSON.stringify(hc_data));
+					return;
+				case "save":
+					try {
 						save_hostconfig(message.data);
-					case "update":
-						cmd = "uhc";
-						cmd_opt = "";
-						break;
-				}
-			}
-			catch (e) {
-				ws.send(JSON.stringify({
-					class: message.class,
-					command: message.command,
-					action: message.action,
-					status: 500,
-					message: `${e.name}: ${e.message}`
-				}));
+					}
+					catch (e) {
+						ws.send(JSON.stringify({
+							class: message.class,
+							command: message.command,
+							action: message.action,
+							status: 500,
+							message: `${e.name}: ${e.message}`
+						}));
+						return;
+					}
+				case "update":
+					cmd = "uhc";
+					cmd_opt = "";
+					break;
 			}
 			break;
 		case "afd":
@@ -298,7 +294,9 @@ function action_afd(message, ws) {
 		default:
 			console.log("Command unclear?");
 	}
-	exec_cmd(cmd, cmd_opt, null);
+	exec_cmd(cmd, cmd_opt,
+		(buf) => { console.debug("%s %s :: %s", cmd, cmd_opt, buf) }
+	);
 }
 
 /**
@@ -320,8 +318,6 @@ function action_alias(message, ws) {
 						alias: alias,
 						text: html
 					};
-					console.debug("SEND:");
-					console.debug(reply);
 					ws.send(JSON.stringify(reply));
 				});
 			}
@@ -637,11 +633,13 @@ function int_or_str(s) {
 	return parsed;
 }
 
-function read_hostconfig(alias = null) {
-	hc_order = [];
-	hc_data = {};
+function read_hostconfig(aliasList = []) {
+	const hc_order = [];
+	const hc_data = {};
+	const alias = aliasList.length == 0 ? null : aliasList[0];
 
 	function get_proto(host) {
+		return "FTP";
 		try {
 			if (host === null) {
 				host = "";
@@ -659,23 +657,24 @@ function read_hostconfig(alias = null) {
 		}
 	}
 
-	fh_hc = fs.readFileSync(
+	const hc_content = fs.readFileSync(
 		path.join(AFD_WORK_DIR, "etc", "HOST_CONFIG"),
 		{ encoding: "latin1" }
-	)
-	for (const line of fh_hc) {
-		line = line.strip();
-		if (!line || line.startswith("#")) {
+	);
+	for (let line of hc_content.split("\n")) {
+		if (!line || line.startsWith("#")) {
 			continue;
 		}
-		line_data = line.split(":");
-		hc_order.append(line_data[HC_FIELD_NAME]);
+		line = line.trim();
+		let line_data = line.split(":");
+		hc_order.push(line_data[HC_FIELD_NAME]);
 		if (alias === null || line_data[HC_FIELD_NAME] == alias) {
 			hc_data[line_data[HC_FIELD_NAME]] = {};
 			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(alias)];
 			for (const hc_field of HC_FIELDS) {
+				let value;
 				if (hc_field[HC_FIELD_BIT] >= 0) {
-					if (int(line_data[hc_field[HC_FIELD_COLUMN]]) & (1 << hc_field[HC_FIELD_BIT])) {
+					if (parseInt(line_data[hc_field[HC_FIELD_COLUMN]]) & (1 << hc_field[HC_FIELD_BIT])) {
 						value = hc_field[HC_FIELD_RADIO] || "yes";
 					}
 					else {
@@ -685,7 +684,7 @@ function read_hostconfig(alias = null) {
 				else if (hc_field[HC_FIELD_BIT] == -2) {
 					if (line_data[hc_field[HC_FIELD_COLUMN]] != "") {
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "yes";
-						hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = ine_data[hc_fiel[HC_FIELD_COLUMN]][0] == "{" ? "yes" : "no";
+						hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = line_data[hc_field[HC_FIELD_COLUMN]][0] == "{" ? "yes" : "no";
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = line_data[hc_field[HC_FIELD_COLUMN]][1];
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_char2"] = line_data[hc_field[HC_FIELD_COLUMN]][2];
 					}
@@ -699,22 +698,21 @@ function read_hostconfig(alias = null) {
 				else {
 					value = line_data[hc_field[HC_FIELD_COLUMN]];
 				}
-				if ((!hc_field[HC_FIELD_NAME] in hc_data[line_data[HC_FIELD_NAME]])
-					|| (hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] in ("no", hc_field[HC_FIELD_DEFAULT]))
+				if (!(hc_field[HC_FIELD_NAME] in hc_data[line_data[HC_FIELD_NAME]])
+					|| ["no", hc_field[HC_FIELD_DEFAULT]].indexOf(hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]])
 				) {
 					hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value);
 				}
 			}
 		}
 	}
-	return { order: hc_order, data: hc_data };
+	return { class: "afd", action: "hc", alias: [alias], order: hc_order, data: hc_data };
 }
 
 
 function save_hostconfig(form_json) {
-	tmp_fn_hc = path.join(AFD_WORK_DIR, "etc", ".HOST_CONFIG");
 	/* Read current content of HOST_CONFIG */
-	hc = read_hostconfig();
+	const hc = read_hostconfig();
 	/* Replace the host order */
 	hc["order"] = form_json.order;
 	if ("data" in form_json) {
@@ -725,7 +723,7 @@ function save_hostconfig(form_json) {
 			for (const t of HC_FIELDS) {
 				hc.data[alias][t[HC_FIELD_NAME]] = t[HC_FIELD_RADIO] || t[HC_FIELD_DEFAULT];
 			}
-			hc.data[alias].assign(alias_data);
+			Object.assign(hc.data[alias], alias_data);
 			/*
 			 * TODO: improve setting default-values without overriding host-status.
 			 */
@@ -734,8 +732,8 @@ function save_hostconfig(form_json) {
 	/* Write a new HOST_CONFIG to a temporary file. */
 	let hc_text = HC_COMMENT;
 	for (const alias of hc["order"]) {
-		line_data = [null] * 23;
-		hc_toggle = {};
+		const line_data = new Array(23).fill(null);
+		const hc_toggle = {};
 		for (const tuplevalue of HC_FIELDS) {
 			const tuplevalue_field = tuplevalue[0];
 			const tuplevalue_radio = tuplevalue[1];
@@ -743,27 +741,37 @@ function save_hostconfig(form_json) {
 			const tuplevalue_column = tuplevalue[3];
 			const tuplevalue_bit = tuplevalue[4];
 			if (tuplevalue_bit >= 0) {
-				column_value = int_or_str(line_data[tuplevalue_column])
-				if (column_value == null) {
+				/*
+				FIXME: Duplicate-check-flag nutzt bis bit#32, 
+				JS stellt Bitmuster als 32-bit-SIGNED-integer dar.
+				*/
+				let column_value = int_or_str(line_data[tuplevalue_column])
+				if (column_value === null) {
 					column_value = 0;
 				}
-				if (["yes", tuplevalue_radio].indexOf(hc["data"][alias].get(tuplevalue_field, "no"))) {
-					column_value = column_value | 1 << tuplevalue_bit;
+				let f = (tuplevalue_field in hc["data"][alias]) ? hc["data"][alias][tuplevalue_field] : "no";
+				if (f == "yes" || f == tuplevalue_radio) {
+					column_value = column_value | (1 << tuplevalue_bit);
 				}
 				else {
 					column_value = column_value & ~(1 << tuplevalue_bit);
 				}
 				line_data[tuplevalue_column] = column_value;
 			}
-			else if (tuplevalue_bit == -1) {
-				line_data[tuplevalue_column] = hc["data"][alias].get(tuplevalue_field, tuplevalue_default);
+			else if (tuplevalue_bit === -1) {
+				if (tuplevalue_field in hc["data"][alias]) {
+					line_data[tuplevalue_column] = hc["data"][alias][tuplevalue_field];
+				}
+				else {
+					line_data[tuplevalue_column] = tuplevalue_default;
+				}
 			}
-			else if (tuplevalue_bit == -2) {
+			else if (tuplevalue_bit === -2) {
 				hc_toggle[tuplevalue_field] = hc["data"][alias][tuplevalue_field];
 			}
 		}
-		if (hc_toggle["host_switch_enable"] == "yes") {
-			if (hc_toggle["host_switch_auto"] == "yes") {
+		if (hc_toggle["host_switch_enable"] === "yes") {
+			if (hc_toggle["host_switch_auto"] === "yes") {
 				line_data[3] = `{${hc_toggle.host_switch_char1}${hc_toggle.host_switch_char2}}`;
 			}
 			else {
@@ -773,15 +781,20 @@ function save_hostconfig(form_json) {
 		else {
 			line_data[3] = "";
 		}
-		hc_text += line_data.concat(":");
+		hc_text += line_data.join(":");
 		hc_text += "\n";
 	}
-	fh_hc = fs.writeFile(tmp_fn_hc,
+	const tmp_fn_hc = path.join(AFD_WORK_DIR, "etc", ".HOST_CONFIG");
+	fs.writeFile(tmp_fn_hc,
 		hc_text,
 		{ encoding: "latin1" },
 		(err) => {
 			if (!err) {
-				fs.rename(tmp_fn_hc, os.path.join(AFD_WORK_DIR, "etc", "HOST_CONFIG"));
+				fs.rename(
+					tmp_fn_hc,
+					path.join(AFD_WORK_DIR, "etc", "HOST_CONFIG"),
+					() => { console.log("host_config updated."); }
+				);
 			}
 		}
 	);

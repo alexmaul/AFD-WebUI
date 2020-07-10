@@ -152,7 +152,8 @@ var AFDCTRL = function() {
 					AFDCTRL.wsViewModalInfo(Object.keys(this.markedRows));
 					break;
 				case "Configuration":
-					AFDCTRL.callAliasWindow("config", Object.keys(this.markedRows));
+					console.log("callAliasWindow:", "config", Object.keys(this.markedRows));
+					AFDCTRL.wsCallAliasCmd("config", Object.keys(this.markedRows));
 					break;
 				case "System Log":
 					window.open("/html/afd-log.html#system");
@@ -242,19 +243,24 @@ var AFDCTRL = function() {
 				// error handler -> reconnect.
 			});
 			AFDCTRL.ws.addEventListener('message', function(event) {
-				const data = JSON.parse(event.data);
-				console.log(data);
+				const message = JSON.parse(event.data);
+				console.log(message);
 				/* evaluate incoming message */
-				switch (data.class) {
+				switch (message.class) {
 					case "fsa":
-						AFDCTRL.wsLoadData(data.data);
+						AFDCTRL.wsLoadData(message.data);
 						break;
 					case "info":
-						$("#modalInfoBody").append(data.text);
+						$("#modalInfoBody").append(message.text);
 						break;
 					case "select":
 					case "deselect":
-						AFDCTRL.applyAliasSelect(data.data);
+						AFDCTRL.applyAliasSelect(message.data);
+						break;
+					case "alias":
+						if (message.action == "config") {
+							AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
+						}
 						break;
 					default:
 						break;
@@ -301,7 +307,7 @@ var AFDCTRL = function() {
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
 			}
-			console.log("callAliasCmd:", cmd, aliasList);
+			console.log("callAliasCmd:", action, aliasList);
 			const message = {
 				user: "test",
 				class: "alias",
@@ -342,14 +348,9 @@ var AFDCTRL = function() {
          * 
          * Best suited for e.g. alias configuration.
          */
-		callAliasWindow: function(cmd, aliasList) {
-			if (!AFDCTRL.isAliasSelected(aliasList)) {
-				return;
-			}
-			console.log("callAliasWindow:", cmd, aliasList);
-			$.each(aliasList, function(i, v) {
-				window.open(AFDCTRL.urlBase + "alias/" + cmd + "/" + v.replace(/row-/, ""));
-			});
+		openWindowPlaintext: function(title, text) {
+			console.log("openWindowPlaintext: '%s' >>%s<<", title, text.substring(0, 100));
+			window.open().document.write(`<pre>${text}</pre>`);
 		},
 
 		/**

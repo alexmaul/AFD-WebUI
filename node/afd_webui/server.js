@@ -93,10 +93,10 @@ const static_server = new node_static.Server(path.join(AFD_WEBUI_DIR, "static"))
  * TODO implement in server: - SSL/TLS - user authentication (Basic?)
  */
 /*
-                                     * { cert:
-                                     * fs.readFileSync("/path/to/cert.pem"),
-                                     * key: fs.readFileSync("/path/to/key.pem") },
-                                     */
+ * { cert:
+ * fs.readFileSync("/path/to/cert.pem"),
+ * key: fs.readFileSync("/path/to/key.pem") },
+ */
 const server = https.createServer(
 	(req, res) => {
 		req.addListener("end", () => { static_server.serve(req, res) }).resume()
@@ -265,7 +265,6 @@ function action_afd(message, ws) {
 						break;
 					case "save":
 						save_hostconfig(message.data);
-						break;
 					case "update":
 						cmd = "uhc";
 						cmd_opt = "";
@@ -348,7 +347,7 @@ function action_alias(message, ws) {
 						class: "alias",
 						action: "config",
 						alias: message.alias,
-						data: dc_data
+						text: dc_data
 					};
 					ws.send(JSON.stringify(msg));
 				}
@@ -371,11 +370,6 @@ function action_alias(message, ws) {
 	}
 }
 
-const mock_fsa_text = fs.readFileSync("./fsa_view_dummy_wettinfo.txt", { encoding: "utf8" });
-function mock_fsa_cmd(cmd, args, callback) {
-	callback(mock_fsa_text);
-}
-
 /**
  * Collect information for one host. Details are inserted in rendered html
  * template, which is send via callback.
@@ -386,10 +380,9 @@ function collect_info(host, callback) {
 	let field_values = {
 		HOST_ONE: "",
 		HOST_TWO: "",
-		info: "No information available."
+		info_text: "No information available."
 	};
-	mock_fsa_cmd("fsa_view", [host], (raw) => {
-		//exec_cmd("fsa_view", [host], (raw) => {
+	exec_cmd("fsa_view", [host], (raw) => {
 		raw.split("\n").forEach((l) => {
 			if (!l.length || l[0] == " ") {
 				return;
@@ -795,10 +788,20 @@ function save_hostconfig(form_json) {
 
 }
 
+function exec_cmd(cmd, args, callback) {
+	exec_cmd_mock(cmd, args, callback);
+}
+
+function exec_cmd_mock(cmd, args, callback) {
+	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
+	callback(mock_text);
+}
+
+
 /**
  * Execute 'cmd' with arguments, callback function is called with stdoud as parameter.
  */
-function exec_cmd(cmd, args, callback) {
+function exec_cmd_real(cmd, args, callback) {
 	console.debug("prepare command: %s %s", cmd, args)
 	execFile(cmd,
 		["-w", AFD_WORK_DIR].concat(args),

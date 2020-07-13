@@ -338,14 +338,16 @@ function action_alias(message, ws) {
 		case "config":
 			exec_cmd("get_dc_data",
 				["-h"].concat(message.alias),
-				(dc_data) => {
-					const msg = {
-						class: "alias",
-						action: "config",
-						alias: message.alias,
-						text: dc_data
-					};
-					ws.send(JSON.stringify(msg));
+				(error, dc_data, stderr) => {
+					if (!error) {
+						const msg = {
+							class: "alias",
+							action: "config",
+							alias: message.alias,
+							text: dc_data
+						};
+						ws.send(JSON.stringify(msg));
+					}
 				}
 			);
 			break;
@@ -354,10 +356,27 @@ function action_alias(message, ws) {
 				exec_cmd(
 					"afdcmd",
 					AFDCMD_ARGS[message.action].concat(message.alias),
-					null
+					(error, stdout, stderr) => {
+						if (error) {
+							console.warn("afdcmd %s %s -> %s",
+								message.action,
+								message.alias,
+								stderr
+							);
+							message["status"] = 504;
+							ws.send(JSON.stringify(message));
+						}
+						else {
+							console.log("afdcmd %s %s -> %s",
+								message.action,
+								message.alias,
+								stdout
+							);
+						}
+
+					}
 				);
-				message["status"] = 204;
-				ws.send(JSON.stringify(message));
+
 			}
 			else {
 				message["status"] = 504;
@@ -639,7 +658,7 @@ function read_hostconfig(aliasList = []) {
 	const alias = aliasList.length == 0 ? null : aliasList[0];
 
 	function get_proto(host) {
-		return "FTP";
+		return "FTP"; // XXX: mock.
 		try {
 			if (host === null) {
 				host = "";
@@ -668,7 +687,7 @@ function read_hostconfig(aliasList = []) {
 		line = line.trim();
 		let line_data = line.split(":");
 		hc_order.push(line_data[HC_FIELD_NAME]);
-		if (alias === null || line_data[HC_FIELD_NAME] == alias) {
+		if ((alias === null && Object.keys(hc_data).length < 1) || line_data[HC_FIELD_NAME] == alias) {
 			hc_data[line_data[HC_FIELD_NAME]] = {};
 			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(alias)];
 			for (const hc_field of HC_FIELDS) {
@@ -756,7 +775,7 @@ function save_hostconfig(form_json) {
 				}
 				abview.setUint32(0, column_value);
 				line_data[tuplevalue_column] = "" + abview.getUint32(0);
-				if (alias==="LOOP"){console.log(tuplevalue_field," ",f," ",column_value," " + abview.getUint32(0));}
+				if (alias === "LOOP") { console.log(tuplevalue_field, " ", f, " ", column_value, " " + abview.getUint32(0)); }
 			}
 			else if (tuplevalue_bit === -1) {
 				if (tuplevalue_field in hc["data"][alias]) {

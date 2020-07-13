@@ -29,6 +29,15 @@ var AFDEDIT = function() {
 			}
 		},
 
+		dupcheck_defaults: function() {
+			console.log("dupcheck_defaults");
+			$("#dupcheck_timeout")[0].value = "3600";
+			$("#dupcheck_reference-alias")[0].checked = true;
+			$("#dupcheck_type-name")[0].checked = true;
+			$("#dupcheck_delete")[0].checked = true;
+			$("#dupcheck_crc-crc32")[0].checked = true;
+		},
+
         /**
          * Send host configuration data for the selected host for saving.
          */

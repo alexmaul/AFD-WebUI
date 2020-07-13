@@ -711,6 +711,8 @@ function read_hostconfig(aliasList = []) {
 
 
 function save_hostconfig(form_json) {
+	const buffer = new ArrayBuffer(4);
+	const abview = new DataView(buffer);
 	/* Read current content of HOST_CONFIG */
 	const hc = read_hostconfig();
 	/* Replace the host order */
@@ -741,10 +743,6 @@ function save_hostconfig(form_json) {
 			const tuplevalue_column = tuplevalue[3];
 			const tuplevalue_bit = tuplevalue[4];
 			if (tuplevalue_bit >= 0) {
-				/*
-				FIXME: Duplicate-check-flag nutzt bis bit#32, 
-				JS stellt Bitmuster als 32-bit-SIGNED-integer dar.
-				*/
 				let column_value = int_or_str(line_data[tuplevalue_column])
 				if (column_value === null) {
 					column_value = 0;
@@ -756,7 +754,9 @@ function save_hostconfig(form_json) {
 				else {
 					column_value = column_value & ~(1 << tuplevalue_bit);
 				}
-				line_data[tuplevalue_column] = column_value;
+				abview.setUint32(0, column_value);
+				line_data[tuplevalue_column] = "" + abview.getUint32(0);
+				if (alias==="LOOP"){console.log(tuplevalue_field," ",f," ",column_value," " + abview.getUint32(0));}
 			}
 			else if (tuplevalue_bit === -1) {
 				if (tuplevalue_field in hc["data"][alias]) {

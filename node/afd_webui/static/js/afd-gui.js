@@ -350,7 +350,7 @@ var AFDCTRL = function() {
          */
 		openWindowPlaintext: function(title, text) {
 			console.log("openWindowPlaintext: '%s' >>%s<<", title, text.substring(0, 100));
-			window.open().document.write(`<pre>${text}</pre>`);
+			window.open().document.write("<pre>" + text + "</pre>");
 		},
 
 		/**

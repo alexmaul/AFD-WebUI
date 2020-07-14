@@ -3,8 +3,10 @@
 /* jslint node: true */
 
 /******************************************************************************
+
 	AFD WebUI Server
 	================
+
 All communication between WebUI server and client is done by exchanging JSON 
 via Websocket.
 
@@ -99,6 +101,7 @@ const AFD_WORK_DIR = argv.afd_work_dir;
  * implement: - write PID in file - stop
  * 
  */
+const static_server = new node_static.Server(path.join(AFD_WEBUI_DIR, "static"));
 
 const AFDCMD_ARGS = {
 	start: ["-t", "-q"],
@@ -110,7 +113,13 @@ const AFDCMD_ARGS = {
 	switch: ["-s"],
 	retry: ["-r"],
 };
-const static_server = new node_static.Server(path.join(AFD_WEBUI_DIR, "static"));
+
+const AFDLOG_FILES = {
+	system: "SYSTEM_LOG.",
+	receive: "RECEIVE_LOG.",
+	transfer: "TRANSFER_LOG.",
+	transfer_debug: "TRANS_DB_LOG."
+};
 
 /*
  * TODO implement in server: - SSL/TLS - user authentication (Basic?)
@@ -165,7 +174,7 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
 /*
  * When Websocket-Server establishes an incoming connection ...
  */
-wss_ctrl.on("connection", function connection(ws, req) {
+wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 	let fsaLoop = null;
 	const ip = req.socket.remoteAddress;
 	console.log("connection ctrl open from %s.", ip);
@@ -218,7 +227,7 @@ wss_ctrl.on("connection", function connection(ws, req) {
 /*
  * When Websocket-Server establishes an incoming connection ...
  */
-wss_log.on("connection", function connection(ws, req) {
+wss_log.on("connection", function connection_log(ws, req) {
 	const ip = req.socket.remoteAddress;
 	console.log("connection log open from %s.", ip);
 	/*
@@ -232,7 +241,12 @@ wss_log.on("connection", function connection(ws, req) {
 			console.warn("unknown class ...");
 			return;
 		}
-		
+		if (message.context in AFDLOG_FILES) {
+			return log_from_file(message, ws);
+		}
+		else {
+			return log_from_alda(message, ws);
+		}
 	});
 
 	/*
@@ -296,12 +310,6 @@ function fsaLoopStartMock(ws) {
 	}, 2000);
 	return fsaLoop;
 }
-
-/*
-@app.route("/afd/<command>", methods=["GET"])
-@app.route("/afd/<command>/<host>", methods=["GET"])
-@app.route("/afd/<command>/<action>", methods=["POST"])
-*/
 
 /**
  * Dispatch to AFD controlling functions.
@@ -473,6 +481,10 @@ function action_alias(message, ws) {
 	}
 }
 
+/* ****************************************************************************
+ * ALias/host realted functions.
+ * ***************************************************************************/
+
 /**
  * Collect information for one host. Details are inserted in rendered html
  * template, which is send via callback.
@@ -626,9 +638,9 @@ function search_host(action, form_json) {
 	return r;
 }
 
-/* *****************************************************************************
+/* ****************************************************************************
  * Functions to read and write AFD configuration files.
- */
+ * ***************************************************************************/
 
 
 /* These field names tuple represent the fields in HOST_CONFIG.
@@ -930,6 +942,172 @@ function save_hostconfig(form_json) {
 
 }
 
+
+/* ****************************************************************************
+ * Functions for retrieving log-data.
+ * ***************************************************************************/
+
+/**
+ */
+function log_from_file(message, ws) {
+	let file_number = message.filter.file == "all" ? "*" : message.filter.file;
+	// TODO: statt exec: datei selbst filtern und ausgabe als tr/td aufbereiten.
+	exec_cmd("grep", [
+		"-shP",
+		"<(" + message.filter.level + ")>",
+		AFD_WORK_DIR + "/log/" + AFDLOG_FILES[message.context] + file_number
+	],
+		(error, stdout, stderr) => {
+			if (error) {
+				console.warn(error, stderr);
+			}
+			else {
+				data = {
+					class: "log",
+					context: message.context,
+					append: false,
+					lines: stdout.split("\n"),
+				};
+				ws.send(JSON.stringify(data));
+			}
+		}
+	);
+}
+
+function log_from_alda(message, ws) {
+	let alda_output_format = {
+		input: ["-o", "\"<tr><td class='clst-dd'>%ITm.%ITd.</td>"
+			+ "<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
+			+ "<td class='clst-fs'>%ISB</td></tr>\""],
+		output: ["-o", "\"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
+			+ "<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
+			+ "%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"
+			+ "<td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td>"
+			+ "<td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td>"
+			+ "</tr>\""],
+		delete: ["-o", "\"<tr><td class='clst-dd'>%DTm.%DTd.</td>"
+			+ "<td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td>"
+			+ "<td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td>"
+			+ "<td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td>"
+			+ "</tr>\""]
+	};
+	let par_tr = {
+		start: "-t ",
+		end: "-T ",
+		directory: "-d ",
+		recipient: "-h ",
+		filesize: "-S ",
+		job_id: "-j ",
+		protocol: "-p ",
+		"trans-time": "-D ",
+		"delete-reason": null,
+	};
+	let par_lst = [];
+	let fnam = "";
+	let logtype;
+	if (message.filter["received-only"]) {
+		logtype = "R";
+	}
+	else {
+		logtype = message.context[0].upper();
+	}
+	let archived_only;
+	if (message.filter["archived-only"]) {
+		archived_only = true;
+	}
+	else {
+		archived_only = false;
+	}
+	let alda_output_line;
+	if (message.context in alda_output_format) {
+		alda_output_line = alda_output_format[message.context];
+	}
+	else {
+		alda_output_line = [];
+	}
+	for (key in message.filter) {
+		let val = message.filter[key];
+		if (key in par_tr && par_tr[key] === null) {
+			continue;
+		}
+		else if (key == "filename") {
+			fnam = val;
+		}
+		else if (key == "recipient") {
+			let rl = val.split(",").map(v => "%" + v).join(",");
+			// rl = ",".join("%" + v for v in val.split(","));
+			par_lst.push("{}'{}'".format(par_tr[key], rl));
+		}
+		else if (key == "output-filename-remote" && ["on", "yes", "true"].indexOf(val) >= 0) {
+			alda_output_line[1] = alda_output_line[1].replace("%Of", "%OF");
+		}
+		else if (key in par_tr && val == "true") {
+			par_lst.append(par_tr[key]);
+		}
+		else if (key in par_tr) {
+			par_lst.append(par_tr[key] + val);
+		}
+		let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line).push(fnam);
+		let data = {
+			class: "log",
+			context: message.context,
+			append: false,
+			lines: stdout.split("\n"),
+		};
+		if (message.context == "output") {
+			exec_cmd("alda", cmd_par, (error, stdout, stderr) => {
+				if (error) {
+					console.log.warn(error, stderr);
+				}
+				else {
+					// Parse each line, and set archive flag.
+					let new_data = [];
+					for (data_line of stdout.split("\n")) {
+						if (!data_line) {
+							continue;
+						}
+						let parts = data_line.split("|");
+						if (!parts[1].startswith("/")) {
+							if (path.exists(path.join(afd_work_dir, "archive", parts[1]))) {
+								parts[-2] = "Y";
+							}
+							else {
+								parts[-2] = "D";
+							}
+						}
+						else {
+							parts[1] = "";
+							parts[-2] = "N";
+						}
+						if (!archived_only || parts[-2] == "Y") {
+							new_data.append("".join(parts));
+						}
+					}
+					data.lines = new_data;
+					ws.send(JSON.stringify(data));
+				}
+			});
+		}
+		else {
+			exec_cmd("alda", cmd_par,
+				(error, stdout, stderr) => {
+					if (error) {
+						console.log.warn(error, stderr);
+					}
+					else {
+						data.lines = stdout.split("\n");
+						ws.send(JSON.stringify(data));
+					}
+				});
+		}
+	}
+}
+
+
+/* ****************************************************************************
+ * Execute command-line programs.
+ * ***************************************************************************/
+
 function exec_cmd(cmd, args, callback) {
 	exec_cmd_mock(cmd, args, callback);
 }
@@ -976,8 +1154,9 @@ function exec_cmd_sync(cmd, args) {
 	return stdout;
 }
 
-/*
+/* ****************************************************************************
  * At last we start the server listener.
  */
 server.listen(8040);
 
+/* ***** END *****************************************************************/

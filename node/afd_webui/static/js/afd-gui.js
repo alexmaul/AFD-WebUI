@@ -774,6 +774,7 @@ var AFDCTRL = function() {
         /*
          * Set interval-handler to regularly load data and update display.
          */
+		AFDCTRL.urlBase = window.location.host;
 		AFDCTRL.wsConnectionOpen();
 		$(document).on("close", function(event) {
 			AFDCTRL.wsConnctionClose();

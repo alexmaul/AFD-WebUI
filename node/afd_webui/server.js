@@ -9,9 +9,9 @@ All communication between WebUI server and client is done by exchanging JSON
 via Websocket.
 
 The messages have these attributes:
-
+-----------------------------------
 user:		string:			? user profile.
-class:		string:			<fsa|alias|afd|log|...>.
+class:		string:			<fsa|alias|afd|...>.
 action:		string:			depends on class.
 command:	string:			optional, only some actions have commands,
 							eg. read|save|start|stop.
@@ -21,12 +21,35 @@ text: 		string:			optional, if plain text is send/received, eg. the
 							text for INFO.
 data: 		{}:				optional, general object for data. 
 
+
+For log window the messages are different:
+------------------------------------------
+Request
+^^^^^^^
+class: 		string:	"log".
+context:	string: <system|event|transfer|transfer-debug|input|output|delete>.
+filter: 	{}:
+	file:		number:	the file number for file-organized logs.
+	level:		string: Regex of log-level letter <I|C|W|E|O|D>.
+	paramSet...	{}:		Object with filter parameter, the names reflect
+						classes/names in html.
+
+
+Response
+^^^^^^^^
+class:		string:		"log">.
+context: 	string: 	<system|event|transfer|transfer-debug|input|output|delete>.
+append: 	bool:		true|false, if the lines/text should be appended to
+						existing log lines.
+lines:		[ string ]:	log data.
+
 ******************************************************************************/
 
 const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
 const https = require("http");
+const url = require('url');
 const node_static = require("node-static");
 const ejs = require('ejs');
 const WebSocket = require("ws");
@@ -102,7 +125,29 @@ const server = https.createServer(
 		req.addListener("end", () => { static_server.serve(req, res) }).resume()
 	}
 );
-const wss = new WebSocket.Server({ server });
+const wss_ctrl = new WebSocket.Server({ noServer: true });
+const wss_log = new WebSocket.Server({ noServer: true });
+
+/**
+ * Handle upgrade to Websocket connection.
+ *
+ * Use seperate ws-server for ctrl and log.
+ */
+server.on('upgrade', function upgrade(request, socket, head) {
+	const pathname = url.parse(request.url).pathname;
+
+	if (pathname === '/ctrl') {
+		wss_ctrl.handleUpgrade(request, socket, head, function done(ws) {
+			wss_ctrl.emit('connection', ws, request);
+		});
+	} else if (pathname === '/log') {
+		wss_log.handleUpgrade(request, socket, head, function done(ws) {
+			wss_log.emit('connection', ws, request);
+		});
+	} else {
+		socket.destroy();
+	}
+});
 
 /*
  * Setup template engine.
@@ -120,16 +165,16 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
 /*
  * When Websocket-Server establishes an incoming connection ...
  */
-wss.on("connection", function connection(ws, req) {
+wss_ctrl.on("connection", function connection(ws, req) {
 	let fsaLoop = null;
 	const ip = req.socket.remoteAddress;
-	console.log("connection open from %s.", ip);
+	console.log("connection ctrl open from %s.", ip);
 	/*
 	 * Evaluate incoming message, dispatch actions to functions.
 	 */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.debug("RCVD:", ip, message);
+		console.debug("CTRL RCVD:", ip, message);
 		/* */
 		switch (message.class) {
 			case "fsa":
@@ -151,9 +196,6 @@ wss.on("connection", function connection(ws, req) {
 				/* All alias/host related actions. */
 				action_alias(message, ws);
 				break;
-			case "log":
-				/* Retrieving log-information. */
-				break;
 			default:
 				console.warn("unknown class ...");
 		}
@@ -164,6 +206,7 @@ wss.on("connection", function connection(ws, req) {
 	 */
 	ws.on("close", () => {
 		fsaLoopStop(fsaLoop);
+		console.log("connection ctrl close from %s", ip);
 	});
 
 	/*
@@ -171,6 +214,40 @@ wss.on("connection", function connection(ws, req) {
 	 */
 	// TODO:
 });
+
+/*
+ * When Websocket-Server establishes an incoming connection ...
+ */
+wss_log.on("connection", function connection(ws, req) {
+	const ip = req.socket.remoteAddress;
+	console.log("connection log open from %s.", ip);
+	/*
+	 * Evaluate incoming message, dispatch actions to functions.
+	 */
+	ws.on("message", function incoming(message_raw) {
+		const message = JSON.parse(message_raw);
+		console.debug("LOG RCVD:", ip, message);
+		/* */
+		if (message.class !== "log") {
+			console.warn("unknown class ...");
+			return;
+		}
+		
+	});
+
+	/*
+	 * When a connection is closed by the client ...
+	 */
+	ws.on("close", () => {
+		console.log("connection log close from %s", ip);
+	});
+
+	/*
+	 * In case of any error, cutting a connection ...
+	 */
+	// TODO:
+});
+
 
 /** */
 function fsaLoopStart(ws) {
@@ -263,6 +340,7 @@ function action_afd(message, ws) {
 						save_hostconfig(message.data);
 					}
 					catch (e) {
+						console.error(e);
 						ws.send(JSON.stringify({
 							class: message.class,
 							command: message.command,
@@ -296,7 +374,14 @@ function action_afd(message, ws) {
 			console.log("Command unclear?");
 	}
 	exec_cmd(cmd, cmd_opt,
-		(buf) => { console.debug("%s %s :: %s", cmd, cmd_opt, buf) }
+		(error, stdout, stderr) => {
+			if (error) {
+				console.warn(error, stderr);
+			}
+			else {
+				console.debug("%s %s :: %s", cmd, cmd_opt, stdout);
+			}
+		}
 	);
 }
 
@@ -337,9 +422,11 @@ function action_alias(message, ws) {
 			}
 			break;
 		case "config":
+			console.log("config:", message.alias);
 			exec_cmd("get_dc_data",
 				["-h"].concat(message.alias),
 				(error, dc_data, stderr) => {
+					console.log("EXEC->", error, dc_data, stderr);
 					if (!error) {
 						const msg = {
 							class: "alias",
@@ -398,7 +485,11 @@ function collect_info(host, callback) {
 		HOST_TWO: "",
 		info_text: "No information available."
 	};
-	exec_cmd("fsa_view", [host], (raw) => {
+	exec_cmd("fsa_view", [host], (err, raw, _) => {
+		if (err) {
+			console.warn(err);
+			return;
+		}
 		raw.split("\n").forEach((l) => {
 			if (!l.length || l[0] == " ") {
 				return;
@@ -611,7 +702,7 @@ const HC_FIELDS = [
 	["dupcheck_type", "name-size", "no", 20, 4],  //          DF:5 - Checksum of filename and size.
 	["dupcheck_crc", "crc32", "no", 20, 15],  //              DF:16 - Do a CRC32 checksum.
 	["dupcheck_crc", "crc32c", "no", 20, 16],  //             DF:17 - Do a CRC32C checksum.
-	["dupcheck_delete", null, "no", 20, 23],  //              DF:24 - Delete the file.
+	["dupcheck_delete", null, "yes", 20, 23],  //              DF:24 - Delete the file.
 	["dupcheck_store", null, "no", 20, 24],  //               DF:25 - Store the duplicate file.
 	["dupcheck_warn", null, "no", 20, 25],  //                DF:26 - Warn in SYSTEM_LOG.
 	["dupcheck_timeout_fixed", null, "no", 20, 30],  //       DF:31 - Timeout is fixed, ie. not cumulative.
@@ -653,10 +744,25 @@ function int_or_str(s) {
 	return parsed;
 }
 
+/**
+ * Read HOST_CONFIG data.
+ *
+ * If aliasList===null an object representing the whole HOST_CONFIG is returned,
+ * otherwise only the data for the alias in the list is returned.
+ */
 function read_hostconfig(aliasList = []) {
 	const hc_order = [];
 	const hc_data = {};
-	const alias = aliasList.length == 0 ? null : aliasList[0];
+	let alias;
+	if (aliasList === null) {
+		alias = null;
+	}
+	else if (aliasList.length == 0) {
+		alias = "";
+	}
+	else {
+		alias = aliasList[0];
+	}
 
 	function get_proto(host) {
 		return "FTP"; // XXX: mock.
@@ -688,9 +794,11 @@ function read_hostconfig(aliasList = []) {
 		line = line.trim();
 		let line_data = line.split(":");
 		hc_order.push(line_data[HC_FIELD_NAME]);
-		if ((alias === null && Object.keys(hc_data).length < 1) || line_data[HC_FIELD_NAME] == alias) {
+		if (alias === null
+			|| (alias === "" && Object.keys(hc_data).length < 1)
+			|| line_data[HC_FIELD_NAME] == alias) {
 			hc_data[line_data[HC_FIELD_NAME]] = {};
-			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(alias)];
+			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(line_data[HC_FIELD_NAME])];
 			for (const hc_field of HC_FIELDS) {
 				let value;
 				if (hc_field[HC_FIELD_BIT] >= 0) {
@@ -719,7 +827,9 @@ function read_hostconfig(aliasList = []) {
 					value = line_data[hc_field[HC_FIELD_COLUMN]];
 				}
 				if (!(hc_field[HC_FIELD_NAME] in hc_data[line_data[HC_FIELD_NAME]])
-					|| ["no", hc_field[HC_FIELD_DEFAULT]].indexOf(hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]])
+					|| ["no", hc_field[HC_FIELD_DEFAULT]].indexOf(
+						hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]]
+					) >= 0
 				) {
 					hc_data[line_data[HC_FIELD_NAME]][hc_field[HC_FIELD_NAME]] = int_or_str(value);
 				}
@@ -734,9 +844,9 @@ function save_hostconfig(form_json) {
 	const buffer = new ArrayBuffer(4);
 	const abview = new DataView(buffer);
 	/* Read current content of HOST_CONFIG */
-	const hc = read_hostconfig();
+	const hc = read_hostconfig(null);
 	/* Replace the host order */
-	hc["order"] = form_json.order;
+	hc.order = form_json.order;
 	if ("data" in form_json) {
 		/* Update values for all submitted host with those from the request.json */
 		for (const alias in form_json.data) {
@@ -753,7 +863,7 @@ function save_hostconfig(form_json) {
 	}
 	/* Write a new HOST_CONFIG to a temporary file. */
 	let hc_text = HC_COMMENT;
-	for (const alias of hc["order"]) {
+	for (const alias of hc.order) {
 		const line_data = new Array(23).fill(null);
 		const hc_toggle = {};
 		for (const tuplevalue of HC_FIELDS) {
@@ -767,7 +877,7 @@ function save_hostconfig(form_json) {
 				if (column_value === null) {
 					column_value = 0;
 				}
-				let f = (tuplevalue_field in hc["data"][alias]) ? hc["data"][alias][tuplevalue_field] : "no";
+				let f = (tuplevalue_field in hc.data[alias]) ? hc.data[alias][tuplevalue_field] : "no";
 				if (f == "yes" || f == tuplevalue_radio) {
 					column_value = column_value | (1 << tuplevalue_bit);
 				}
@@ -776,18 +886,17 @@ function save_hostconfig(form_json) {
 				}
 				abview.setUint32(0, column_value);
 				line_data[tuplevalue_column] = "" + abview.getUint32(0);
-				if (alias === "LOOP") { console.log(tuplevalue_field, " ", f, " ", column_value, " " + abview.getUint32(0)); }
 			}
 			else if (tuplevalue_bit === -1) {
-				if (tuplevalue_field in hc["data"][alias]) {
-					line_data[tuplevalue_column] = hc["data"][alias][tuplevalue_field];
+				if (tuplevalue_field in hc.data[alias]) {
+					line_data[tuplevalue_column] = hc.data[alias][tuplevalue_field];
 				}
 				else {
 					line_data[tuplevalue_column] = tuplevalue_default;
 				}
 			}
 			else if (tuplevalue_bit === -2) {
-				hc_toggle[tuplevalue_field] = hc["data"][alias][tuplevalue_field];
+				hc_toggle[tuplevalue_field] = hc.data[alias][tuplevalue_field];
 			}
 		}
 		if (hc_toggle["host_switch_enable"] === "yes") {
@@ -827,12 +936,14 @@ function exec_cmd(cmd, args, callback) {
 
 function exec_cmd_mock(cmd, args, callback) {
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
-	callback(mock_text);
+	callback(undefined, mock_text, undefined);
 }
 
 
 /**
- * Execute 'cmd' with arguments, callback function is called with stdoud as parameter.
+ * Execute 'cmd' with arguments.
+ *
+ * Callback function is called with error, stdout, stderr as parameter.
  */
 function exec_cmd_real(cmd, args, callback) {
 	console.debug("prepare command: %s %s", cmd, args)
@@ -841,12 +952,12 @@ function exec_cmd_real(cmd, args, callback) {
 		{ encoding: "latin1" },
 		(error, stdout, stderr) => {
 			console.log(stdout);
-			console.error(stderr);
 			if (callback) {
 				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
-				callback(stdout);
+				callback(error, stdout, stderr);
 			}
 			if (error) {
+				console.error(stderr);
 				throw error;
 			}
 		}

@@ -120,15 +120,16 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
 /*
  * When Websocket-Server establishes an incoming connection ...
  */
-wss.on("connection", function connection(ws) {
-	console.log("connection open.");
+wss.on("connection", function connection(ws, req) {
 	let fsaLoop = null;
+	const ip = req.socket.remoteAddress;
+	console.log("connection open from %s.", ip);
 	/*
 	 * Evaluate incoming message, dispatch actions to functions.
 	 */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.debug("RCVD:", message);
+		console.debug("RCVD:", ip, message);
 		/* */
 		switch (message.class) {
 			case "fsa":

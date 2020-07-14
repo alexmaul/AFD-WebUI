@@ -226,8 +226,8 @@ var AFDCTRL = function() {
          * 
          */
 		wsConnectionOpen: function() {
-			AFDCTRL.ws = new WebSocket('ws://localhost:8040', ['json']),
-				AFDCTRL.ws.addEventListener('open', function() {
+			AFDCTRL.ws = new WebSocket("ws://" + AFDCTRL.urlBase + "/ctrl", ["json"]),
+				AFDCTRL.ws.addEventListener("open", function() {
 					const message = {
 						user: "test",
 						class: "fsa",
@@ -242,7 +242,7 @@ var AFDCTRL = function() {
 			AFDCTRL.ws.addEventListener("error", function(event) {
 				// error handler -> reconnect.
 			});
-			AFDCTRL.ws.addEventListener('message', function(event) {
+			AFDCTRL.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
 				console.log(message);
 				/* evaluate incoming message */
@@ -499,43 +499,10 @@ var AFDCTRL = function() {
          * Methods to load data and update display.
          */
 		/**
-         * Load FSA data and start update on all aliases in afd_ctrl-window.
+         * Update on all aliases in afd_ctrl-window.
          * 
          * TODO: improve insert/remove of rows. Now rows are inserted/removed
          * with simple append/remove, changes in host-order are not reflected.
-         */
-		ajaxLoadData: function() {
-			$.getJSON(AFDCTRL.urlBase + "fsa/json", function(data) {
-				if (data["data"].length < AFDCTRL.rowNum) {
-					/*
-                     * If display has more rows than in JSON, collect all alias-
-                     * names and remove surplus rows.
-                     */
-					let dataAliasSet = {};
-					$.each(data["data"], function(i, v) {
-						dataAliasSet["row-" + v.alias] = v.ord;
-					});
-					$.each($(".tab-row"), function(i, o) {
-						if (o.id != "template-row") {
-							if (dataAliasSet[o.id] == undefined) {
-								AFDCTRL.removeRow(o.id);
-							}
-						}
-					});
-				}
-				$.each(data["data"], function(i, v) {
-					if ($("#row-" + v.alias).length == 0) {
-						/* If a alias in JSON is not in display, add new row. */
-						AFDCTRL.addRow(AFDCTRL.rowNum, v);
-						AFDCTRL.rowNum += 1;
-					}
-					/* Set row data. */
-					AFDCTRL.setRowData(v);
-				});
-			});
-		},
-		/**
-         * Update on all aliases in afd_ctrl-window.
          */
 		wsLoadData: function(data) {
 			if (data.length < AFDCTRL.rowNum) {

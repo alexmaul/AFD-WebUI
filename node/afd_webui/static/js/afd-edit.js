@@ -2,13 +2,11 @@
 var AFDEDIT = function() {
 	return {
 		/** urlBase. */
-		urlBase: "/",
-
-		/** urlView. */
-		urlHc: "afd/hc",
+		urlBase: "localhost:8040",
 
 		/** Hold Websocket connection. */
 		ws: {},
+
         /**
          * Enable/disable form-input-tags which have CSS-class as filter.
          */
@@ -196,8 +194,8 @@ var AFDEDIT = function() {
 		},
 
 		wsConnectionOpen: function() {
-			AFDEDIT.ws = new WebSocket('ws://localhost:8040', ['json']),
-				AFDEDIT.ws.addEventListener('open', function() {
+			AFDEDIT.ws = new WebSocket("ws://" + AFDEDIT.urlBase + "/ctrl", ["json"]),
+				AFDEDIT.ws.addEventListener("open", function() {
 					console.log("ws-connection open");
 					if (window.location.pathname.endsWith("afd-hcedit.html")) {
 						/*
@@ -205,7 +203,7 @@ var AFDEDIT = function() {
 						 */
 						if (window.location.search != "") {
 							/*
-							 * In case there's "?<alias>" in URL, load this alias ...
+							 * In case there"s "?<alias>" in URL, load this alias ...
 							 */
 							let al = window.location.search.substring(1).split(",");
 							AFDEDIT.readHostconfig(al[0]);
@@ -226,7 +224,7 @@ var AFDEDIT = function() {
 				// error handler -> reconnect.
 				console.warn(event);
 			});
-			AFDEDIT.ws.addEventListener('message', function(event) {
+			AFDEDIT.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
 				console.log(message);
 				/* evaluate incoming message */
@@ -239,6 +237,13 @@ var AFDEDIT = function() {
 					}
 				}
 			});
+		},
+
+		/**
+         * 
+         */
+		wsConnctionClose: function() {
+			console.debug("close ws connection.");
 		}
 
 	}; /* End returned object. */
@@ -253,6 +258,7 @@ var AFDEDIT = function() {
 				return this.indexOf(suffix, this.length - suffix.length) !== -1;
 			};
 		}
+		AFDEDIT.urlBase = window.location.host;
         /*
          * Set interval-handler to regularly load data and update display.
          */

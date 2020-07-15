@@ -250,16 +250,18 @@ var AFDCTRL = function() {
 					case "fsa":
 						AFDCTRL.wsLoadData(message.data);
 						break;
-					case "info":
-						$("#modalInfoBody").append(message.text);
-						break;
-					case "select":
-					case "deselect":
-						AFDCTRL.applyAliasSelect(message.data);
-						break;
 					case "alias":
-						if (message.action == "config") {
-							AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
+						switch (message.action){
+						    case "config":
+						        AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
+						        break;
+		                    case "info":
+		                        $("#modalInfoBody").append(message.text);
+		                        break;
+		                    case "select":
+		                    case "deselect":
+		                        AFDCTRL.applyAliasSelect(message.action, message.alias);
+		                        break;
 						}
 						break;
 					default:
@@ -307,12 +309,15 @@ var AFDCTRL = function() {
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
 			}
-			console.log("callAliasCmd:", action, aliasList);
+			const al = aliasList.map(function(v){
+			        return v.replace(/row-/, "");
+			    });
+			console.log("callAliasCmd:", action, al);
 			const message = {
 				user: "test",
 				class: "alias",
 				action: action,
-				alias: aliasList
+				alias: al
 			};
 			AFDCTRL.ws.send(JSON.stringify(message));
 		},
@@ -482,16 +487,20 @@ var AFDCTRL = function() {
         /**
          * Select+deselect all hosts in returned lists.
          */
-		applyAliasSelect: function(data) {
-			console.log(status, data);
-			$.each(data.select, function(i, v) {
-				let row = $("#row-" + v);
-				AFDCTRL.toggleMark(row, 1);
-			});
-			$.each(data.deselect, function(i, v) {
-				let row = $("#row-" + v);
-				AFDCTRL.toggleMark(row, -1);
-			});
+		applyAliasSelect: function(what, aliasList) {
+			console.log(status, what, aliasList);
+			if (what === "select"){
+    			$.each(aliasList, function(i, v) {
+    				let row = $("#row-" + v);
+    				AFDCTRL.toggleMark(row, 1);
+    			});
+			}
+			else {
+    			$.each(aliasList, function(i, v) {
+    				let row = $("#row-" + v);
+    				AFDCTRL.toggleMark(row, -1);
+    			});
+			}
 		},
 
 		/*

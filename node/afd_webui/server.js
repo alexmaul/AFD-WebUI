@@ -2,39 +2,50 @@
 "use strict";
 /* jslint node: true */
 
-const MOCK = false;
+const MOCK = true;
 
-/*******************************************************************************
- * 
- * AFD WebUI Server ================
- * 
- * All communication between WebUI server and client is done by exchanging JSON
- * via Websocket.
- * 
- * The messages have these attributes: ----------------------------------- user:
- * string: ? user profile. class: string: <fsa|alias|afd|...>. action: string:
- * depends on class. command: string: optional, only some actions have commands,
- * eg. read|save|start|stop. alias: [string, ...]: optional, all alias related
- * actions expect a list of alias names. text: string: optional, if plain text
- * is send/received, eg. the text for INFO. data: {}: optional, general object
- * for data.
- * 
- * 
- * For log window the messages are different:
- * ------------------------------------------ Request ^^^^^^^ class: string:
- * "log". context: string:
- * <system|event|transfer|transfer-debug|input|output|delete>. filter: {}: file:
- * number: the file number for file-organized logs. level: string: Regex of
- * log-level letter <I|C|W|E|O|D>. paramSet... {}: Object with filter parameter,
- * the names reflect classes/names in html.
- * 
- * 
- * Response ^^^^^^^^ class: string: "log">. context: string:
- * <system|event|transfer|transfer-debug|input|output|delete>. append: bool:
- * true|false, if the lines/text should be appended to existing log lines.
- * lines: [ string ]: log data.
- * 
- ******************************************************************************/
+/******************************************************************************
+	AFD WebUI Server
+	================
+All communication between WebUI server and client is done by exchanging JSON 
+via Websocket.
+
+The messages have these attributes:
+-----------------------------------
+user:		string:			? user profile.
+class:		string:			<fsa|alias|afd|...>.
+action:		string:			depends on class.
+command:	string:			optional, only some actions have commands,
+							eg. read|save|start|stop.
+alias: 		[string, ...]:	optional, all alias related actions expect a list
+							of alias names.
+text: 		string:			optional, if plain text is send/received, eg. the
+							text for INFO.
+data: 		{}:				optional, general object for data. 
+
+
+For log window the messages are different:
+------------------------------------------
+Request
+^^^^^^^
+class: 		string:	"log".
+context:	string: <system|event|transfer|transfer-debug|input|output|delete>.
+filter: 	{}:
+	file:		number:	the file number for file-organized logs.
+	level:		string: Regex of log-level letter <I|C|W|E|O|D>.
+	paramSet...	{}:		Object with filter parameter, the names reflect
+						classes/names in html.
+
+
+Response
+^^^^^^^^
+class:		string:		"log">.
+context: 	string: 	<system|event|transfer|transfer-debug|input|output|delete>.
+append: 	bool:		true|false, if the lines/text should be appended to
+						existing log lines.
+lines:		[ string ]:	log data.
+
+******************************************************************************/
 
 const yargs = require("yargs");
 const fs = require("fs");
@@ -253,11 +264,11 @@ wss_log.on("connection", function connection_log(ws, req) {
 
 /** */
 function fsaLoopStart(ws) {
-    if (MOCK){
-	return fsaLoopStartMock(ws);
-    }else{
-	return fsaLoopStartReal(ws);
-    }
+	if (MOCK)  {
+		eturn fsaLoopStartMock(ws);
+	} else {
+		return fsaLoopStartReal(ws);
+	}
 }
 
 /** */
@@ -274,7 +285,7 @@ function fsaLoopStartReal(ws) {
 			{ encoding: "latin1" },
 			(error, stdout, stderr) => {
 				if (error) {
-	                console.error(stderr);
+					console.error(stderr);
 					throw error;
 				}
 				else {
@@ -390,11 +401,11 @@ function action_alias(message, ws) {
 	switch (message.action) {
 		case "select":
 		case "deselect":
-            const msg = {
-                class: "alias",
-                action: message.action,
-                alias: search_host(message.action, message.data)
-            };
+			const msg = {
+				class: "alias",
+				action: message.action,
+				alias: search_host(message.action, message.data)
+			};
 			ws.send(JSON.stringify(msg));
 			break;
 		case "info":
@@ -424,22 +435,22 @@ function action_alias(message, ws) {
 			}
 			break;
 		case "config":
-			for (const alias of message.alias){
-    			exec_cmd("get_dc_data",
-    				["-h", alias],
-    				(error, dc_data, stderr) => {
-    					console.log("EXEC->", error, dc_data, stderr);
-    					if (!error) {
-    						const msg = {
-    							class: "alias",
-    							action: "config",
-    							alias: alias,
-    							text: dc_data
-    						};
-    						ws.send(JSON.stringify(msg));
-    					}
-    				}
-    			);
+			for (const alias of message.alias) {
+				exec_cmd("get_dc_data",
+					["-h", alias],
+					(error, dc_data, stderr) => {
+						console.log("EXEC->", error, dc_data, stderr);
+						if (!error) {
+							const msg = {
+								class: "alias",
+								action: "config",
+								alias: alias,
+								text: dc_data
+							};
+							ws.send(JSON.stringify(msg));
+						}
+					}
+				);
 			}
 			break;
 		default:
@@ -611,19 +622,19 @@ function search_host(action, form_json) {
 			if (os.path.exists(fn_info)) {
 				let info_text = fs.readFileSync(fn_info, { encoding: "utf8" });
 				if (re_matcher.test(info_text)) {
-				    host_list = host_list.concat(hc_key)
+					host_list = host_list.concat(hc_key)
 				}
 			}
 		}
 		else {
 			if (form_json.modal_select_hostname == "alias") {
 				if (re_matcher.test(hc_set.alias)) {
-				    host_list = host_list.concat(hc_key)
+					host_list = host_list.concat(hc_key)
 				}
 			}
 			else {
 				if (re_matcher.test(hc_set.host_name_real1) || re_matcher.test(hc_set.host_name_real2)) {
-				    host_list = host_list.concat(hc_key)
+					host_list = host_list.concat(hc_key)
 				}
 			}
 		}
@@ -659,7 +670,7 @@ const HC_FIELDS = [
 	["host_switch_char1", null, "", 3, -2],  // HT - Host toggle character 1
 	["host_switch_char2", null, "", 3, -2],  // HT - Host toggle character 2
 	["host_switch_auto", null, "no", 3, -2],  // HT - Automatic host
-                                                // switching: yes={}, no=[]
+	// switching: yes={}, no=[]
 	["proxy_name", null, "", 4, -1],  // PXY - Proxy name
 	["max_parallel_transfer", null, "3", 5, -1],  // AT - Allowed transfers
 	["max_errors", null, "10", 6, -1],  // ME - Max. errors
@@ -667,98 +678,98 @@ const HC_FIELDS = [
 	["transfer_block_size", null, "4 KB", 8, -1],  // TB - Transfer block size
 	["successful_retries", null, "0", 9, -1],  // SR - Successful retries
 	["filesize_offset_for_append", null, "null", 10, -1],  // FSO - File size
-                                                            // offset
+	// offset
 	["transfer_timeout", null, "60", 11, -1],  // TT - Transfer timeout
 	["no_burst", null, "0", 12, -1],  // NB - Number of no bursts
 	["host_status", null, "0", 13, -1],  // HS - Mostly irrelevant for
-                                            // HC-edit page!
+	// HC-edit page!
 	["ignore_error_warning", null, "no", 13, 4],  // HS:5 - Error status
-                                                    // offline
+	// offline
 	["do_not_delete", null, "no", 13, 15],  // HS:16 - Do not delete files due
-                                            // age-limit and 'delete queued
-                                            // files'
+	// age-limit and 'delete queued
+	// files'
 	["ftp_mode_passive", null, "no", 14, 0],  // SF:1 - FTP passive mode
 	["ftp_idle_time", null, "no", 14, 1],  // SF:2 - Set FTP idle time to
-                                            // transfer timeout
+	// transfer timeout
 	["ftp_keep_alive", null, "no", 14, 2],  // SF:3 - Send STAT command to keep
-                                            // control connection alive.
+	// control connection alive.
 	["ftp_fast_rename", null, "no", 14, 3],  // SF:4 - Combine RNFR and RNTO
-                                                // to one command.
+	// to one command.
 	["ftp_fast_cd", null, "no", 14, 4],  // SF:5 - Do not do a cd, always use
-                                            // absolute path.
+	// absolute path.
 	["ftp_no_type_i", null, "no", 14, 5],  // SF:6 - Do not send TYPE I
-                                            // command.
+	// command.
 	["ftp_mode_epsv", null, "no", 14, 6],  // SF:7 - Use extended active or
-                                            // extended passive mode.
+	// extended passive mode.
 	["disable_burst", null, "no", 14, 7],  // SF:8 - If set bursting is
-                                            // disabled.
+	// disabled.
 	["ftp_allow_redirect", null, "no", 14, 8],  // SF:9 - If set FTP passive
-                                                // mode allows to be redirected
-                                                // to another address.
+	// mode allows to be redirected
+	// to another address.
 	["use_local_scheme", null, "no", 14, 9],  // SF:10 - When set it will
-                                                // replace the given scheme with
-                                                // file if the hostname matches
-                                                // local hostname or one in
-                                                // local_interface.list.
+	// replace the given scheme with
+	// file if the hostname matches
+	// local hostname or one in
+	// local_interface.list.
 	["tcp_keep_alive", null, "no", 14, 10],  // SF:11 - Set TCP keepalive.
 	["sequence_locking", null, "no", 14, 11],  // SF:12 - Set sequence locking.
 	["enable_compress", null, "no", 14, 12],  // SF:13 - Enable compression.
 	["keep_timestamp", null, "no", 14, 13],  // SF:14 - Keep time stamp of
-                                                // source file.
+	// source file.
 	["sort_names", null, "no", 14, 14],  // SF:15 - Sort file names.
 	["no_ageing_jobs", null, "no", 14, 15],  // SF:16 - No ageing jobs.
 	["check_local_remote_match_size", null, "no", 14, 16],  // SF:17 - Check if
-                                                            // local and remote
-                                                            // size match.
+	// local and remote
+	// size match.
 	["is_timeout_transfer", null, "no", 14, 17],  // SF:18 - Timeout transfer.
 	["keep_connected_direction", "send", "no", 14, 18],  // SF:19 - Keep
-                                                            // connected no
-                                                            // fetching.
+	// connected no
+	// fetching.
 	["keep_connected_direction", "fetch", "no", 14, 19],  // SF:20 - Keep
-                                                            // connected no
-                                                            // sending.
+	// connected no
+	// sending.
 	["ftps_clear_ctrlcon", null, "no", 14, 20],  // SF:21 - FTPS Clear
-                                                    // Control Connection.
+	// Control Connection.
 	["ftp_use_list", null, "no", 14, 21],  // SF:22 - Use FTP LIST for
-                                            // directory listing.
+	// directory listing.
 	["tls_strict_verification", null, "no", 14, 22],  // SF:23 - TLS uses
-                                                        // strict verification
-                                                        // of host.
+	// strict verification
+	// of host.
 	["ftp_disable_mlst", null, "no", 14, 23],  // SF:24 - Disables FTP MLST for
-                                                // directory listing.
+	// directory listing.
 	["keep_connected_disconnect", null, "no", 14, 24],  // SF:25 - Disconnect
-                                                        // after given keep
-                                                        // connected time.
+	// after given keep
+	// connected time.
 	["transfer_rate_limit", null, "0", 15, -1],  // TRL - Transfer rate limit
 	["time_to_live", null, "0", 16, -1],  // TTL - TCP time-to-live
 	["socket_send_buffer", null, "0", 17, -1],  // SSB - Socket send buffer
 	["socket_receive_buffer", null, "0", 18, -1],  // SRB - Socket receive
-                                                    // buffer
+	// buffer
 	["dupcheck_timeout", null, "0", 19, -1],  // DT - Duplicate check timeout
 	["dupcheck_type", "name", "no", 20, 0],  // DF:1 - Only do CRC checksum
-                                                // for filename.
+	// for filename.
 	["dupcheck_type", "content", "no", 20, 1],  // DF:2 - Only do CRC checksum
-                                                // for file content.
+	// for file content.
 	["dupcheck_type", "name-content", "no", 20, 2],  // DF:3 - Checksum for
-                                                        // filename and content.
+	// filename and content.
 	["dupcheck_type", "name-no-suffix", "no", 20, 3],  // DF:4 - Checksum of
-                                                        // filename without last
-                                                        // suffix.
+	// filename without last
+	// suffix.
 	["dupcheck_type", "name-size", "no", 20, 4],  // DF:5 - Checksum of
-                                                    // filename and size.
+	// filename and size.
 	["dupcheck_crc", "crc32", "no", 20, 15],  // DF:16 - Do a CRC32 checksum.
 	["dupcheck_crc", "crc32c", "no", 20, 16],  // DF:17 - Do a CRC32C checksum.
 	["dupcheck_delete", null, "yes", 20, 23],  // DF:24 - Delete the file.
 	["dupcheck_store", null, "no", 20, 24],  // DF:25 - Store the duplicate
-                                                // file.
+	// file.
 	["dupcheck_warn", null, "no", 20, 25],  // DF:26 - Warn in SYSTEM_LOG.
 	["dupcheck_timeout_fixed", null, "no", 20, 30],  // DF:31 - Timeout is
-                                                        // fixed, ie. not
-                                                        // cumulative.
+	// fixed, ie. not
+	// cumulative.
 	["dupcheck_reference", "recipient", "no", 20, 31],  // DF:32 - Use full
-                                                        // recipient as
-                                                        // reference instead of
-                                                        // alias name.
+	// recipient as
+	// reference instead of
+	// alias name.
 	["keep_connected", null, "0", 21, -1],  // KC - Keep connected
 	["warn_time", null, "0", 22, -1],  // WT - Warn time [secs]
 ];
@@ -1150,10 +1161,10 @@ function log_from_alda(message, ws) {
  ******************************************************************************/
 
 function exec_cmd(cmd, args, callback) {
-	if (MOCK){
-	    exec_cmd_mock(cmd, args, callback);
-	}else{
-	    exec_cmd_real(cmd, args, callback);
+	if (MOCK) {
+		exec_cmd_mock(cmd, args, callback);
+	} else {
+		exec_cmd_real(cmd, args, callback);
 	}
 }
 
@@ -1179,9 +1190,9 @@ function exec_cmd_real(cmd, args, callback) {
 				callback(error, stdout, stderr);
 			}
 			else if (error) {
-                console.error(stderr);
-                console.error(error);
-            }
+				console.error(stderr);
+				console.error(error);
+			}
 		}
 	);
 }

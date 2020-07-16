@@ -6,9 +6,6 @@ var AFDLOG = function() {
 		/** urlBase. */
 		urlBase: "localhost:8040",
 
-		/** urlView. */
-		urlView: "view/",
-
 		/** selectedLogAreaLines. */
 		selectedLogAreaLines: {},
 
@@ -206,7 +203,7 @@ var AFDLOG = function() {
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
 			console.debug("view", mode, selectedLogAreaLines);
 			$.each(selectedLogAreaLines, function(i, v) {
-				window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);
+				window.open("http://" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
 			});
 		}
 	}; /* End returned object. */

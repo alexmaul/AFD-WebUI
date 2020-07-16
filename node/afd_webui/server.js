@@ -50,9 +50,11 @@ lines:		[ string ]:	log data.
 const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
-const https = require("http");
+const http = require("http");
 const url = require('url');
-const node_static = require("node-static");
+const querystring = require('querystring');
+const session = require('express-session');
+const express = require('express');
 const ejs = require('ejs');
 const WebSocket = require("ws");
 const { execFile, execFileSync, execSync } = require("child_process");
@@ -101,7 +103,6 @@ const AFD_WORK_DIR = argv.afd_work_dir;
  * implement: - write PID in file - stop
  * 
  */
-const static_server = new node_static.Server(path.join(AFD_WEBUI_DIR, "static"));
 
 const AFDCMD_ARGS = {
 	start: ["-t", "-q"],
@@ -121,20 +122,48 @@ const AFDLOG_FILES = {
 	transfer_debug: "TRANS_DB_LOG."
 };
 
-/*
- * TODO implement in server: - SSL/TLS - user authentication (Basic?)
+const REST_URL = {
+	bufr_decode: "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
+};
+const CONTENT_TYPE = {
+	OCTET: "application/octet-stream",
+	PLAIN: "text/plain",
+	HTML: "text/html",
+};
+/**
+ * Setup server.
  */
 /*
+ * TODO implement in server: - SSL/TLS - user authentication (Basic?)
+ *
  * { cert: fs.readFileSync("/path/to/cert.pem"), key:
  * fs.readFileSync("/path/to/key.pem") },
  */
-const server = https.createServer(
-	(req, res) => {
-		req.addListener("end", () => { static_server.serve(req, res) }).resume()
-	}
-);
+const app = express();
+const map = new Map();
+const sessionParser = session({
+	saveUninitialized: false,
+	secret: "$eCuRiTy",
+	resave: false
+});
+app.set('view engine', 'ejs');
+app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
+app.use(sessionParser);
+const server = http.createServer(app);
 const wss_ctrl = new WebSocket.Server({ noServer: true });
 const wss_log = new WebSocket.Server({ noServer: true });
+
+/**
+ * Set dynamic routing for content-view.
+ *
+ * The worker function needs to send the response object 'res'.
+ *
+ * GET "/view/<mode>/<path:arcfile>"
+ */
+app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
+	console.log(req.params);
+	view_content(res, req.params.arc, req.params.mode);
+});
 
 /**
  * Handle upgrade to Websocket connection.
@@ -240,11 +269,19 @@ wss_log.on("connection", function connection_log(ws, req) {
 			console.warn("unknown class ...");
 			return;
 		}
-		if (message.context in AFDLOG_FILES) {
-			return log_from_file(message, ws);
-		}
-		else {
-			return log_from_alda(message, ws);
+		switch (message.context) {
+			case "view":
+				// TODO ?
+				break;
+			case "system":
+			case "receive":
+			case "transfer":
+			case "transfer_debug":
+				log_from_file(message, ws);
+				break;
+			default:
+				log_from_alda(message, ws);
+				break;
 		}
 	});
 
@@ -264,7 +301,7 @@ wss_log.on("connection", function connection_log(ws, req) {
 
 /** */
 function fsaLoopStart(ws) {
-	if (MOCK)  {
+	if (MOCK) {
 		return fsaLoopStartMock(ws);
 	} else {
 		return fsaLoopStartReal(ws);
@@ -1109,7 +1146,7 @@ function log_from_alda(message, ws) {
 		if (message.context == "output") {
 			exec_cmd("alda", cmd_par, (error, stdout, stderr) => {
 				if (error) {
-					console.log.warn(error, stderr);
+					console.warn(error, stderr);
 				}
 				else {
 					// Parse each line, and set archive flag.
@@ -1144,7 +1181,7 @@ function log_from_alda(message, ws) {
 			exec_cmd("alda", cmd_par,
 				(error, stdout, stderr) => {
 					if (error) {
-						console.log.warn(error, stderr);
+						console.warn(error, stderr);
 					}
 					else {
 						data.lines = stdout.split("\n");
@@ -1155,6 +1192,102 @@ function log_from_alda(message, ws) {
 	}
 }
 
+/**
+ * Output-Log -> View File.
+ *
+ * Retrieve a file from AFD archive and apply a parser program if required.
+ *
+ * Returns {content_type: <MIME>, blob: <data>}
+ */
+function view_content(response, arcfile, mode = "auto") {
+	content = "";
+	arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
+	if (!path.exists(arcfile_path)) {
+		console.warn("Archived file not found.");
+		response.sendStatus(404);
+	}
+	if (mode == "auto") {
+		content_type = magic.from_file(arcfile_path, mime = True);
+		if (content_type == CONTENT_TYPE.OCTET) {
+			m = re.match(".*[-.](\w+)$", arcfile);
+			if (m !== null && m.group(1) in ("bufr", "wmo")) {
+				mode = "bufr";
+			}
+		}
+	}
+	switch (mode) {
+		case "hexdump":
+		case "od":
+			content = exec_cmd(
+				"hexdump", ["-C", arcfile_path],
+				(error, stdout, stderr) => {
+					if (error) {
+						console.warn(error, stderr);
+						response.sendStatus(404);
+					}
+					else {
+						response.set("Content-Type", CONTENT_TYPE.PLAIN);
+						response.send(stdout);
+					}
+				});
+			break;
+		case "bufr":
+			fs.readFile(arcfile_path, (err, data) => {
+				if (err) {
+					console.warn(error, stderr);
+					response.sendStatus(404);
+				}
+				else {
+					response.set("Content-Type", CONTENT_TYPE.HTML);
+					webservice_send_file(REST_URL.bufr_decode, data, response.send)
+				}
+			});
+			break;
+		default:
+			response.sendFile(arcfile_path);
+			break;
+	}
+}
+
+/**
+ * Send file to REST webservice by http/post and give the response to a callback.
+ */
+function webservice_send_file(rest_url, data, callback) {
+	const rest_req = http.request(
+		rest_url,
+		{
+			method: "POST",
+		},
+		(rest_res) => {
+			console.log(`STATUS: ${rest_res.statusCode}`);
+			console.log(`HEADERS: ${JSON.stringify(rest_res.headers)}`);
+			rest_res.setEncoding("utf8");
+			rest_res.on("data", (chunk) => {
+				callback(chunk);
+			});
+		});
+	rest_req.on("error", (e) => {
+		console.error("problem with request:", e);
+	});
+	const crlf = "\r\n";
+	const headers = [
+		"Content-Disposition: form-data; name='file'" + crlf
+	];
+	const boundaryKey = Math.random().toString(16);
+	const boundary = `-----${boundaryKey}`;
+	const delimeter = `${crlf}-----${boundary}`;
+	const closeDelimeter = `${delimeter}-----`;
+	const multipartBody = Buffer.concat([
+		new Buffer.from(delimeter + crlf + headers.join("") + crlf),
+		data,
+		new Buffer.from(closeDelimeter)]
+	);
+	rest_req.setHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+	rest_req.setHeader("Content-Length", multipartBody.length);
+	/* Write data to request body */
+	rest_req.write(multipartBody);
+	rest_req.end();
+}
 
 /*******************************************************************************
  * Execute command-line programs.

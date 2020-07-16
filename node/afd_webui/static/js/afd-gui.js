@@ -35,7 +35,7 @@ var AFDCTRL = function() {
          */
 		toggleMark: function(row, how) {
 			if (how <= 0 && this.markedRows[row.attr("id")]) {
-				console.log("alias-click-deselect:", row.attr("id"));
+				console.debug("alias-click-deselect:", row.attr("id"));
 				row.addClass("tab-row");
 				row.removeClass("tab-row-mark");
 				row.children(".mrkbl").removeClass("marked");
@@ -43,7 +43,7 @@ var AFDCTRL = function() {
 				row.children(".numval-mark").removeClass("numval-mark");
 				delete this.markedRows[row.attr("id")];
 			} else if (how >= 0) {
-				console.log("alias-click-select:", row.attr("id"));
+				console.debug("alias-click-select:", row.attr("id"));
 				row.addClass("tab-row-mark");
 				row.removeClass("tab-row");
 				row.children(".mrkbl").addClass("marked");
@@ -112,7 +112,7 @@ var AFDCTRL = function() {
          * Evaluate and deferr actions from menu selection.
          */
 		evalMenu: function(menuItem) {
-			console.log("menu-click:", menuItem, Object.keys(this.markedRows));
+			console.debug("menu-click:", menuItem, Object.keys(this.markedRows));
 			switch (menuItem) {
                 /*
                  * Menu: Host
@@ -244,7 +244,7 @@ var AFDCTRL = function() {
 			});
 			AFDCTRL.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
-				console.log(message);
+				console.debug(message);
 				/* evaluate incoming message */
 				switch (message.class) {
 					case "fsa":
@@ -382,7 +382,7 @@ var AFDCTRL = function() {
          * in browser instead on server.
          */
 		wsViewModalInfo: function(aliasList) {
-			console.log("viewModalInfo:", aliasList);
+			console.info("viewModalInfo:", aliasList);
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
 			}
@@ -404,7 +404,7 @@ var AFDCTRL = function() {
          * Remove host info from modal. Close modal if removing last info.
          */
 		closeInfo: function(infoHost) {
-			console.log("closeInfo:", infoHost);
+			console.info("closeInfo:", infoHost);
 			$("#infoBox_" + infoHost).remove();
 			if ($("#modalInfoBody").children().length == 0) {
 				$("#modalInfo").modal("hide");
@@ -417,9 +417,8 @@ var AFDCTRL = function() {
          * Send edited text for saving in INFO-file.
          */
 		wsSaveInfoText: function(infoHost) {
-			console.log("saveInfoText");
 			let infoText = $("#infoArea_" + infoHost)[0];
-			console.log(infoHost);
+			console.info("saveInfoText", infoHost);
 			console.log(infoText.value);
 			const message = {
 				user: "test",
@@ -440,7 +439,7 @@ var AFDCTRL = function() {
          * Show modal dialog for host selection.
          */
 		viewModalSelect: function(aliasList) {
-			console.log("viewModalSelect:", aliasList);
+			console.debug("viewModalSelect:", aliasList);
 			$("#modalSelect").modal("show");
 		},
 
@@ -448,7 +447,7 @@ var AFDCTRL = function() {
          * Close modal dialog.
          */
 		closeModalSelect: function(infoHost) {
-			console.log("closeModalSelect:", infoHost);
+			console.debug("closeModalSelect:", infoHost);
 			$("#modalSelect").modal("hide");
 		},
 
@@ -457,7 +456,7 @@ var AFDCTRL = function() {
          * returned list.
          */
 		wsCallAliasSelect: function(cmd) {
-			console.log("callAliasSelect:");
+			console.debug("callAliasSelect:");
 			/* Declare and collect form parameters. */
 			let paramSet = {
 				what: cmd
@@ -488,7 +487,7 @@ var AFDCTRL = function() {
          * Select+deselect all hosts in returned lists.
          */
 		applyAliasSelect: function(what, aliasList) {
-			console.log(status, what, aliasList);
+			console.debug(status, what, aliasList);
 			if (what === "select"){
     			$.each(aliasList, function(i, v) {
     				let row = $("#row-" + v);
@@ -577,7 +576,7 @@ var AFDCTRL = function() {
 		addRow: function(rowNum, val) {
 			/* Calculates the column in which the row should be placed. */
 			let lastCol = Math.floor(rowNum / AFDCTRL.maxRowsPerCol);
-			console.log("rownum:", rowNum, "maxRowsPerCol:", AFDCTRL.maxRowsPerCol, "lastCol:", lastCol, "tabcol.len:",
+			console.debug("rownum:", rowNum, "maxRowsPerCol:", AFDCTRL.maxRowsPerCol, "lastCol:", lastCol, "tabcol.len:",
 				$(".tabcol").length);
 			if ($(".tabcol").length <= lastCol) {
 				/*
@@ -773,7 +772,7 @@ var AFDCTRL = function() {
          * Set update function for modal events.
          */
 		$("#modalInfo").on("hide.bs.modal", function(event) {
-			console.log("clear modalInfoBody");
+			console.debug("clear modalInfoBody");
 			$("#modalInfoBody").children().remove();
 		});
         /*

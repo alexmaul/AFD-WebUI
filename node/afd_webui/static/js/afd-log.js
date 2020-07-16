@@ -15,7 +15,7 @@ var AFDLOG = function() {
 		wsConnectionOpen: function() {
 			AFDLOG.ws = new WebSocket("ws://" + AFDLOG.urlBase + "/log", ["json"]),
 				AFDLOG.ws.addEventListener("open", function() {
-					console.log("ws-connection open");
+					console.info("ws-connection open");
 				});
 			AFDLOG.ws.addEventListener("close", function() {
 				alert("AFD closed connection!");
@@ -26,7 +26,7 @@ var AFDLOG = function() {
 			});
 			AFDLOG.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
-				console.log(message);
+				console.debug(message);
 				/* evaluate incoming message */
 				if (message.class == "log") {
 					let context = $("#" + message.context + "-area");
@@ -58,7 +58,7 @@ var AFDLOG = function() {
          * Retrieve full log-file content (e.g. system-log, transfer-log).
          */
 		callAldaLevel: function(logName) {
-			console.log("callAldaLevel " + logName);
+			console.debug("callAldaLevel " + logName);
 			var transl = {
 				info: "I",
 				config: "C",
@@ -92,7 +92,7 @@ var AFDLOG = function() {
          * Retrieve log information with ALDA.
          */
 		callAldaFilter: function(logName) {
-			console.log("callAldaFilter " + logName);
+			console.debug("callAldaFilter " + logName);
 			let paramSet = {};
 			$.each($("#" + logName + " .filter"), function(i, obj) {
 				if (obj.type == "checkbox") {
@@ -103,7 +103,7 @@ var AFDLOG = function() {
 					paramSet[obj.name] = obj.value;
 				}
 			});
-			console.log(paramSet);
+			console.debug(paramSet);
 			AFDLOG.ws.send({
 				class: "log",
 				context: logName,
@@ -115,7 +115,7 @@ var AFDLOG = function() {
 		 * Set input fields for start- and end-time according to range.
 		 */
 		setDate: function(logName, timeRange) {
-			console.log("setDate", logName, timeRange);
+			console.debug("setDate", logName, timeRange);
 			if (timeRange == "clear") {
 				$("#" + logName + " .filter[name=start]").val("");
 				$("#" + logName + " .filter[name=end]").val("");
@@ -159,7 +159,7 @@ var AFDLOG = function() {
 			}
 			$("#" + logName + " .filter[name=start]").val(dateStart);
 			$("#" + logName + " .filter[name=end]").val(dateEnd);
-			console.log(dateStart, dateEnd);
+			console.debug(dateStart, dateEnd);
 		},
 
 		/**
@@ -192,7 +192,7 @@ var AFDLOG = function() {
 		 * View file content for each selected one in a new window.
 		 */
 		callView: function(logName) {
-			console.log("callView " + logName);
+			console.debug("callView " + logName);
 			let selectedLogAreaLines = [];
 			$.each($("#" + logName + " .selected"), function(i, obj) {
 				if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
@@ -204,7 +204,7 @@ var AFDLOG = function() {
 				return;
 			}
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
-			console.log("view", mode, selectedLogAreaLines);
+			console.debug("view", mode, selectedLogAreaLines);
 			$.each(selectedLogAreaLines, function(i, v) {
 				window.open(AFDLOG.urlBase + AFDLOG.urlView + mode + "/" + v);
 			});
@@ -218,16 +218,16 @@ var AFDLOG = function() {
 			/*
 			 * Activate tab if url-anchor is set.
 			 */
-			console.log(window.location);
+			console.debug(window.location);
 			if (window.location.hash != "") {
-				console.log("found anchor: " + window.location.hash);
+				console.debug("found anchor: " + window.location.hash);
 				$(window.location.hash + "-tab").tab("show");
 			}
 			/*
 			 * Pre-set input field "Recipient" if "?..." is set in URL.
 			 */
 			if (window.location.search != "") {
-				console.log("found query: " + window.location.search);
+				console.debug("found query: " + window.location.search);
 				$("#" + window.location.hash.substring(1) + " .filter[name=recipient]").val(
 					window.location.search.substring(1));
 			}

@@ -265,7 +265,7 @@ wss_log.on("connection", function connection_log(ws, req) {
 /** */
 function fsaLoopStart(ws) {
 	if (MOCK)  {
-		eturn fsaLoopStartMock(ws);
+		return fsaLoopStartMock(ws);
 	} else {
 		return fsaLoopStartReal(ws);
 	}

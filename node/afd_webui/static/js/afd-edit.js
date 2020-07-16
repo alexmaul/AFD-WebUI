@@ -11,7 +11,7 @@ var AFDEDIT = function() {
          * Enable/disable form-input-tags which have CSS-class as filter.
          */
 		ableAll: function(obj, class_filter) {
-			console.log("ableAll", class_filter);
+			console.debug("ableAll", class_filter);
 			if (obj.type == "radio") {
 				if (obj.value == "yes" && obj.checked == true) {
 					$("." + class_filter).removeAttr("disabled");
@@ -28,7 +28,7 @@ var AFDEDIT = function() {
 		},
 
 		dupcheck_defaults: function() {
-			console.log("dupcheck_defaults");
+			console.debug("dupcheck_defaults");
 			$("#dupcheck_timeout")[0].value = "3600";
 			$("#dupcheck_reference-alias")[0].checked = true;
 			$("#dupcheck_type-name")[0].checked = true;
@@ -40,11 +40,10 @@ var AFDEDIT = function() {
          * Send host configuration data for the selected host for saving.
          */
 		updateHostconfig: function() {
-			console.log("updateHostconfig");
-			console.log("selected alias:", $("#alias-list"));
+			console.info("updateHostconfig: selected alias:", $("#alias-list"));
 			let alias = $("#alias-list")[0].value;
 			if (alias == null || alias == "") {
-				console.log("nothing to do.");
+				console.debug("nothing to do.");
 				return;
 			}
 			let ol = $("#alias-list option");
@@ -79,7 +78,7 @@ var AFDEDIT = function() {
 				alias: alias !== null ? [alias] : [],
 				data: formData
 			};
-			console.log(message);
+			console.debug(message);
 			AFDEDIT.ws.send(JSON.stringify(message));
 		},
 
@@ -87,7 +86,7 @@ var AFDEDIT = function() {
          * Exec general AFD command, handle ajax call.
          */
 		readHostconfig: function(alias) {
-			console.log("readHostconfig: " + alias);
+			console.debug("readHostconfig: " + alias);
 			const message = {
 				class: "afd",
 				action: "hc",
@@ -101,7 +100,7 @@ var AFDEDIT = function() {
          * Re-build the hostname list to reflect any change in the order.
          */
 		changeHostconfigAliasList: function(aliasList, selectedAlias) {
-			console.log("changeHostconfigAliasList: " + aliasList + " - " + selectedAlias);
+			console.debug("changeHostconfigAliasList: " + aliasList + " - " + selectedAlias);
 			let data = "";
 			for (let i = 0; i < aliasList.length; i++) {
 				if (aliasList[i] == selectedAlias) {
@@ -117,7 +116,7 @@ var AFDEDIT = function() {
          * Update the form-input-tag values with retrieved values.
          */
 		changeHostconfigFormValues: function(data, selectedAlias) {
-			console.log("changeHostconfigFormValues: " + selectedAlias);
+			console.debug("changeHostconfigFormValues: " + selectedAlias);
 			if (data[selectedAlias]["keep_connected_direction"] != "send"
 				&& data[selectedAlias]["keep_connected_direction"] != "fetch") {
 				data[selectedAlias]["keep_connected_direction"] = "both";
@@ -155,15 +154,15 @@ var AFDEDIT = function() {
          * Move a hostname up/down in the hostname-list.
          */
 		moveHostconfigAlias: function(direction) {
-			console.log("moveHostconfigAlias", direction);
+			console.debug("moveHostconfigAlias", direction);
 			let alias = $("#alias-list")[0].value;
 			if (!alias) {
 				return;
 			}
 			let aliasList = $("#alias-list option");
-			console.log("aliasList -------");
+			console.debug("aliasList -------");
 			$.each(aliasList, function(i, v) {
-				console.log(v.value);
+				console.debug(v.value);
 			});
 			let is = 0;
 			let ie = aliasList.length;
@@ -173,10 +172,10 @@ var AFDEDIT = function() {
 				ie = ie - 1;
 			}
 			for (let i = is; i < ie; i++) {
-				console.log("test", i, aliasList[i].value)
+				console.debug("test", i, aliasList[i].value)
 				if (alias == aliasList[i].value) {
 					if (direction) {
-						console.log("move", i, aliasList[i].value);
+						console.debug("move", i, aliasList[i].value);
 						let buf = aliasList[i];
 						aliasList[i] = aliasList[i + direction];
 						aliasList[i + direction] = buf;
@@ -187,16 +186,16 @@ var AFDEDIT = function() {
 					break;
 				}
 			}
-			console.log("aliasList -------");
+			console.debug("aliasList -------");
 			$.each(aliasList, function(i, v) {
-				console.log(v.value);
+				console.debug(v.value);
 			});
 		},
 
 		wsConnectionOpen: function() {
 			AFDEDIT.ws = new WebSocket("ws://" + AFDEDIT.urlBase + "/ctrl", ["json"]),
 				AFDEDIT.ws.addEventListener("open", function() {
-					console.log("ws-connection open");
+					console.info("ws-connection open");
 					if (window.location.pathname.endsWith("afd-hcedit.html")) {
 						/*
 						 * Document-ready actions for Host-Config-Editor.
@@ -226,7 +225,7 @@ var AFDEDIT = function() {
 			});
 			AFDEDIT.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
-				console.log(message);
+				console.debug(message);
 				/* evaluate incoming message */
 				if (message.class == "afd" && message.action == "hc") {
 					AFDEDIT.changeHostconfigAliasList(message.order, message.alias);
@@ -251,7 +250,6 @@ var AFDEDIT = function() {
 
 (function() {
 	$(document).ready(function() {
-		console.log(window.location);
 		if (!String.prototype.hasOwnProperty("endsWith")) {
 			console.log("IE<12: mock-up endsWith()");
 			String.prototype.endsWith = function(suffix) {

@@ -51,12 +51,11 @@ const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const url = require('url');
-const querystring = require('querystring');
-const session = require('express-session');
-const express = require('express');
-const ejs = require('ejs');
 const WebSocket = require("ws");
+const url = require('url');
+const express = require('express');
+const session = require('express-session');
+const ejs = require('ejs');
 const { execFile, execFileSync, execSync } = require("child_process");
 
 /*
@@ -140,7 +139,6 @@ const CONTENT_TYPE = {
  * fs.readFileSync("/path/to/key.pem") },
  */
 const app = express();
-const map = new Map();
 const sessionParser = session({
 	saveUninitialized: false,
 	secret: "$eCuRiTy",
@@ -148,6 +146,7 @@ const sessionParser = session({
 });
 app.set('view engine', 'ejs');
 app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
+app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
 app.use(sessionParser);
 const server = http.createServer(app);
 const wss_ctrl = new WebSocket.Server({ noServer: true });
@@ -161,7 +160,6 @@ const wss_log = new WebSocket.Server({ noServer: true });
  * GET "/view/<mode>/<path:arcfile>"
  */
 app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
-	console.log(req.params);
 	view_content(res, req.params.arc, req.params.mode);
 });
 
@@ -655,12 +653,16 @@ function search_host(action, form_json) {
 			continue;
 		}
 		if (form_json.modal_select_where[0] == "info") {
-			fn_info = os.path.join(afd_work_dir, "etc", "INFO-" + hc_key)
-			if (os.path.exists(fn_info)) {
+			fn_info = path.join(afd_work_dir, "etc", "INFO-" + hc_key)
+			try {
+				fs.accessSync(fn_info);
 				let info_text = fs.readFileSync(fn_info, { encoding: "utf8" });
 				if (re_matcher.test(info_text)) {
 					host_list = host_list.concat(hc_key)
 				}
+			}
+			catch (e) {
+				console.warn(e);
 			}
 		}
 		else {
@@ -1098,7 +1100,7 @@ function log_from_alda(message, ws) {
 		logtype = "R";
 	}
 	else {
-		logtype = message.context[0].upper();
+		logtype = message.context[0].toUpperCase();
 	}
 	let archived_only;
 	if (message.filter["archived-only"]) {
@@ -1114,7 +1116,7 @@ function log_from_alda(message, ws) {
 	else {
 		alda_output_line = [];
 	}
-	for (key in message.filter) {
+	for (const key in message.filter) {
 		let val = message.filter[key];
 		if (key in par_tr && par_tr[key] === null) {
 			continue;
@@ -1124,8 +1126,7 @@ function log_from_alda(message, ws) {
 		}
 		else if (key == "recipient") {
 			let rl = val.split(",").map(v => "%" + v).join(",");
-			// rl = ",".join("%" + v for v in val.split(","));
-			par_lst.push("{}'{}'".format(par_tr[key], rl));
+			par_lst.push(`${par_tr[key]}'${rl}'`);
 		}
 		else if (key == "output-filename-remote" && ["on", "yes", "true"].indexOf(val) >= 0) {
 			alda_output_line[1] = alda_output_line[1].replace("%Of", "%OF");
@@ -1136,59 +1137,61 @@ function log_from_alda(message, ws) {
 		else if (key in par_tr) {
 			par_lst.concat(par_tr[key] + val);
 		}
-		let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line).push(fnam);
-		let data = {
-			class: "log",
-			context: message.context,
-			append: false,
-			lines: stdout.split("\n"),
-		};
-		if (message.context == "output") {
-			exec_cmd("alda", cmd_par, (error, stdout, stderr) => {
+	}
+	let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line);
+	cmd_par.push(fnam);
+	let data = {
+		class: "log",
+		context: message.context,
+		append: false,
+		lines: [],
+	};
+	if (message.context == "output") {
+		exec_cmd("alda", cmd_par, (error, stdout, stderr) => {
+			if (error) {
+				console.warn(error, stderr);
+			}
+			else {
+				// Parse each line, and set archive flag.
+				let new_data = [];
+				for (const data_line of stdout.split("\n")) {
+					if (!data_line) {
+						continue;
+					}
+					let parts = data_line.split("|");
+					if (parts[1][0] != "/") {
+						try {
+							fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
+							parts[parts.length - 2] = "Y";
+						}
+						catch {
+							parts[parts.length - 2] = "D";
+						}
+					}
+					else {
+						parts[1] = "";
+						parts[parts.length - 2] = "N";
+					}
+					if (!archived_only || parts[parts.length - 2] == "Y") {
+						new_data.push(parts.join(""));
+					}
+				}
+				data.lines = new_data;
+				ws.send(JSON.stringify(data));
+			}
+		});
+	}
+	else {
+		exec_cmd("alda", cmd_par,
+			(error, stdout, stderr) => {
 				if (error) {
 					console.warn(error, stderr);
 				}
 				else {
-					// Parse each line, and set archive flag.
-					let new_data = [];
-					for (data_line of stdout.split("\n")) {
-						if (!data_line) {
-							continue;
-						}
-						let parts = data_line.split("|");
-						if (!parts[1].startsWith("/")) {
-							if (path.exists(path.join(afd_work_dir, "archive", parts[1]))) {
-								parts[-2] = "Y";
-							}
-							else {
-								parts[-2] = "D";
-							}
-						}
-						else {
-							parts[1] = "";
-							parts[-2] = "N";
-						}
-						if (!archived_only || parts[-2] == "Y") {
-							new_data.concat("".join(parts));
-						}
-					}
-					data.lines = new_data;
+					data.lines = stdout.split("\n");
 					ws.send(JSON.stringify(data));
 				}
 			});
-		}
-		else {
-			exec_cmd("alda", cmd_par,
-				(error, stdout, stderr) => {
-					if (error) {
-						console.warn(error, stderr);
-					}
-					else {
-						data.lines = stdout.split("\n");
-						ws.send(JSON.stringify(data));
-					}
-				});
-		}
 	}
 }
 
@@ -1200,14 +1203,24 @@ function log_from_alda(message, ws) {
  * Returns {content_type: <MIME>, blob: <data>}
  */
 function view_content(response, arcfile, mode = "auto") {
-	content = "";
-	arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
-	if (!path.exists(arcfile_path)) {
+	const arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
+	try {
+		fs.accessSync(arcfile_path);
+	}
+	catch{
 		console.warn("Archived file not found.");
 		response.sendStatus(404);
 	}
 	if (mode == "auto") {
-		content_type = magic.from_file(arcfile_path, mime = True);
+		const fileType = require('file-type');
+
+		// FIXME
+
+		const buffer = fs.readFileSync((arcfile_path));
+		const content_type = fileType.fromBuffer(buffer).mime;
+		console.log(content_type);
+
+
 		if (content_type == CONTENT_TYPE.OCTET) {
 			m = re.match(".*[-.](\w+)$", arcfile);
 			if (m !== null && m.group(1) in ("bufr", "wmo")) {
@@ -1239,7 +1252,7 @@ function view_content(response, arcfile, mode = "auto") {
 				}
 				else {
 					response.set("Content-Type", CONTENT_TYPE.HTML);
-					webservice_send_file(REST_URL.bufr_decode, data, response.send)
+					webservice_send_file(REST_URL.bufr_decode, data, (c) => { response.send(c) });
 				}
 			});
 			break;
@@ -1253,40 +1266,19 @@ function view_content(response, arcfile, mode = "auto") {
  * Send file to REST webservice by http/post and give the response to a callback.
  */
 function webservice_send_file(rest_url, data, callback) {
-	const rest_req = http.request(
-		rest_url,
-		{
-			method: "POST",
-		},
-		(rest_res) => {
-			console.log(`STATUS: ${rest_res.statusCode}`);
-			console.log(`HEADERS: ${JSON.stringify(rest_res.headers)}`);
-			rest_res.setEncoding("utf8");
-			rest_res.on("data", (chunk) => {
-				callback(chunk);
-			});
-		});
-	rest_req.on("error", (e) => {
-		console.error("problem with request:", e);
+	const request = require("request");
+	var req = request.post(rest_url, (err, resp, body) => {
+		if (err) {
+			console.warn(err);
+		}
+		else {
+			callback(body);
+		}
 	});
-	const crlf = "\r\n";
-	const headers = [
-		"Content-Disposition: form-data; name='file'" + crlf
-	];
-	const boundaryKey = Math.random().toString(16);
-	const boundary = `-----${boundaryKey}`;
-	const delimeter = `${crlf}-----${boundary}`;
-	const closeDelimeter = `${delimeter}-----`;
-	const multipartBody = Buffer.concat([
-		new Buffer.from(delimeter + crlf + headers.join("") + crlf),
-		data,
-		new Buffer.from(closeDelimeter)]
-	);
-	rest_req.setHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-	rest_req.setHeader("Content-Length", multipartBody.length);
-	/* Write data to request body */
-	rest_req.write(multipartBody);
-	rest_req.end();
+	var form = req.form();
+	form.append("file", data, {
+		contentType: CONTENT_TYPE.OCTET
+	});
 }
 
 /*******************************************************************************
@@ -1302,6 +1294,7 @@ function exec_cmd(cmd, args, callback) {
 }
 
 function exec_cmd_mock(cmd, args, callback) {
+	console.debug("Mock command: %s %s", cmd, args);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
 }

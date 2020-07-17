@@ -30,9 +30,9 @@ var AFDLOG = function() {
 					if (message.append) {
 						// TODO append or replace lines.
 					}
-					context.html(data);
+					context.html(message.lines);
 					context.find("tr").on("click", function(event) {
-						context.toggleClass("selected");
+						$(this).toggleClass("selected");
 					});
 					$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
 					/* TODO progress-swirl?
@@ -75,14 +75,16 @@ var AFDLOG = function() {
 				return false;
 			}
 			let fileNumber = $("#" + logName + "-logfile").get(0).value;
-			AFDLOG.ws.send({
+			const msg = {
 				class: "log",
 				context: logName,
 				filter: {
 					file: fileNumber,
 					level: levelList.join("|")
 				}
-			});
+			}
+			console.debug(msg);
+			AFDLOG.ws.send(JSON.stringify(msg));
 		},
 
         /**
@@ -100,12 +102,13 @@ var AFDLOG = function() {
 					paramSet[obj.name] = obj.value;
 				}
 			});
-			console.debug(paramSet);
-			AFDLOG.ws.send({
+			const msg = {
 				class: "log",
 				context: logName,
 				filter: paramSet
-			});
+			};
+			console.debug(msg);
+			AFDLOG.ws.send(JSON.stringify(msg));
 		},
 
 		/**

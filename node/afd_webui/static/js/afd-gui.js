@@ -2,7 +2,13 @@
 var AFDCTRL = function() {
 	return {
 		/** urlBase. */
-		urlBase: "/",
+		urlBase: "localhost:8040",
+
+		/** urlPathLog. */
+		urlPathLog: "/static/html/afd-log.html",
+
+		/** urlPathEdit. */
+		urlPathHcEdit: "/static/html/afd-hcedit.html",
 
 		/** Interval [msec] for display update. */
 		updateInterval: 3210,
@@ -156,31 +162,31 @@ var AFDCTRL = function() {
 					AFDCTRL.wsCallAliasCmd("config", Object.keys(this.markedRows));
 					break;
 				case "System Log":
-					window.open("/html/afd-log.html#system");
+					window.open(AFDCTRL.urlPathLog + "#system");
 					break;
 				case "Receive Log":
-					window.open("/html/afd-log.html#receive");
+					window.open(AFDCTRL.urlPathLog + "#receive");
 					break;
 				case "Transfer Log":
-					window.open("/html/afd-log.html#transfer");
+					window.open(AFDCTRL.urlPathLog + "#transfer");
 					break;
 				case "Transfer Debug Log":
-					window.open("/html/afd-log.html#transfer-debug");
+					window.open(AFDCTRL.urlPathLog + "#transfer-debug");
 					break;
 				case "Input Log":
-					window.open("/html/afd-log.html"
+					window.open(AFDCTRL.urlPathLog +
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#input");
 					break;
 				case "Output Log":
-					window.open("/html/afd-log.html"
+					window.open(AFDCTRL.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#output");
 					break;
 				case "Delete Log":
-					window.open("/html/afd-log.html"
+					window.open(AFDCTRL.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#delete");
 					break;
 				case "Queue":
-					window.open("/html/afd-log.html"
+					window.open(AFDCTRL.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#queue");
 					break;
                 /*
@@ -199,7 +205,7 @@ var AFDCTRL = function() {
 					AFDCTRL.wsCallAfdCmd("hc", "update");
 					break;
 				case "Edit HOST_CONFIG":
-					window.open("/html/afd-hcedit.html"
+					window.open(AFDCTRL.urlPathHcEdit
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true));
 					break;
 				case "Startup AFD":
@@ -251,17 +257,17 @@ var AFDCTRL = function() {
 						AFDCTRL.wsLoadData(message.data);
 						break;
 					case "alias":
-						switch (message.action){
-						    case "config":
-						        AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
-						        break;
-		                    case "info":
-		                        $("#modalInfoBody").append(message.text);
-		                        break;
-		                    case "select":
-		                    case "deselect":
-		                        AFDCTRL.applyAliasSelect(message.action, message.alias);
-		                        break;
+						switch (message.action) {
+							case "config":
+								AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
+								break;
+							case "info":
+								$("#modalInfoBody").append(message.text);
+								break;
+							case "select":
+							case "deselect":
+								AFDCTRL.applyAliasSelect(message.action, message.alias);
+								break;
 						}
 						break;
 					default:
@@ -309,9 +315,9 @@ var AFDCTRL = function() {
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
 			}
-			const al = aliasList.map(function(v){
-			        return v.replace(/row-/, "");
-			    });
+			const al = aliasList.map(function(v) {
+				return v.replace(/row-/, "");
+			});
 			console.log("callAliasCmd:", action, al);
 			const message = {
 				user: "test",
@@ -488,17 +494,17 @@ var AFDCTRL = function() {
          */
 		applyAliasSelect: function(what, aliasList) {
 			console.debug(status, what, aliasList);
-			if (what === "select"){
-    			$.each(aliasList, function(i, v) {
-    				let row = $("#row-" + v);
-    				AFDCTRL.toggleMark(row, 1);
-    			});
+			if (what === "select") {
+				$.each(aliasList, function(i, v) {
+					let row = $("#row-" + v);
+					AFDCTRL.toggleMark(row, 1);
+				});
 			}
 			else {
-    			$.each(aliasList, function(i, v) {
-    				let row = $("#row-" + v);
-    				AFDCTRL.toggleMark(row, -1);
-    			});
+				$.each(aliasList, function(i, v) {
+					let row = $("#row-" + v);
+					AFDCTRL.toggleMark(row, -1);
+				});
 			}
 		},
 

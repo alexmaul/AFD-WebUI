@@ -616,24 +616,19 @@ function collect_info(host, callback) {
 
 function search_host(action, form_json) {
 	let host_list = [];
+	const proto_map = collect_protocols();
 
 	function test_protocol(host) {
-		const raw = exec_cmd_sync("fsa_view", [host]);
 		let ok = false;
-		for (const l of raw.split("\n")) {
-			const le = l.split(":").map(x => x.trim());
-			if (le[0].startsWith("Protocol")) {
-				if (le[1] === "") {
-					ok = true;
+		const pl = proto_map[host];
+		if (pl === undefined || pl.length == 0) {
+			ok = true;
+		}
+		else {
+			for (const p of pl) {
+				if (form_json.modal_select_protocol.indexOf(p) >= 0) {
+					ok = true
 				}
-				else {
-					for (const p of le[1].split(" ")) {
-						if (form_json.modal_select_protocol.indexOf(p) >= 0) {
-							ok = true
-						}
-					}
-				}
-				return ok;
 			}
 		}
 		return ok;
@@ -847,6 +842,29 @@ function int_or_str(s) {
 }
 
 /**
+ *
+ */
+function collect_protocols() {
+	const proto_list = {};
+	const re_head = /===> ([a-zA-Z0-9_-]+) .\d+. <===/;
+	const fsa = exec_cmd_sync("fsa_view");
+	let hlm = null;
+	let a = null;
+	for (const line of fsa.split("\n")) {
+		if ((hlm = re_head.exec(line)) !== null) {
+			proto_list[hlm[1]] = [];
+			a = hlm[1];
+		}
+		else if (line.startsWith("Protocol")) {
+			const pl = line.split(":")[1].trim().split(" ").map(x => x.trim());
+			proto_list[a] = pl;
+		}
+	}
+	console.log(proto_list);
+	return proto_list;
+}
+
+/**
  * Read HOST_CONFIG data.
  * 
  * If aliasList===null an object representing the whole HOST_CONFIG is returned,
@@ -865,23 +883,14 @@ function read_hostconfig(aliasList = []) {
 	else {
 		alias = aliasList[0];
 	}
+	const proto_map = collect_protocols();
 
-	function get_proto(host) {
-		return "FTP"; // XXX: mock.
-		try {
-			if (host === null) {
-				host = "";
-			}
-			line = execSync("fsa_view " + host + " | grep Protocol");
-			const r = line.split(":")[1].trim().split(" ")[0];
-			if (r === "") {
-				return "null";
-			}
-			else {
-				return r;
-			}
-		} catch (ex) {
-			return "null";
+	function get_proto_classes(host) {
+		if (host in proto_map) {
+			return proto_map[host].map(v => PROTO_SCHEME[v]).join(" ");
+		}
+		else {
+			return "";
 		}
 	}
 
@@ -900,7 +909,7 @@ function read_hostconfig(aliasList = []) {
 			|| (alias === "" && Object.keys(hc_data).length < 1)
 			|| line_data[HC_FIELD_NAME] == alias) {
 			hc_data[line_data[HC_FIELD_NAME]] = {};
-			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = PROTO_SCHEME[get_proto(line_data[HC_FIELD_NAME])];
+			hc_data[line_data[HC_FIELD_NAME]]["protocol-class"] = get_proto_classes(line_data[HC_FIELD_NAME]);
 			for (const hc_field of HC_FIELDS) {
 				let value;
 				if (hc_field[HC_FIELD_BIT] >= 0) {
@@ -1285,10 +1294,22 @@ function exec_cmd(cmd, args, callback) {
 	}
 }
 
+function exec_cmd_sync(cmd, args) {
+	if (MOCK) {
+		return exec_cmd_sync_mock(cmd, args);
+	} else {
+		return exec_cmd_sync_real(cmd, args);
+	}
+}
 function exec_cmd_mock(cmd, args, callback) {
 	console.debug("Mock command: %s %s", cmd, args);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
+}
+function exec_cmd_sync_mock(cmd, args) {
+	console.debug("Mock command (sync): %s %s", cmd, args);
+	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
+	return mock_text;
 }
 
 
@@ -1318,7 +1339,7 @@ function exec_cmd_real(cmd, args, callback) {
 /**
  * Execute 'cmd' synchronous with arguments, stdout is returned.
  */
-function exec_cmd_sync(cmd, args) {
+function exec_cmd_sync_real(cmd, args) {
 	console.debug("prepare command (sync): %s %s", cmd, args)
 	const stdout = execFileSync(cmd,
 		["-w", AFD_WORK_DIR].concat(args),

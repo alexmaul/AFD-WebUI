@@ -311,7 +311,10 @@ function fsaLoopStop(fsaLoop) {
 	console.log("fsa loop stop");
 	clearInterval(fsaLoop);
 }
-/** */
+/**
+ * Setup Interval: read and prepare fsa_view output.
+ */
+// TODO: only one interval, and a list of ws connections the status is distributed to.
 function fsaLoopStartReal(ws) {
 	console.log("start fsa loop with real data.");
 	let fsaLoop = setInterval(() => {
@@ -1216,6 +1219,9 @@ function view_content(response, arcfile, mode = "auto") {
 	console.debug("View:", arcfile_path);
 	fs.access(arcfile_path, () => {
 		if (mode == "auto") {
+			/*
+			* TODO: Use pattern mapping from AFD_CONFIG.
+			*/
 			const m = /.*[-.](\w+)$/.exec(arcfile);
 			if (m !== null) {
 				if (["bufr", "buf", "wmo"].indexOf(m[1]) >= 0) {

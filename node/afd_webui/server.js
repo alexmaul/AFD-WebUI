@@ -1204,72 +1204,64 @@ function log_from_alda(message, ws) {
  */
 function view_content(response, arcfile, mode = "auto") {
 	const arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
-	try {
-		fs.accessSync(arcfile_path);
-	}
-	catch{
-		console.warn("Archived file not found.");
-		response.sendStatus(404);
-	}
-	if (mode == "auto") {
-		const fileType = require('file-type');
-
-		// FIXME
-
-		const buffer = fs.readFileSync((arcfile_path));
-		const content_type = fileType.fromBuffer(buffer).mime;
-		console.log(content_type);
-
-
-		if (content_type == CONTENT_TYPE.OCTET) {
-			m = re.match(".*[-.](\w+)$", arcfile);
-			if (m !== null && m.group(1) in ("bufr", "wmo")) {
-				mode = "bufr";
+	console.debug("View:", arcfile_path);
+	fs.access(arcfile_path, () => {
+		if (mode == "auto") {
+			const m = /.*[-.](\w+)$/.exec(arcfile);
+			if (m !== null) {
+				if (["bufr", "buf", "wmo"].indexOf(m[1]) >= 0) {
+					mode = "bufr";
+				}
+				else if (["bin"].indexOf(m[1]) >= 0) {
+					mode = "od";
+				}
 			}
 		}
-	}
-	switch (mode) {
-		case "hexdump":
-		case "od":
-			content = exec_cmd(
-				"hexdump", ["-C", arcfile_path],
-				(error, stdout, stderr) => {
-					if (error) {
+		console.debug("Mode:", mode);
+		switch (mode) {
+			case "hexdump":
+			case "od":
+				content = exec_cmd(
+					"hexdump", ["-C", arcfile_path],
+					(error, stdout, stderr) => {
+						if (error) {
+							console.warn(error, stderr);
+							response.sendStatus(404);
+						}
+						else {
+							response.set("Content-Type", CONTENT_TYPE.PLAIN);
+							response.send(stdout);
+						}
+					});
+				break;
+			case "bufr":
+				fs.readFile(arcfile_path, (err, data) => {
+					if (err) {
 						console.warn(error, stderr);
 						response.sendStatus(404);
 					}
 					else {
-						response.set("Content-Type", CONTENT_TYPE.PLAIN);
-						response.send(stdout);
+						response.set("Content-Type", CONTENT_TYPE.HTML);
+						webservice_send_file(REST_URL.bufr_decode, data, (c) => { response.send(c) });
 					}
 				});
-			break;
-		case "bufr":
-			fs.readFile(arcfile_path, (err, data) => {
-				if (err) {
-					console.warn(error, stderr);
-					response.sendStatus(404);
-				}
-				else {
-					response.set("Content-Type", CONTENT_TYPE.HTML);
-					webservice_send_file(REST_URL.bufr_decode, data, (c) => { response.send(c) });
-				}
-			});
-			break;
-		default:
-			response.sendFile(arcfile_path);
-			break;
-	}
+				break;
+			default:
+				response.sendFile(arcfile_path);
+				break;
+		}
+	});
 }
 
 /**
  * Send file to REST webservice by http/post and give the response to a callback.
  */
-function webservice_send_file(rest_url, data, callback) {
+async function webservice_send_file(rest_url, data, callback) {
 	const request = require("request");
 	var req = request.post(rest_url, (err, resp, body) => {
 		if (err) {
 			console.warn(err);
+			callback("Error");
 		}
 		else {
 			callback(body);

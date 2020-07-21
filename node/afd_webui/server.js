@@ -129,6 +129,14 @@ const CONTENT_TYPE = {
 	PLAIN: "text/plain",
 	HTML: "text/html",
 };
+
+/** Set holding all ws-connections we send fsa-status to.
+ *
+ * key: connection object, value: Interval object
+ */
+var fsaConnSet = [];
+var fsaLoopInterval = null;
+
 /**
  * Setup server.
  */
@@ -201,7 +209,6 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
  * When Websocket-Server establishes an incoming connection ...
  */
 wss_ctrl.on("connection", function connection_ctrl(ws, req) {
-	let fsaLoop = null;
 	const ip = req.socket.remoteAddress;
 	console.log("connection ctrl open from %s.", ip);
 	/*
@@ -216,10 +223,10 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 				/* About sending status to client. */
 				switch (message.action) {
 					case "start":
-						fsaLoop = fsaLoopStart(ws);
+						fsaLoopStart(ws);
 						break;
 					case "stop":
-						fsaLoop = fsaLoopStop(fsaLoop);
+						fsaLoopStop(ws);
 						break;
 				}
 				break;
@@ -240,7 +247,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
      * When a connection is closed by the client ...
      */
 	ws.on("close", () => {
-		fsaLoopStop(fsaLoop);
+		fsaLoopStop(ws);
 		console.log("connection ctrl close from %s", ip);
 	});
 
@@ -307,32 +314,40 @@ function fsaLoopStart(ws) {
 }
 
 /** */
-function fsaLoopStop(fsaLoop) {
+function fsaLoopStop(ws) {
 	console.log("fsa loop stop");
-	clearInterval(fsaLoop);
+	let i = fsaConnSet.indexOf(ws);
+	fsaConnSet.splice(i, 1);
+	if (fsaConnSet.length == 0) {
+		clearInterval(fsaLoopInterval);
+		fsaLoopInterval = null;
+	}
 }
 /**
  * Setup Interval: read and prepare fsa_view output.
  */
-// TODO: only one interval, and a list of ws connections the status is distributed to.
 function fsaLoopStartReal(ws) {
 	console.log("start fsa loop with real data.");
-	let fsaLoop = setInterval(() => {
-		execFile("fsa_view_json",
-			["-w", AFD_WORK_DIR],
-			{ encoding: "latin1" },
-			(error, stdout, stderr) => {
-				if (error) {
-					console.error(stderr);
-					throw error;
+	if (fsaLoopInterval === null) {
+		fsaLoopInterval = setInterval(() => {
+			execFile("fsa_view_json",
+				["-w", AFD_WORK_DIR],
+				{ encoding: "latin1" },
+				(error, stdout, stderr) => {
+					if (error) {
+						console.error(stderr);
+						throw error;
+					}
+					else {
+						for (const ws_instance of fsaConnSet) {
+							ws_instance.send('{"class":"fsa","data":' + stdout + "}");
+						}
+					}
 				}
-				else {
-					ws.send('{"class":"fsa","data":' + stdout + "}");
-				}
-			}
-		);
-	}, 2000);
-	return fsaLoop;
+			);
+		}, 2000);
+	}
+	fsaConnSet.push(ws);
 }
 
 function fsaLoopStartMock(ws) {
@@ -342,13 +357,17 @@ function fsaLoopStartMock(ws) {
 	data.counter = counter;
 
 	console.log("start fsa loop with %s", data);
-	let fsaLoop = setInterval(() => {
-		console.log("fsa send #%d", counter);
-		data.counter = counter;
-		ws.send(JSON.stringify(data));
-		counter++;
-	}, 2000);
-	return fsaLoop;
+	if (fsaLoopInterval === null) {
+		fsaLoopInterval = setInterval(() => {
+			console.log("fsa send #%d to %d", counter, fsaConnSet.length);
+			data.counter = counter;
+			for (const ws_instance of fsaConnSet) {
+				ws_instance.send(JSON.stringify(data));
+			}
+			counter++;
+		}, 2000);
+	}
+	fsaConnSet.push(ws);
 }
 
 /**

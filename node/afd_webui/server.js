@@ -2,8 +2,6 @@
 "use strict";
 /* jslint node: true */
 
-const MOCK = true;
-
 /******************************************************************************
 	AFD WebUI Server
 	================
@@ -92,9 +90,16 @@ const argv = yargs
 		type: "string",
 		description: "AFD work directory, per instance.",
 	})
+	.option("mock", {
+		type: "boolean",
+		default: false
+	})
 	.help()
 	.alias("help", "h")
 	.argv;
+
+let MOCK = argv.mock;
+
 const AFD_WEBUI_DIR = path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
 /*

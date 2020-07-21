@@ -121,9 +121,6 @@ const AFDLOG_FILES = {
 	transfer_debug: "TRANS_DB_LOG."
 };
 
-const REST_URL = {
-	bufr_decode: "http://informatix.dwd.de/cgi-bin/pytroll/bufr/decode.py"
-};
 const CONTENT_TYPE = {
 	OCTET: "application/octet-stream",
 	PLAIN: "text/plain",
@@ -134,8 +131,68 @@ const CONTENT_TYPE = {
  *
  * key: connection object, value: Interval object
  */
-var fsaConnSet = [];
+const fsaConnSet = [];
 var fsaLoopInterval = null;
+
+/**
+ * Some details from AFD_CONFIG file we use in WebUI server.
+ *
+ * If a key can occur more than one time in AFD_CONFIG, the values are
+ * stored as a list of strings instead of as a string.
+ */
+const AFD_CONFIG = {};
+const VIEW_DATA = { named: {}, filter: {} };
+/**
+ * Read AFD_CONFIG.
+ */
+fs.readFile(
+	path.join(AFD_WORK_DIR, "etc", "AFD_CONFIG"),
+	{ encoding: "latin1" },
+	function parse_afd_config(err, data) {
+		if (!err) {
+			const re_no = /^(?:$|#|\s+)/;
+			const re_kv = /(\S+)\s+(.*)/;
+			for (const line of data.split("\n")) {
+				if (re_no.test(line)) {
+					continue;
+				}
+				let m = re_kv.exec(line);
+				if (m[1] in AFD_CONFIG) {
+					let buf = AFD_CONFIG[m[1]];
+					if (buf !== undefined) {
+						if ((typeof buf) === "string") {
+							buf = [buf];
+						}
+						buf.push(m[2].trim());
+						AFD_CONFIG[m[1]] = buf;
+					}
+				}
+				else {
+					AFD_CONFIG[m[1]] = m[2].trim();
+				}
+			}
+		}
+		else {
+			throw Error("Can't read AFD_CONFIG!");
+		}
+		const re_a = /(\*|\?)/g;
+		for (const p of AFD_CONFIG.VIEW_DATA_PROG) {
+			let i = p.lastIndexOf(" ");
+			VIEW_DATA.filter[
+				p.substring(i + 1).replace(re_a, ".$1")
+			] = p.substring(0, i)
+				.replace("--with-show_cmd \"", "")
+				.replace(/\"$/, "");
+		}
+		for (const p of AFD_CONFIG.VIEW_DATA_NO_FILTER_PROG) {
+			let i = p.indexOf(" ");
+			VIEW_DATA.named[p.substring(0, i)] = p.substring(i + 1)
+				.replace("--with-show_cmd \"", "")
+				.replace(/\"$/, "");
+		}
+		console.info("AFD_CONFIG parsed.");
+	}
+);
 
 /**
  * Setup server.
@@ -869,7 +926,7 @@ function int_or_str(s) {
  */
 function collect_protocols() {
 	const proto_list = {};
-	const re_head = /===> ([a-zA-Z0-9_-]+) .\d+. <===/;
+	const re_head = /===> (\S+) .\d+. <===/;
 	const fsa = exec_cmd_sync("fsa_view");
 	let hlm = null;
 	let a = null;
@@ -1237,53 +1294,90 @@ function log_from_alda(message, ws) {
 function view_content(response, arcfile, mode = "auto") {
 	const arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
 	console.debug("View:", arcfile_path);
+	let view_cmd;
+	let view_args;
+	let push_filename = true;
 	fs.access(arcfile_path, () => {
 		if (mode == "auto") {
-			/*
-			* TODO: Use pattern mapping from AFD_CONFIG.
-			*/
-			const m = /.*[-.](\w+)$/.exec(arcfile);
-			if (m !== null) {
-				if (["bufr", "buf", "wmo"].indexOf(m[1]) >= 0) {
-					mode = "bufr";
-				}
-				else if (["bin"].indexOf(m[1]) >= 0) {
-					mode = "od";
+			/* Test filename with all patterns. */
+			for (const pat in VIEW_DATA.filter) {
+				console.log("Test with", pat);
+				if (RegExp(pat).test(arcfile)) {
+					const i = VIEW_DATA.filter[pat].indexOf(" ");
+					view_cmd = VIEW_DATA.filter[pat].substring(0, i);
+					view_args = VIEW_DATA.filter[pat].substring(i + 1).split(" ");
+					if (VIEW_DATA.filter[pat].indexOf("%s") != -1) {
+						push_filename = false;
+					}
+					break;
 				}
 			}
 		}
-		console.debug("Mode:", mode);
-		switch (mode) {
-			case "hexdump":
-			case "od":
-				content = exec_cmd(
-					"hexdump", ["-C", arcfile_path],
-					(error, stdout, stderr) => {
-						if (error) {
-							console.warn(error, stderr);
-							response.sendStatus(404);
-						}
-						else {
-							response.set("Content-Type", CONTENT_TYPE.PLAIN);
-							response.send(stdout);
-						}
-					});
-				break;
-			case "bufr":
-				fs.readFile(arcfile_path, (err, data) => {
-					if (err) {
-						console.warn(error, stderr);
-						response.sendStatus(404);
-					}
-					else {
-						response.set("Content-Type", CONTENT_TYPE.HTML);
-						webservice_send_file(REST_URL.bufr_decode, data, (c) => { response.send(c) });
-					}
-				});
-				break;
-			default:
-				response.sendFile(arcfile_path);
-				break;
+		else {
+			/* Use program for selected mode. */
+			if (mode in VIEW_DATA.named) {
+				const i = VIEW_DATA.named[mode].indexOf(" ");
+				view_cmd = VIEW_DATA.named[mode].substring(0, i);
+				view_args = VIEW_DATA.named[mode].substring(i + 1).split(" ");
+				if (VIEW_DATA.named[mode].indexOf("%s") != -1) {
+					push_filename = false;
+				}
+			}
+		}
+		if (view_cmd) {
+			/* With the selected/determined program we start some conversion
+			 * and send the result to the response object.
+			 */
+			if (view_cmd.startsWith("http://")) {
+				/* Use HTTP/POST to send the file content to some webservice.
+				 * As return we expect text/plain or text/html.
+				 */
+				try {
+					webservice_send_file(
+						view_cmd,
+						view_args,
+						fs.createReadStream(arcfile_path),
+						(c) => { response.send(c) }
+					);
+				}
+				catch (e) {
+					console.warn("View with %s: %s", view_cmd, e);
+					response.sendStatus(500);
+				}
+			}
+			else {
+				if (push_filename) {
+					view_args = view_args.map(v => v == "%s" ? arcfile_path : v);
+				}
+				else {
+					view_args.push(arcfile_path);
+				}
+				try {
+					exec_cmd(
+						view_cmd, view_args,
+						(error, stdout, stderr) => {
+							if (error) {
+								console.warn(error, stderr);
+								response.sendStatus(404);
+							}
+							else {
+								response.set("Content-Type", CONTENT_TYPE.PLAIN);
+								response.send(stdout);
+							}
+						});
+				}
+				catch (e) {
+					console.warn("View with %s: %s", view_cmd, e);
+					response.sendStatus(500);
+				}
+			}
+		}
+		else {
+			/* If there is no program configured for pre-formatting, we send
+			 * the file to the response object and leave it to the browser
+			 * to display the file content properly.
+			 */
+			response.sendFile(arcfile_path);
 		}
 	});
 }
@@ -1291,21 +1385,36 @@ function view_content(response, arcfile, mode = "auto") {
 /**
  * Send file to REST webservice by http/post and give the response to a callback.
  */
-async function webservice_send_file(rest_url, data, callback) {
+async function webservice_send_file(rest_url, params, dataReadStream, callback) {
 	const request = require("request");
-	var req = request.post(rest_url, (err, resp, body) => {
-		if (err) {
-			console.warn(err);
-			callback("Error");
+	const formData = {};
+	for (const p of params) {
+		const pe = p.split(":");
+		if (pe[1] === "%s") {
+			formData[pe[0]] = {
+				value: dataReadStream,
+				options: { contentType: CONTENT_TYPE.OCTET }
+			};
 		}
 		else {
-			callback(body);
+			formData[pe[0]] = pe[1];
 		}
-	});
-	var form = req.form();
-	form.append("file", data, {
-		contentType: CONTENT_TYPE.OCTET
-	});
+	}
+	request.post(
+		{
+			url: rest_url,
+			formData: formData
+		},
+		(err, _, body) => {
+			if (err) {
+				console.warn(err);
+				callback("Error");
+			}
+			else {
+				callback(body);
+			}
+		}
+	);
 }
 
 /*******************************************************************************

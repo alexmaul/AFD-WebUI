@@ -56,7 +56,7 @@ const url = require('url');
 const express = require('express');
 const session = require('express-session');
 const ejs = require('ejs');
-const { execFile, execFileSync, execSync } = require("child_process");
+const { execFile, execFileSync } = require("child_process");
 
 /*
  * Parse command line arguments. It's done this early to set correct path to
@@ -275,9 +275,10 @@ wss_log.on("connection", function connection_log(ws, req) {
 			return;
 		}
 		switch (message.context) {
+			/* Handeled by route-mapper (express).
 			case "view":
-				// TODO ?
 				break;
+			*/
 			case "system":
 			case "receive":
 			case "transfer":

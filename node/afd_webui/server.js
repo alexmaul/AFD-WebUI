@@ -181,19 +181,23 @@ fs.readFile(
 			throw Error("Can't read AFD_CONFIG!");
 		}
 		const re_a = /(\*|\?)/g;
-		for (const p of AFD_CONFIG.VIEW_DATA_PROG) {
-			let i = p.lastIndexOf(" ");
-			VIEW_DATA.filter[
-				p.substring(i + 1).replace(re_a, ".$1")
-			] = p.substring(0, i)
-				.replace("--with-show_cmd \"", "")
-				.replace(/\"$/, "");
+		if ("VIEW_DATA_PROG" in AFD_CONFIG){
+    		for (const p of AFD_CONFIG.VIEW_DATA_PROG) {
+    			let i = p.lastIndexOf(" ");
+    			VIEW_DATA.filter[
+    				p.substring(i + 1).replace(re_a, ".$1")
+    			] = p.substring(0, i)
+    				.replace("--with-show_cmd \"", "")
+    				.replace(/\"$/, "");
+    		}
 		}
-		for (const p of AFD_CONFIG.VIEW_DATA_NO_FILTER_PROG) {
-			let i = p.indexOf(" ");
-			VIEW_DATA.named[p.substring(0, i)] = p.substring(i + 1)
-				.replace("--with-show_cmd \"", "")
-				.replace(/\"$/, "");
+		if ("VIEW_DATA_NO_FILTER_PROG" in AFD_CONFIG) {
+    		for (const p of AFD_CONFIG.VIEW_DATA_NO_FILTER_PROG) {
+    			let i = p.indexOf(" ");
+    			VIEW_DATA.named[p.substring(0, i)] = p.substring(i + 1)
+    				.replace("--with-show_cmd \"", "")
+    				.replace(/\"$/, "");
+    		}
 		}
 		console.info("AFD_CONFIG parsed.");
 	}
@@ -489,7 +493,7 @@ function action_afd(message, ws) {
 			switch (message.command) {
 				case "start":
 					cmd = "afd";
-					cmd_opt = " -a";
+					cmd_opt = "-a";
 					break;
 				case "stop":
 					cmd = "afd"
@@ -556,7 +560,7 @@ function action_alias(message, ws) {
 			break;
 		case "config":
 			for (const alias of message.alias) {
-				exec_cmd("get_dc_data",
+				exec_cmd("get_dc_data", true, 
 					["-h", alias],
 					(error, dc_data, stderr) => {
 						console.log("EXEC->", error, dc_data, stderr);
@@ -576,7 +580,7 @@ function action_alias(message, ws) {
 		default:
 			if (message.action in AFDCMD_ARGS) {
 				exec_cmd(
-					"afdcmd",
+					"afdcmd", true, 
 					AFDCMD_ARGS[message.action].concat(message.alias),
 					(error, stdout, stderr) => {
 						if (error) {
@@ -623,7 +627,7 @@ function collect_info(host, callback) {
 		HOST_TWO: "",
 		info_text: "No information available."
 	};
-	exec_cmd("fsa_view", [host], (err, raw, _) => {
+	exec_cmd("fsa_view", true, [host], (err, raw, _) => {
 		if (err) {
 			console.warn(err);
 			return;
@@ -945,7 +949,6 @@ function collect_protocols() {
 			proto_list[a] = pl;
 		}
 	}
-	console.log(proto_list);
 	return proto_list;
 }
 
@@ -984,7 +987,7 @@ function read_hostconfig(aliasList = []) {
 		{ encoding: "latin1" }
 	);
 	for (let line of hc_content.split("\n")) {
-		if (!line || line.startsWith("#")) {
+		if (/^\s*(?:$|#)/.test(line)) {
 			continue;
 		}
 		line = line.trim();
@@ -1006,7 +1009,7 @@ function read_hostconfig(aliasList = []) {
 					}
 				}
 				else if (hc_field[HC_FIELD_BIT] == -2) {
-					if (line_data[hc_field[HC_FIELD_COLUMN]] != "") {
+					if (line_data[hc_field[HC_FIELD_COLUMN]] !== undefined && line_data[hc_field[HC_FIELD_COLUMN]] !== "") {
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_enable"] = "yes";
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_auto"] = line_data[hc_field[HC_FIELD_COLUMN]][0] == "{" ? "yes" : "no";
 						hc_data[line_data[HC_FIELD_NAME]]["host_switch_char1"] = line_data[hc_field[HC_FIELD_COLUMN]][1];
@@ -1137,21 +1140,21 @@ function save_hostconfig(form_json) {
 function log_from_file(message, ws) {
 	let file_number = message.filter.file == "all" ? "*" : message.filter.file;
 	// TODO: statt exec: datei selbst filtern und ausgabe als tr/td aufbereiten.
-	exec_cmd("grep", [
+	exec_cmd("grep", false, [
 		"-shP",
 		"<(" + message.filter.level + ")>",
-		AFD_WORK_DIR + "/log/" + AFDLOG_FILES[message.context] + file_number
+		path.join(AFD_WORK_DIR, "log", AFDLOG_FILES[message.context] + file_number)
 	],
 		(error, stdout, stderr) => {
 			if (error) {
 				console.warn(error, stderr);
 			}
 			else {
-				data = {
+				const data = {
 					class: "log",
 					context: message.context,
 					append: false,
-					lines: stdout.split("\n"),
+					text: stdout, // lines: stdout.split("\n"),
 				};
 				ws.send(JSON.stringify(data));
 			}
@@ -1161,20 +1164,20 @@ function log_from_file(message, ws) {
 
 function log_from_alda(message, ws) {
 	let alda_output_format = {
-		input: ["-o", "\"<tr><td class='clst-dd'>%ITm.%ITd.</td>"
+		input: ["-o", "<tr><td class='clst-dd'>%ITm.%ITd.</td>"
 			+ "<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
-			+ "<td class='clst-fs'>%ISB</td></tr>\""],
-		output: ["-o", "\"<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
+			+ "<td class='clst-fs'>%ISB</td></tr>"],
+		output: ["-o", "<tr archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
 			+ "<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
 			+ "%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"
 			+ "<td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td>"
 			+ "<td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td>"
-			+ "</tr>\""],
-		delete: ["-o", "\"<tr><td class='clst-dd'>%DTm.%DTd.</td>"
+			+ "</tr>"],
+		delete: ["-o", "<tr><td class='clst-dd'>%DTm.%DTd.</td>"
 			+ "<td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td>"
 			+ "<td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td>"
 			+ "<td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td>"
-			+ "</tr>\""]
+			+ "</tr>"]
 	};
 	let par_tr = {
 		start: "-t ",
@@ -1188,7 +1191,7 @@ function log_from_alda(message, ws) {
 		"delete-reason": null,
 	};
 	let par_lst = [];
-	let fnam = "";
+	let fnam = null;
 	let logtype;
 	if (message.filter["received-only"]) {
 		logtype = "R";
@@ -1233,7 +1236,9 @@ function log_from_alda(message, ws) {
 		}
 	}
 	let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line);
-	cmd_par.push(fnam);
+	if (fnam) {
+	    cmd_par.push(fnam);
+	}
 	let data = {
 		class: "log",
 		context: message.context,
@@ -1241,7 +1246,7 @@ function log_from_alda(message, ws) {
 		lines: [],
 	};
 	if (message.context == "output") {
-		exec_cmd("alda", cmd_par, (error, stdout, stderr) => {
+		exec_cmd("alda", true, cmd_par, (error, stdout, stderr) => {
 			if (error) {
 				console.warn(error, stderr);
 			}
@@ -1258,7 +1263,7 @@ function log_from_alda(message, ws) {
 							fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
 							parts[parts.length - 2] = "Y";
 						}
-						catch {
+						catch (_) {
 							parts[parts.length - 2] = "D";
 						}
 					}
@@ -1276,7 +1281,7 @@ function log_from_alda(message, ws) {
 		});
 	}
 	else {
-		exec_cmd("alda", cmd_par,
+		exec_cmd("alda", true, cmd_par,
 			(error, stdout, stderr) => {
 				if (error) {
 					console.warn(error, stderr);
@@ -1359,7 +1364,7 @@ function view_content(response, arcfile, mode = "auto") {
 				}
 				try {
 					exec_cmd(
-						view_cmd, view_args,
+						view_cmd, false, view_args,
 						(error, stdout, stderr) => {
 							if (error) {
 								console.warn(error, stderr);
@@ -1426,27 +1431,27 @@ async function webservice_send_file(rest_url, params, dataReadStream, callback) 
  * Execute command-line programs.
  ******************************************************************************/
 
-function exec_cmd(cmd, args, callback) {
+function exec_cmd(cmd, with_awd, args, callback) {
 	if (MOCK) {
-		exec_cmd_mock(cmd, args, callback);
+		exec_cmd_mock(cmd, with_awd, args, callback);
 	} else {
-		exec_cmd_real(cmd, args, callback);
+		exec_cmd_real(cmd, with_awd, args, callback);
 	}
 }
 
-function exec_cmd_sync(cmd, args) {
+function exec_cmd_sync(cmd, with_awd, args) {
 	if (MOCK) {
-		return exec_cmd_sync_mock(cmd, args);
+		return exec_cmd_sync_mock(cmd, with_awd, args);
 	} else {
-		return exec_cmd_sync_real(cmd, args);
+		return exec_cmd_sync_real(cmd, with_awd, args);
 	}
 }
-function exec_cmd_mock(cmd, args, callback) {
+function exec_cmd_mock(cmd, with_awd, args=[], callback) {
 	console.debug("Mock command: %s %s", cmd, args);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
 }
-function exec_cmd_sync_mock(cmd, args) {
+function exec_cmd_sync_mock(cmd, with_awd, args) {
 	console.debug("Mock command (sync): %s %s", cmd, args);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	return mock_text;
@@ -1458,32 +1463,35 @@ function exec_cmd_sync_mock(cmd, args) {
  * 
  * Callback function is called with error, stdout, stderr as parameter.
  */
-function exec_cmd_real(cmd, args, callback) {
-	console.debug("prepare command: %s %s", cmd, args)
+function exec_cmd_real(cmd, with_awd, args=[], callback) {
+    let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+	console.debug("exec_cmd prepare command: %s %s", cmd, largs);
 	execFile(cmd,
-		["-w", AFD_WORK_DIR].concat(args),
-		{ encoding: "latin1" },
-		(error, stdout, stderr) => {
-			if (callback) {
-				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
-				callback(error, stdout, stderr);
-			}
-			else if (error) {
-				console.error(stderr);
-				console.error(error);
-			}
-		}
+	        largs,
+    		{ encoding: "latin1" },
+    		(error, stdout, stderr) => {
+    		    console.log("RAW:", error, stdout, stderr);
+    			if (callback) {
+    				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
+    				callback(error, stdout, stderr);
+    			}
+    			else if (error) {
+    				console.error(stderr);
+    				console.error(error);
+    			}
+    		}
 	);
 }
 
 /**
  * Execute 'cmd' synchronous with arguments, stdout is returned.
  */
-function exec_cmd_sync_real(cmd, args) {
-	console.debug("prepare command (sync): %s %s", cmd, args)
+function exec_cmd_sync_real(cmd, with_awd, args=[]) {
+    let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+	console.debug("exec_cmd_sync prepare command (sync): %s %s", cmd, largs);
 	const stdout = execFileSync(cmd,
-		["-w", AFD_WORK_DIR].concat(args),
-		{ encoding: "latin1" }
+            largs,
+    		{ encoding: "latin1" }
 	);
 	return stdout;
 }

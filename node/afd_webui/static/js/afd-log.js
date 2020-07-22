@@ -30,7 +30,12 @@ var AFDLOG = function() {
 					if (message.append) {
 						// TODO append or replace lines.
 					}
-					context.html(message.lines);
+					if ("lines" in message) {
+					    context.html(message.lines);
+					}
+					else {
+					    context.html(message.text);
+					}
 					context.find("tr").on("click", function(event) {
 						$(this).toggleClass("selected");
 					});

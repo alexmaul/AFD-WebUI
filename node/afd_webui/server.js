@@ -48,7 +48,6 @@ lines:		[ string ]:	log data.
 const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
-const http = require("http");
 const WebSocket = require("ws");
 const url = require('url');
 const express = require('express');
@@ -223,8 +222,11 @@ fs.readFile(
 	}
 );
 
-/**
+/* ***************************************************************************
  * Setup server.
+ * ***************************************************************************
+ *
+ * First, instantiate express and add midleware.
  */
 const app = express();
 app.disable('x-powered-by');
@@ -249,15 +251,27 @@ const sessionParser = session({
 	resave: false
 });
 app.use(sessionParser);
-/* SSL/TLS. */
+/* 
+ * If SSL/TLS is requested, load HTTPS module and secure the server. Otherwise 
+ * load unsecure HTTP module.
+ */
+var http_module;
+let http_options = {};
 if (argv.cert) {
-	const ssl = {
-		cert: fs.readFileSync("/path/to/cert.pem"),
-		key: fs.readFileSync("/path/to/key.pem")
-	}
+	http_module = require("https");
+	/*
+	cert: /etc/pki/tls/certs
+	key:  /etc/pki/tls/private
+	*/
+	http_options["cert"] = fs.readFileSync("/path/to/cert.pem");
+	http_options["key"] = fs.readFileSync("/path/to/key.pem");
+}
+else {
+	http_module = require("http");
+
 }
 /* Create server objects. */
-const server = http.createServer(app);
+const server = http_module.createServer(http_options, app);
 const wss_ctrl = new WebSocket.Server({ noServer: true });
 const wss_log = new WebSocket.Server({ noServer: true });
 

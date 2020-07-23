@@ -132,6 +132,20 @@ const CONTENT_TYPE = {
 	HTML: "text/html",
 };
 
+const STATUS = {
+	ok: 200,
+	ok_accepted: 202,
+	ok_no_content: 204,
+	forbidden: 403,
+	not_found: 404,
+	method_not_allowed: 405,
+	not_acceptable: 406,
+	conflict: 409,
+	precondition_failed: 412,
+	not_satisfyable: 416,
+	error: 500,
+};
+
 /** Set holding all ws-connections we send fsa-status to.
  *
  * key: connection object, value: Interval object
@@ -181,23 +195,23 @@ fs.readFile(
 			throw Error("Can't read AFD_CONFIG!");
 		}
 		const re_a = /(\*|\?)/g;
-		if ("VIEW_DATA_PROG" in AFD_CONFIG){
-    		for (const p of AFD_CONFIG.VIEW_DATA_PROG) {
-    			let i = p.lastIndexOf(" ");
-    			VIEW_DATA.filter[
-    				p.substring(i + 1).replace(re_a, ".$1")
-    			] = p.substring(0, i)
-    				.replace("--with-show_cmd \"", "")
-    				.replace(/\"$/, "");
-    		}
+		if ("VIEW_DATA_PROG" in AFD_CONFIG) {
+			for (const p of AFD_CONFIG.VIEW_DATA_PROG) {
+				let i = p.lastIndexOf(" ");
+				VIEW_DATA.filter[
+					p.substring(i + 1).replace(re_a, ".$1")
+				] = p.substring(0, i)
+					.replace("--with-show_cmd \"", "")
+					.replace(/\"$/, "");
+			}
 		}
 		if ("VIEW_DATA_NO_FILTER_PROG" in AFD_CONFIG) {
-    		for (const p of AFD_CONFIG.VIEW_DATA_NO_FILTER_PROG) {
-    			let i = p.indexOf(" ");
-    			VIEW_DATA.named[p.substring(0, i)] = p.substring(i + 1)
-    				.replace("--with-show_cmd \"", "")
-    				.replace(/\"$/, "");
-    		}
+			for (const p of AFD_CONFIG.VIEW_DATA_NO_FILTER_PROG) {
+				let i = p.indexOf(" ");
+				VIEW_DATA.named[p.substring(0, i)] = p.substring(i + 1)
+					.replace("--with-show_cmd \"", "")
+					.replace(/\"$/, "");
+			}
 		}
 		console.info("AFD_CONFIG parsed.");
 	}
@@ -441,7 +455,7 @@ function fsaLoopStartMock(ws) {
  * Dispatch to AFD controlling functions.
  */
 function action_afd(message, ws) {
-	let cmd = "afdcmd";
+	let cmd = null;
 	let cmd_opt = "";
 	switch (message.action) {
 		case "amg":
@@ -463,30 +477,30 @@ function action_afd(message, ws) {
 			}
 			break;
 		case "hc":
-			switch (message.command) {
-				case "read":
-					const hc_data = read_hostconfig(message.alias);
-					ws.send(JSON.stringify(hc_data));
-					return;
-				case "save":
-					try {
+			try {
+				switch (message.command) {
+					case "read":
+						const hc_data = read_hostconfig(message.alias[0]);
+						ws.send(JSON.stringify(hc_data));
+						break;
+					case "save":
 						save_hostconfig(message.data);
-					}
-					catch (e) {
-						console.error(e);
-						ws.send(JSON.stringify({
-							class: message.class,
-							command: message.command,
-							action: message.action,
-							status: 500,
-							message: `${e.name}: ${e.message}`
-						}));
-						return;
-					}
-				case "update":
-					cmd = "uhc";
-					cmd_opt = "";
-					break;
+						break;
+					case "update":
+						cmd = "uhc";
+						cmd_opt = "";
+						break;
+				}
+			}
+			catch (e) {
+				console.error(e);
+				ws.send(JSON.stringify({
+					class: message.class,
+					command: message.command,
+					action: message.action,
+					status: STATUS.not_satisfyable,
+					message: `${e.name}: ${e.message}`
+				}));
 			}
 			break;
 		case "afd":
@@ -506,16 +520,18 @@ function action_afd(message, ws) {
 		default:
 			console.log("Command unclear?");
 	}
-	exec_cmd(cmd, cmd_opt,
-		(error, stdout, stderr) => {
-			if (error) {
-				console.warn(error, stderr);
+	if (cmd !== null) {
+		exec_cmd(cmd, cmd_opt,
+			(error, stdout, stderr) => {
+				if (error) {
+					console.warn(error, stderr);
+				}
+				else {
+					console.debug("%s %s :: %s", cmd, cmd_opt, stdout);
+				}
 			}
-			else {
-				console.debug("%s %s :: %s", cmd, cmd_opt, stdout);
-			}
-		}
-	);
+		);
+	}
 }
 
 /**
@@ -560,7 +576,7 @@ function action_alias(message, ws) {
 			break;
 		case "config":
 			for (const alias of message.alias) {
-				exec_cmd("get_dc_data", true, 
+				exec_cmd("get_dc_data", true,
 					["-h", alias],
 					(error, dc_data, stderr) => {
 						console.log("EXEC->", error, dc_data, stderr);
@@ -580,7 +596,7 @@ function action_alias(message, ws) {
 		default:
 			if (message.action in AFDCMD_ARGS) {
 				exec_cmd(
-					"afdcmd", true, 
+					"afdcmd", true,
 					AFDCMD_ARGS[message.action].concat(message.alias),
 					(error, stdout, stderr) => {
 						if (error) {
@@ -589,7 +605,7 @@ function action_alias(message, ws) {
 								message.alias,
 								stderr
 							);
-							message["status"] = 504;
+							message["status"] = STATUS.error;
 							ws.send(JSON.stringify(message));
 						}
 						else {
@@ -605,7 +621,7 @@ function action_alias(message, ws) {
 
 			}
 			else {
-				message["status"] = 504;
+				message["status"] = STATUS.error;
 				ws.send(JSON.stringify(message));
 			}
 	}
@@ -931,7 +947,7 @@ function int_or_str(s) {
 }
 
 /**
- *
+ * Create a map host->[protocol, ...]
  */
 function collect_protocols() {
 	const proto_list = {};
@@ -955,22 +971,25 @@ function collect_protocols() {
 /**
  * Read HOST_CONFIG data.
  * 
- * If aliasList===null an object representing the whole HOST_CONFIG is returned,
- * otherwise only the data for the alias in the list is returned.
+ * alias===null : an object representing the whole HOST_CONFIG is returned.
+ *
+ * alias==="" (empty string) : only the data for the first host is returned.
+ *
+ * alias===(non-empty string) : Host_config data for the named host is returned.
  */
-function read_hostconfig(aliasList = []) {
+function read_hostconfig(alias = null) {
 	const hc_order = [];
 	const hc_data = {};
-	let alias;
-	if (aliasList === null) {
-		alias = null;
-	}
-	else if (aliasList.length == 0) {
-		alias = "";
-	}
-	else {
-		alias = aliasList[0];
-	}
+	//	let alias;
+	//	if (aliasList === null) {
+	//		alias = null;
+	//	}
+	//	else if (aliasList.length == 0) {
+	//		alias = "";
+	//	}
+	//	else {
+	//		alias = aliasList[0];
+	//	}
 	const proto_map = collect_protocols();
 
 	function get_proto_classes(host) {
@@ -1237,7 +1256,7 @@ function log_from_alda(message, ws) {
 	}
 	let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line);
 	if (fnam) {
-	    cmd_par.push(fnam);
+		cmd_par.push(fnam);
 	}
 	let data = {
 		class: "log",
@@ -1446,7 +1465,7 @@ function exec_cmd_sync(cmd, with_awd, args) {
 		return exec_cmd_sync_real(cmd, with_awd, args);
 	}
 }
-function exec_cmd_mock(cmd, with_awd, args=[], callback) {
+function exec_cmd_mock(cmd, with_awd, args = [], callback) {
 	console.debug("Mock command: %s %s", cmd, args);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
@@ -1463,35 +1482,35 @@ function exec_cmd_sync_mock(cmd, with_awd, args) {
  * 
  * Callback function is called with error, stdout, stderr as parameter.
  */
-function exec_cmd_real(cmd, with_awd, args=[], callback) {
-    let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+function exec_cmd_real(cmd, with_awd, args = [], callback) {
+	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
 	console.debug("exec_cmd prepare command: %s %s", cmd, largs);
 	execFile(cmd,
-	        largs,
-    		{ encoding: "latin1" },
-    		(error, stdout, stderr) => {
-    		    console.log("RAW:", error, stdout, stderr);
-    			if (callback) {
-    				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
-    				callback(error, stdout, stderr);
-    			}
-    			else if (error) {
-    				console.error(stderr);
-    				console.error(error);
-    			}
-    		}
+		largs,
+		{ encoding: "latin1" },
+		(error, stdout, stderr) => {
+			console.log("RAW:", error, stdout, stderr);
+			if (callback) {
+				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
+				callback(error, stdout, stderr);
+			}
+			else if (error) {
+				console.error(stderr);
+				console.error(error);
+			}
+		}
 	);
 }
 
 /**
  * Execute 'cmd' synchronous with arguments, stdout is returned.
  */
-function exec_cmd_sync_real(cmd, with_awd, args=[]) {
-    let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+function exec_cmd_sync_real(cmd, with_awd, args = []) {
+	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
 	console.debug("exec_cmd_sync prepare command (sync): %s %s", cmd, largs);
 	const stdout = execFileSync(cmd,
-            largs,
-    		{ encoding: "latin1" }
+		largs,
+		{ encoding: "latin1" }
 	);
 	return stdout;
 }

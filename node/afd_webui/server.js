@@ -53,6 +53,7 @@ const WebSocket = require("ws");
 const url = require('url');
 const express = require('express');
 const session = require('express-session');
+const basicAuth = require('express-basic-auth');
 const ejs = require('ejs');
 const { execFile, execFileSync } = require("child_process");
 
@@ -76,6 +77,11 @@ const argv = yargs
 			alias: "l",
 			type: "string",
 			description: "Log directory, if different from AFD log dir."
+		},
+		cert: {
+			type: "string",
+			description: "Path to SSL/TLS certificate/keys files. "
+				+ "Also starts as HTTPS-server."
 		}
 	})
 	.command("stop", "Stop WebUI server.", {
@@ -220,22 +226,37 @@ fs.readFile(
 /**
  * Setup server.
  */
-/*
- * TODO implement in server: - SSL/TLS - user authentication (Basic?)
- *
- * { cert: fs.readFileSync("/path/to/cert.pem"), key:
- * fs.readFileSync("/path/to/key.pem") },
- */
 const app = express();
+app.disable('x-powered-by');
+app.set('view engine', 'ejs');
+/*  User authentication. */
+/* TODO: write proper validation! */
+app.use(basicAuth({
+	users: JSON.parse(
+		fs.readFileSync(
+			path.join(AFD_WORK_DIR, "etc", "webui.users"),
+			{ encoding: "latin1" }
+		)),
+	challenge: true,
+	realm: "AFD"
+}));
+app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
+app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
+/* Prepare session context handler. */
 const sessionParser = session({
 	saveUninitialized: false,
 	secret: "$eCuRiTy",
 	resave: false
 });
-app.set('view engine', 'ejs');
-app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
-app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
 app.use(sessionParser);
+/* SSL/TLS. */
+if (argv.cert) {
+	const ssl = {
+		cert: fs.readFileSync("/path/to/cert.pem"),
+		key: fs.readFileSync("/path/to/key.pem")
+	}
+}
+/* Create server objects. */
 const server = http.createServer(app);
 const wss_ctrl = new WebSocket.Server({ noServer: true });
 const wss_log = new WebSocket.Server({ noServer: true });

@@ -77,11 +77,14 @@ const argv = yargs
 			type: "string",
 			description: "Log directory, if different from AFD log dir."
 		},
+		tls: {
+			type: "boolean",
+			description: "Start as HTTPS-server. Uses TLS"
+		},
 		cert: {
 			type: "string",
-			description: "Path to SSL/TLS certificate/keys files. "
-				+ "Also starts as HTTPS-server."
-		}
+			description: "Path to SSL/TLS certificate/keys files."
+		},
 	})
 	.command("stop", "Stop WebUI server.", {
 		pid: {
@@ -257,14 +260,14 @@ app.use(sessionParser);
  */
 var http_module;
 let http_options = {};
-if (argv.cert) {
+if (argv.tls) {
 	http_module = require("https");
 	/*
 	cert: /etc/pki/tls/certs
 	key:  /etc/pki/tls/private
 	*/
-	http_options["cert"] = fs.readFileSync("/path/to/cert.pem");
-	http_options["key"] = fs.readFileSync("/path/to/key.pem");
+	http_options["cert"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "public-cert.pem"));
+	http_options["key"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "private-key.pem"));
 }
 else {
 	http_module = require("http");

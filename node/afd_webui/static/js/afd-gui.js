@@ -2,7 +2,7 @@
 var AFDCTRL = function() {
 	return {
 		/** Websocket protocol scheme. */
-		urlProto: "wss",
+		urlProto: "ws:",
 
 		/** urlBase. */
 		urlBase: "localhost:8040",
@@ -235,7 +235,7 @@ var AFDCTRL = function() {
          * 
          */
 		wsConnectionOpen: function() {
-			AFDCTRL.ws = new WebSocket(AFDCTRL.urlProto + "://" + AFDCTRL.urlBase + "/ctrl", ["json"]),
+			AFDCTRL.ws = new WebSocket(AFDCTRL.urlProto + "//" + AFDCTRL.urlBase + "/ctrl", ["json"]),
 				AFDCTRL.ws.addEventListener("open", function() {
 					const message = {
 						user: "test",
@@ -791,6 +791,9 @@ var AFDCTRL = function() {
         /*
          * Set interval-handler to regularly load data and update display.
          */
+		if (window.location.protocol === "https:") {
+			AFDCTRL.urlProto = "wss:";
+		}
 		AFDCTRL.urlBase = window.location.host;
 		AFDCTRL.wsConnectionOpen();
 		$(document).on("close", function(event) {

@@ -4,10 +4,10 @@
 var AFDLOG = function() {
 	return {
 		/** Websocket protocol scheme. */
-		urlWsProto: "wss",
+		urlWsProto: "ws:",
 
 		/** Protocol scheme for view-content. */
-		urlViewProto: "https",
+		urlViewProto: "http:",
 
 		/** urlBase. */
 		urlBase: "localhost:8040",
@@ -16,7 +16,7 @@ var AFDLOG = function() {
 		selectedLogAreaLines: {},
 
 		wsConnectionOpen: function() {
-			AFDLOG.ws = new WebSocket(AFDLOG.urlWsProto + "://" + AFDLOG.urlBase + "/log", ["json"]),
+			AFDLOG.ws = new WebSocket(AFDLOG.urlWsProto + "//" + AFDLOG.urlBase + "/log", ["json"]),
 				AFDLOG.ws.addEventListener("open", function() {
 					console.info("ws-connection open");
 				});
@@ -48,9 +48,9 @@ var AFDLOG = function() {
 					$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
 					/* TODO progress-swirl? */
 					$("#" + message.context + " *").css({
-                        "cursor" : "auto"
-                    });
-					
+						"cursor": "auto"
+					});
+
 				}
 			});
 		},
@@ -104,9 +104,9 @@ var AFDLOG = function() {
 		callAldaFilter: function(logName) {
 			console.debug("callAldaFilter " + logName);
 			let paramSet = {};
-            $("#" + logName + " *").css({
-                "cursor" : "progress"
-            });
+			$("#" + logName + " *").css({
+				"cursor": "progress"
+			});
 			$.each($("#" + logName + " .filter"), function(i, obj) {
 				if (obj.type == "checkbox") {
 					if (obj.checked == true) {
@@ -220,7 +220,7 @@ var AFDLOG = function() {
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
 			console.debug("view", mode, selectedLogAreaLines);
 			$.each(selectedLogAreaLines, function(i, v) {
-				window.open(AFDLOG.urlViewProto + "://" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
+				window.open(AFDLOG.urlViewProto + "//" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
 			});
 		}
 	}; /* End returned object. */
@@ -254,6 +254,10 @@ var AFDLOG = function() {
 					AFDLOG.updateModal(event.target.id);
 				});
 				AFDLOG.updateModal(modalList[i]);
+			}
+			if (window.location.protocol === "https:") {
+				AFDLOG.urlWsProto = "wss:";
+				AFDLOG.urlViewProto = "https:";
 			}
 			AFDLOG.urlBase = window.location.host;
 			AFDLOG.wsConnectionOpen();

@@ -2,7 +2,7 @@
 var AFDEDIT = function() {
 	return {
 		/** Websocket protocol scheme. */
-		urlProto: "wss",
+		urlProto: "ws:",
 
 		/** urlBase. */
 		urlBase: "localhost:8040",
@@ -196,7 +196,7 @@ var AFDEDIT = function() {
 		},
 
 		wsConnectionOpen: function() {
-			AFDEDIT.ws = new WebSocket(AFDEDIT.urlProto + "://" + AFDEDIT.urlBase + "/ctrl", ["json"]),
+			AFDEDIT.ws = new WebSocket(AFDEDIT.urlProto + "//" + AFDEDIT.urlBase + "/ctrl", ["json"]),
 				AFDEDIT.ws.addEventListener("open", function() {
 					console.info("ws-connection open");
 					if (window.location.pathname.endsWith("afd-hcedit.html")) {
@@ -258,6 +258,9 @@ var AFDEDIT = function() {
 			String.prototype.endsWith = function(suffix) {
 				return this.indexOf(suffix, this.length - suffix.length) !== -1;
 			};
+		}
+		if (window.location.protocol === "https:") {
+			AFDEDIT.urlProto = "wss:";
 		}
 		AFDEDIT.urlBase = window.location.host;
         /*

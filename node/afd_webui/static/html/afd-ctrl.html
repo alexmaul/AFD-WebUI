@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7; IE=EmulateIE9">
+<meta http-equiv="X-UA-Compatible"
+	content="IE=EmulateIE7; IE=EmulateIE9">
 <meta http-equiv="Content-Type" content="text/html; charset=utf8">
 <meta http-equiv="Expires" content="0">
 <meta http-equiv="Cache-control" content="no-cache">
@@ -13,273 +14,359 @@
 <!--[if IE]>
 <script type="application/javascript" src="/static/js/excanvas.min.js"></script>
 <![endif]-->
-<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
-<script type="application/javascript" src="/static/js/jquery-3.4.0.min.js"></script>
-<script type="application/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="/static/css/bootstrap.min.css">
+<script type="application/javascript"
+	src="/static/js/jquery-3.4.0.min.js"></script>
+<script type="application/javascript"
+	src="/static/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/css/afd-gui.css">
 <script type="application/javascript" src="/static/js/afd-gui.js"></script>
+<script type="application/javascript">
+	
+(function() {
+	$(document).ready(function() {
+        /*
+         * Set height for host area.
+         */
+		let tabAreaHeight = $(window).innerHeight() - $("#navbarArea").innerHeight() - 40;
+		$("#tab-area").attr("style", "height:" + tabAreaHeight + "px;");
+        /*
+         * Set event-handler for navbar menu.
+         */
+		$("nav").find("a").not(".dropdown-toggle").click(function(event) {
+			AFDCTRL.evalMenu(event.target.text);
+		});
+        /*
+         * Set update function for modal events.
+         */
+		$("#modalInfo").on("hide.bs.modal", function(event) {
+			console.debug("clear modalInfoBody");
+			$("#modalInfoBody").children().remove();
+		});
+        /*
+         * Initial load data.
+         */
+		// AFDCTRL.loadData();
+        /*
+         * Set interval-handler to regularly load data and update display.
+         */
+		if (window.location.protocol === "https:") {
+			AFDCTRL.urlProto = "wss:";
+		}
+		AFDCTRL.urlBase = window.location.host;
+		AFDCTRL.wsConnectionOpen();
+		$(document).on("close", function(event) {
+			AFDCTRL.wsConnctionClose();
+		});
+	});
+})();
 
+</script>
 </head>
 <body>
 
-    <nav id="navbarArea" class="navbar navbar-expand-lg navbar-expand-md navbar-light bg-light">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Host
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item disabled" href="#">Handle Event</a>
-                        <a class="dropdown-item" href="#">Start/Stop host</a>
-                        <a class="dropdown-item" href="#">Enable/Disable host</a>
-                        <a class="dropdown-item" href="#">Switch host</a>
-                        <a class="dropdown-item" href="#">Retry</a>
-                        <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Debug: Debug</a>
-                            <a class="dropdown-item" href="#">Debug: Trace</a>
-                            <a class="dropdown-item" href="#">Debug: Full trace</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item disabled" href="#">Simulate mode</a>
-                        <a class="dropdown-item" href="#">Search + (De)Select</a>
-                        <div class="dropdown-divider"></div>
-                            <a class="dropdown-item disabled" href="#">Test: Ping</a>
-                            <a class="dropdown-item disabled" href="#">Test: Traceroute</a>
-                        <div class="dropdown-divider"></div>
-                            <a class="dropdown-item disabled" href="#">Load: Files</a>
-                            <a class="dropdown-item disabled" href="#">Load: KBytes</a>
-                            <a class="dropdown-item disabled" href="#">Load: Connections</a>
-                            <a class="dropdown-item disabled" href="#">Load: Active-transfers</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    View
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">System Log</a>
-                        <a class="dropdown-item disabled" href="#">Event Log</a>
-                        <a class="dropdown-item" href="#">Receive Log</a>
-                        <a class="dropdown-item" href="#">Transfer Log</a>
-                        <a class="dropdown-item" href="#">Transfer Debug Log</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Input Log</a>
-                        <a class="dropdown-item" href="#">Output Log</a>
-                        <a class="dropdown-item" href="#">Delete Log</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item disabled" href="#">Queue</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Info</a>
-                        <a class="dropdown-item" href="#">Configuration</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item disabled" href="#">Job details</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Control
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">Start/Stop AMG</a>
-                        <a class="dropdown-item" href="#">Start/Stop FD</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Reread DIR_CONFIG</a>
-                        <a class="dropdown-item" href="#">Reread HOST_CONFIG</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Edit HOST_CONFIG</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item disabled" href="#">Directory Control</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Startup AFD</a>
-                        <a class="dropdown-item" href="#">Shutdown AFD</a>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Setup
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#">Number of rows:</a>
-                        <select class="custom-select mr-sm-2" id="inlineFormCustomSelect" onChange="javascript:AFDCTRL.setMaxRows(this.value);">
-                            <option value="2">2</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="40" selected>40</option>
-                            <option value="60">60</option>
-                            <option value="70">70</option>
-                            <option value="80">80</option>
-                            <option value="90">90</option>
-                            <option value="100">100</option>
-                        </select>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Refresh</a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
+	<nav id="navbarArea"
+		class="navbar navbar-expand-lg navbar-expand-md navbar-light bg-light">
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+					role="button" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false"> Host </a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item disabled" href="#">Handle Event</a> <a
+							class="dropdown-item" href="#">Start/Stop host</a> <a
+							class="dropdown-item" href="#">Enable/Disable host</a> <a
+							class="dropdown-item" href="#">Switch host</a> <a
+							class="dropdown-item" href="#">Retry</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Debug: Debug</a> <a
+							class="dropdown-item" href="#">Debug: Trace</a> <a
+							class="dropdown-item" href="#">Debug: Full trace</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Simulate mode</a> <a
+							class="dropdown-item" href="#">Search + (De)Select</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Test: Ping</a> <a
+							class="dropdown-item disabled" href="#">Test: Traceroute</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Load: Files</a> <a
+							class="dropdown-item disabled" href="#">Load: KBytes</a> <a
+							class="dropdown-item disabled" href="#">Load: Connections</a> <a
+							class="dropdown-item disabled" href="#">Load:
+							Active-transfers</a>
+					</div></li>
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+					role="button" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false"> View </a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="#">System Log</a> <a
+							class="dropdown-item disabled" href="#">Event Log</a> <a
+							class="dropdown-item" href="#">Receive Log</a> <a
+							class="dropdown-item" href="#">Transfer Log</a> <a
+							class="dropdown-item" href="#">Transfer Debug Log</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Input Log</a> <a
+							class="dropdown-item" href="#">Output Log</a> <a
+							class="dropdown-item" href="#">Delete Log</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Queue</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Info</a> <a
+							class="dropdown-item" href="#">Configuration</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Job details</a>
+					</div></li>
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+					role="button" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false"> Control </a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="#">Start/Stop AMG</a> <a
+							class="dropdown-item" href="#">Start/Stop FD</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Reread DIR_CONFIG</a> <a
+							class="dropdown-item" href="#">Reread HOST_CONFIG</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Edit HOST_CONFIG</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item disabled" href="#">Directory Control</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Startup AFD</a> <a
+							class="dropdown-item" href="#">Shutdown AFD</a>
+					</div></li>
+				<li class="nav-item dropdown"><a
+					class="nav-link dropdown-toggle" href="#" id="navbarDropdown"
+					role="button" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false"> Setup </a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="#">Number of rows:</a> <select
+							class="custom-select mr-sm-2" id="inlineFormCustomSelect"
+							onChange="javascript:AFDCTRL.setMaxRows(this.value);">
+							<option value="2">2</option>
+							<option value="5">5</option>
+							<option value="10">10</option>
+							<option value="20">20</option>
+							<option value="40" selected>40</option>
+							<option value="60">60</option>
+							<option value="70">70</option>
+							<option value="80">80</option>
+							<option value="90">90</option>
+							<option value="100">100</option>
+						</select>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Refresh</a>
+					</div></li>
+			</ul>
+		</div>
+	</nav>
 
-    <div id="tab-area">
-        <table id="template-tabcol" style="display: none;">
-            <thead class="tabcol-head">
-                <tr>
-                    <th>Host</th>
-                    <th></th>
-                    <th>Q</th>
-                    <th>R</th>
-                    <th>S</th>
-                    <th></th>
-                    <th>fc</th>
-                    <th>fs</th>
-                    <th>tr</th>
-                    <th>ec</th>
-                </tr>
-            </thead>
-            <tbody class="tabcol-body">
-            </tbody>
-        </table>
-        <table style="display: none;">
-            <tbody>
-                <tr id="template-row" class="tab-row">
-                    <td class="alias status-run"></td>
-                    <td class="mrkbl debug_mode">
-                       <canvas class="debug-canvas" width="7" height="7" style="background: black;"></canvas>
-                    </td>
-                    <td class="status-led status-queue"></td>
-                    <td class="status-led status-retrieve"></td>
-                    <td class="status-led status-send"></td>
-                    <td class="jobs mrkbl">
-                        <span id="template-job" class="DISCONNECT" style="display: none;">00</span>
-                    </td>
-                    <td class="file_count numval"></td>
-                    <td class="file_size numval"></td>
-                    <td class="transfer_rate numval"></td>
-                    <td class="error_count numval"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+	<div id="tab-area">
+		<table id="template-tabcol" style="display: none;">
+			<thead class="tabcol-head">
+				<tr>
+					<th>Host</th>
+					<th></th>
+					<th>Q</th>
+					<th>R</th>
+					<th>S</th>
+					<th></th>
+					<th>fc</th>
+					<th>fs</th>
+					<th>tr</th>
+					<th>ec</th>
+				</tr>
+			</thead>
+			<tbody class="tabcol-body">
+			</tbody>
+		</table>
+		<table style="display: none;">
+			<tbody>
+				<tr id="template-row" class="tab-row">
+					<td class="alias status-run"></td>
+					<td class="mrkbl debug_mode">
+						<canvas class="debug-canvas" width="7" height="7"
+							style="background: black;"></canvas>
+					</td>
+					<td class="status-led status-queue"></td>
+					<td class="status-led status-retrieve"></td>
+					<td class="status-led status-send"></td>
+					<td class="jobs mrkbl"><span id="template-job"
+						class="DISCONNECT" style="display: none;">00</span></td>
+					<td class="file_count numval"></td>
+					<td class="file_size numval"></td>
+					<td class="transfer_rate numval"></td>
+					<td class="error_count numval"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
-    <!-- Begin modal INFO -->
-    <div class="modal fade" id="modalInfo" tabindex="-1" role="dialog" aria-labelledby="modalInfoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-            <div class="modal-content info-box">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalInfoLabel">Host Information</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="modalInfoBody">
-                </div>
-                <!--
+	<!-- Begin modal INFO -->
+	<div class="modal fade" id="modalInfo" tabindex="-1" role="dialog"
+		aria-labelledby="modalInfoLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-scrollable"
+			role="document">
+			<div class="modal-content info-box">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalInfoLabel">Host Information</h5>
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" id="modalInfoBody"></div>
+				<!--
                 <div class="modal-footer">
                 </div>
                 -->
-            </div>
-        </div>
-    </div>
-    <!-- End modal INFO -->
+			</div>
+		</div>
+	</div>
+	<!-- End modal INFO -->
 
-    <!-- Begin modal SELECT -->
-    <div class="modal fade" id="modalSelect" tabindex="-1" role="dialog" aria-labelledby="modalSelectLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-            <div class="modal-content select-box">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalSelectLabel">Search Host</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body form" id="modalSelectBody">
-                    <div class="form-row form-row-padpad">
-                        <span class="space-short">Search in</span>
-                        <div class="col-auto form-inline">
-                            <div class="form-check">
-                                <input type="radio" class="form-check-input filter" id="modal_select_hostname" name="modal_select_where" value="hostname" checked>
-                                <label for="modal_select_hostname" class="form-check-label elbow"> Hostname</label>
-                            </div>
-                        </div>
-                        <div class="col-auto form-inline">
-                            <div class="form-check">
-                                <input type="radio" class="form-check-input filter" id="modal_select_info" name="modal_select_where" value="info">
-                                <label for="modal_select_info" class="form-check-label elbow"> Information</label>
-                            </div>
-                        </div>
-                        <div class="col-1"></div>
-                        <div class="col-auto form-inline">
-                            <div class="form-check">
-                                <input type="radio" class="form-check-input filter" id="modal_select_alias" name="modal_select_hostname" value="alias" checked>
-                                <label for="modal_select_alias" class="form-check-label elbow"> Alias</label>
-                            </div>
-                        </div>
-                        <div class="col-auto form-inline">
-                            <div class="form-check">
-                                <input type="radio" class="form-check-input filter" id="modal_select_real" name="modal_select_hostname" value="real">
-                                <label for="modal_select_real" class="form-check-label elbow"> Real</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-row form-row-padpad">
-                        <div class="col-1 form-inline" style="text-align:right;">
-                            Regex:
-                        </div>
-                        <div class="col-10 form-inline">
-                            <input type="text" class="form-control filter" style="width:100%" id="modal_select_string" name="modal_select_string" maxlength="100">
-                        </div>
-                        <div class="col-1 form-inline">
-                            <button type="button" class="btn btn-secondary button-action" onClick="javascript:$('#modal_select_string').val('');">Clr</button>
-                        </div>
-                    </div>
-                    <div class="form-row form-row-padpad" id="modalSelectProtocolList">
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_ftp" name="modal_select_protocol" value="FTP" checked>
-                                <label for="modal_select_protocol_ftp" class="form-check-label elbow"> FTP</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_http" name="modal_select_protocol" value="HTTP" checked>
-                                <label for="modal_select_protocol_http" class="form-check-label elbow"> HTTP</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_smtp" name="modal_select_protocol" value="SMTP" checked>
-                                <label for="modal_select_protocol_smtp" class="form-check-label elbow"> SMTP</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_file" name="modal_select_protocol" value="LOC" checked>
-                                <label for="modal_select_protocol_file" class="form-check-label elbow"> FILE</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_exec" name="modal_select_protocol" value="EXEC" checked>
-                                <label for="modal_select_protocol_exec" class="form-check-label elbow"> EXEC</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_sftp" name="modal_select_protocol" value="SFTP" checked>
-                                <label for="modal_select_protocol_sftp" class="form-check-label elbow"> SFTP</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_scp" name="modal_select_protocol" value="SCP" checked>
-                                <label for="modal_select_protocol_scp" class="form-check-label elbow"> SCP</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <input type="checkbox" class="form-check-input filter" id="modal_select_protocol_wmo" name="modal_select_protocol" value="WMO" checked>
-                                <label for="modal_select_protocol_wmo" class="form-check-label elbow"> WMO</label>
-                            </div>
-                            <div class="form-check form-inline">
-                                <button type="button" class="btn btn-secondary" onClick="javascript:AFDCTRL.toggleModal('modalSelectProtocolList');">Toggle</button>
-                            </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div style="width:100%; text-align:center;">
-                        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.wsCallAliasSelect('select');">Select</button>
-                        <button type="button" class="btn btn-success button-action" onClick="javascript:AFDCTRL.wsCallAliasSelect('deselect');">Deselect</button>
-                        <button type="button" class="btn btn-primary button-action" data-dismiss="modal">Hide Dialog</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End modal SELECT -->
+	<!-- Begin modal SELECT -->
+	<div class="modal fade" id="modalSelect" tabindex="-1" role="dialog"
+		aria-labelledby="modalSelectLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg modal-dialog-scrollable"
+			role="document">
+			<div class="modal-content select-box">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalSelectLabel">Search Host</h5>
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body form" id="modalSelectBody">
+					<div class="form-row form-row-padpad">
+						<span class="space-short">Search in</span>
+						<div class="col-auto form-inline">
+							<div class="form-check">
+								<input type="radio" class="form-check-input filter"
+									id="modal_select_hostname" name="modal_select_where"
+									value="hostname" checked> <label
+									for="modal_select_hostname" class="form-check-label elbow">
+									Hostname</label>
+							</div>
+						</div>
+						<div class="col-auto form-inline">
+							<div class="form-check">
+								<input type="radio" class="form-check-input filter"
+									id="modal_select_info" name="modal_select_where" value="info">
+								<label for="modal_select_info" class="form-check-label elbow">
+									Information</label>
+							</div>
+						</div>
+						<div class="col-1"></div>
+						<div class="col-auto form-inline">
+							<div class="form-check">
+								<input type="radio" class="form-check-input filter"
+									id="modal_select_alias" name="modal_select_hostname"
+									value="alias" checked> <label for="modal_select_alias"
+									class="form-check-label elbow"> Alias</label>
+							</div>
+						</div>
+						<div class="col-auto form-inline">
+							<div class="form-check">
+								<input type="radio" class="form-check-input filter"
+									id="modal_select_real" name="modal_select_hostname"
+									value="real"> <label for="modal_select_real"
+									class="form-check-label elbow"> Real</label>
+							</div>
+						</div>
+					</div>
+					<div class="form-row form-row-padpad">
+						<div class="col-1 form-inline" style="text-align: right;">
+							Regex:</div>
+						<div class="col-10 form-inline">
+							<input type="text" class="form-control filter"
+								style="width: 100%" id="modal_select_string"
+								name="modal_select_string" maxlength="100">
+						</div>
+						<div class="col-1 form-inline">
+							<button type="button" class="btn btn-secondary button-action"
+								onClick="javascript:$('#modal_select_string').val('');">Clr</button>
+						</div>
+					</div>
+					<div class="form-row form-row-padpad" id="modalSelectProtocolList">
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_ftp" name="modal_select_protocol"
+								value="FTP" checked> <label
+								for="modal_select_protocol_ftp" class="form-check-label elbow">
+								FTP</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_http" name="modal_select_protocol"
+								value="HTTP" checked> <label
+								for="modal_select_protocol_http" class="form-check-label elbow">
+								HTTP</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_smtp" name="modal_select_protocol"
+								value="SMTP" checked> <label
+								for="modal_select_protocol_smtp" class="form-check-label elbow">
+								SMTP</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_file" name="modal_select_protocol"
+								value="LOC" checked> <label
+								for="modal_select_protocol_file" class="form-check-label elbow">
+								FILE</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_exec" name="modal_select_protocol"
+								value="EXEC" checked> <label
+								for="modal_select_protocol_exec" class="form-check-label elbow">
+								EXEC</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_sftp" name="modal_select_protocol"
+								value="SFTP" checked> <label
+								for="modal_select_protocol_sftp" class="form-check-label elbow">
+								SFTP</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_scp" name="modal_select_protocol"
+								value="SCP" checked> <label
+								for="modal_select_protocol_scp" class="form-check-label elbow">
+								SCP</label>
+						</div>
+						<div class="form-check form-inline">
+							<input type="checkbox" class="form-check-input filter"
+								id="modal_select_protocol_wmo" name="modal_select_protocol"
+								value="WMO" checked> <label
+								for="modal_select_protocol_wmo" class="form-check-label elbow">
+								WMO</label>
+						</div>
+						<div class="form-check form-inline">
+							<button type="button" class="btn btn-secondary"
+								onClick="javascript:AFDCTRL.toggleModal('modalSelectProtocolList');">Toggle</button>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div style="width: 100%; text-align: center;">
+						<button type="button" class="btn btn-success button-action"
+							onClick="javascript:AFDCTRL.wsCallAliasSelect('select');">Select</button>
+						<button type="button" class="btn btn-success button-action"
+							onClick="javascript:AFDCTRL.wsCallAliasSelect('deselect');">Deselect</button>
+						<button type="button" class="btn btn-primary button-action"
+							data-dismiss="modal">Hide Dialog</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- End modal SELECT -->
 
 </body>

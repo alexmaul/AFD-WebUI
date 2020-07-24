@@ -16,10 +16,13 @@ var AFDLOG = function() {
 		selectedLogAreaLines: {},
 
 		wsConnectionOpen: function() {
-			AFDLOG.ws = new WebSocket(AFDLOG.urlWsProto + "//" + AFDLOG.urlBase + "/log", ["json"]),
-				AFDLOG.ws.addEventListener("open", function() {
-					console.info("ws-connection open");
-				});
+			AFDLOG.ws = new WebSocket(
+				AFDLOG.urlWsProto + "//" + AFDLOG.urlBase + "/log",
+				["json"]
+			);
+			AFDLOG.ws.addEventListener("open", function() {
+				console.info("ws-connection open");
+			});
 			AFDLOG.ws.addEventListener("close", function() {
 				alert("AFD closed connection!");
 			});

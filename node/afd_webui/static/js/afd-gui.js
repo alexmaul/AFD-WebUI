@@ -235,16 +235,19 @@ var AFDCTRL = function() {
          * 
          */
 		wsConnectionOpen: function() {
-			AFDCTRL.ws = new WebSocket(AFDCTRL.urlProto + "//" + AFDCTRL.urlBase + "/ctrl", ["json"]),
-				AFDCTRL.ws.addEventListener("open", function() {
-					const message = {
-						user: "test",
-						class: "fsa",
-						command: "fsa",
-						action: "start"
-					};
-					AFDCTRL.ws.send(JSON.stringify(message));
-				});
+			AFDCTRL.ws = new WebSocket(
+				AFDCTRL.urlProto + "//" + AFDCTRL.urlBase + "/ctrl",
+				["json"]
+			);
+			AFDCTRL.ws.addEventListener("open", function() {
+				const message = {
+					user: "test",
+					class: "fsa",
+					command: "fsa",
+					action: "start"
+				};
+				AFDCTRL.ws.send(JSON.stringify(message));
+			});
 			AFDCTRL.ws.addEventListener("close", function() {
 				alert("AFD closed connection!");
 			});

@@ -196,29 +196,32 @@ var AFDEDIT = function() {
 		},
 
 		wsConnectionOpen: function() {
-			AFDEDIT.ws = new WebSocket(AFDEDIT.urlProto + "//" + AFDEDIT.urlBase + "/ctrl", ["json"]),
-				AFDEDIT.ws.addEventListener("open", function() {
-					console.info("ws-connection open");
-					if (window.location.pathname.endsWith("afd-hcedit.html")) {
+			AFDEDIT.ws = new WebSocket(
+				AFDEDIT.urlProto + "//" + AFDEDIT.urlBase + "/ctrl",
+				["json"]
+			);
+			AFDEDIT.ws.addEventListener("open", function() {
+				console.info("ws-connection open");
+				if (window.location.pathname.endsWith("afd-hcedit.html")) {
+					/*
+					 * Document-ready actions for Host-Config-Editor.
+					 */
+					if (window.location.search != "") {
 						/*
-						 * Document-ready actions for Host-Config-Editor.
+						 * In case there"s "?<alias>" in URL, load this alias ...
 						 */
-						if (window.location.search != "") {
-							/*
-							 * In case there"s "?<alias>" in URL, load this alias ...
-							 */
-							let al = window.location.search.substring(1).split(",");
-							AFDEDIT.readHostconfig(al[0]);
-						} else {
-							/*
-							 * ... otherwise load the first one.
-							 */
-							AFDEDIT.readHostconfig(null);
-						}
+						let al = window.location.search.substring(1).split(",");
+						AFDEDIT.readHostconfig(al[0]);
 					} else {
-						alert("Why is there no DIR_CONFIG editor???");
+						/*
+						 * ... otherwise load the first one.
+						 */
+						AFDEDIT.readHostconfig(null);
 					}
-				});
+				} else {
+					alert("Why is there no DIR_CONFIG editor???");
+				}
+			});
 			AFDEDIT.ws.addEventListener("close", function() {
 				alert("AFD closed connection!");
 			});

@@ -240,6 +240,7 @@ var AFDCTRL = function() {
 				["json"]
 			);
 			AFDCTRL.ws.addEventListener("open", function() {
+				AFDCTRL.wsConnectionHeartbeat();
 				const message = {
 					user: "test",
 					class: "fsa",
@@ -249,8 +250,11 @@ var AFDCTRL = function() {
 				AFDCTRL.ws.send(JSON.stringify(message));
 			});
 			AFDCTRL.ws.addEventListener("close", function() {
+				clearTimeout(AFDCTRL.ws.pingTimeout);
 				alert("AFD closed connection!");
 			});
+			AFDCTRL.ws.addEventListener("ping", AFDCTRL.wsConnectionHeartbeat
+			);
 			AFDCTRL.ws.addEventListener("error", function(event) {
 				// error handler -> reconnect.
 			});
@@ -283,6 +287,16 @@ var AFDCTRL = function() {
 		},
 
 		/**
+		 *
+		 */
+		wsConnectionHeartbeat: function() {
+			clearTimeout(AFDCTRL.ws.pingTimeout);
+			AFDCTRL.ws.pingTimeout = setTimeout(() => {	// TODO: so ähnlich für re-connect.
+				AFDCTRL.ws.terminate();
+			}, 30000 + 1000);
+		},
+
+		/**
          * 
          */
 		wsConnctionClose: function() {
@@ -293,6 +307,7 @@ var AFDCTRL = function() {
 				action: "stop"
 			};
 			AFDCTRL.ws.send(JSON.stringify(message));
+			clearTimeout(AFDCTRL.ws.pingTimeout);
 		},
 
 		/*

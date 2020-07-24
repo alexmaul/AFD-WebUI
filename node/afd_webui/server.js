@@ -154,11 +154,9 @@ const STATUS = {
 	error: 500,
 };
 
-/** Set holding all ws-connections we send fsa-status to.
- *
- * key: connection object, value: Interval object
+/**
+ * Holds interval object sending fsa-status to all ws-connections.
  */
-const fsaConnSet = [];
 var fsaLoopInterval = null;
 
 /**
@@ -233,8 +231,9 @@ fs.readFile(
  */
 const app = express();
 app.disable('x-powered-by');
-app.set('view engine', 'ejs');
-/*  User authentication. */
+/*
+ * User authentication.
+ */
 /* TODO: write proper validation! */
 app.use(basicAuth({
 	users: JSON.parse(
@@ -247,13 +246,38 @@ app.use(basicAuth({
 }));
 app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
 app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
-/* Prepare session context handler. */
+/*
+ * Prepare session context handler.
+ */
 const sessionParser = session({
 	saveUninitialized: false,
 	secret: "$eCuRiTy",
 	resave: false
 });
 app.use(sessionParser);
+/**
+ * Set dynamic routing for content-view.
+ *
+ * The worker function needs to send the response object 'res'.
+ *
+ * GET "/view/<mode>/<path:arcfile>"
+ */
+app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
+	view_content(res, req.params.arc, req.params.mode);
+});
+/*
+ * Setup template engine.
+ */
+app.set('view engine', 'ejs');
+var template_info = null;
+fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
+	{ encoding: "utf8" },
+	(err, data) => {
+		if (!err) {
+			template_info = ejs.compile(data);
+		}
+	}
+);
 /* 
  * If SSL/TLS is requested, load HTTPS module and secure the server. Otherwise 
  * load unsecure HTTP module.
@@ -273,21 +297,12 @@ else {
 	http_module = require("http");
 
 }
-/* Create server objects. */
-const server = http_module.createServer(http_options, app);
-const wss_ctrl = new WebSocket.Server({ noServer: true });
-const wss_log = new WebSocket.Server({ noServer: true });
-
-/**
- * Set dynamic routing for content-view.
- *
- * The worker function needs to send the response object 'res'.
- *
- * GET "/view/<mode>/<path:arcfile>"
+/*
+ * Create server objects.
  */
-app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
-	view_content(res, req.params.arc, req.params.mode);
-});
+const server = http_module.createServer(http_options, app);
+const wss_ctrl = new WebSocket.Server({ noServer: true, clientTracking: true });
+const wss_log = new WebSocket.Server({ noServer: true, clientTracking: true });
 
 /**
  * Handle upgrade to Websocket connection.
@@ -311,24 +326,13 @@ server.on('upgrade', function upgrade(request, socket, head) {
 });
 
 /*
- * Setup template engine.
- */
-var template_info = null;
-fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
-	{ encoding: "utf8" },
-	(err, data) => {
-		if (!err) {
-			template_info = ejs.compile(data);
-		}
-	}
-);
-
-/*
  * When Websocket-Server establishes an incoming connection ...
  */
 wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 	const ip = req.socket.remoteAddress;
-	console.log("connection ctrl open from %s.", ip);
+	console.info("connection ctrl open from %s.", ip);
+	ws.isAlive = true;
+	ws.on('pong', heartbeat);
 	/*
      * Evaluate incoming message, dispatch actions to functions.
      */
@@ -341,10 +345,10 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 				/* About sending status to client. */
 				switch (message.action) {
 					case "start":
-						fsaLoopStart(ws);
+						fsaLoopStart();
 						break;
 					case "stop":
-						fsaLoopStop(ws);
+						fsaLoopStop();
 						break;
 				}
 				break;
@@ -365,22 +369,49 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
      * When a connection is closed by the client ...
      */
 	ws.on("close", () => {
-		fsaLoopStop(ws);
-		console.log("connection ctrl close from %s", ip);
+		fsaLoopStop();
+		heartbeatStop();
+		console.info("connection ctrl close from %s", ip);
 	});
 
 	/*
      * In case of any error, cutting a connection ...
      */
-	// TODO:
+	// TODO: ???
 });
+
+/**
+ * 
+ */
+function heartbeatStop() {
+	if (wss_ctrl.clients.size == 0) {
+		console.log("clear heartbeat interval");
+		clearInterval(heartbeat_interval);
+		heartbeat_interval = null;
+	}
+}
+
+function heartbeat() {
+	this.isAlive = true;
+}
+
+var heartbeat_interval = setInterval(() => {
+	wss_ctrl.clients.forEach((ws) => {
+		if (ws.isAlive === false) {
+			console.info("connection ctrl cut from %s", ws);
+			return ws.terminate();
+		}
+		ws.isAlive = false;
+		ws.ping(() => { });
+	});
+}, 30000);
 
 /*
  * When Websocket-Server establishes an incoming connection ...
  */
 wss_log.on("connection", function connection_log(ws, req) {
 	const ip = req.socket.remoteAddress;
-	console.log("connection log open from %s.", ip);
+	console.info("connection log open from %s.", ip);
 	/*
      * Evaluate incoming message, dispatch actions to functions.
      */
@@ -413,7 +444,7 @@ wss_log.on("connection", function connection_log(ws, req) {
      * When a connection is closed by the client ...
      */
 	ws.on("close", () => {
-		console.log("connection log close from %s", ip);
+		console.info("connection log close from %s", ip);
 	});
 
 	/*
@@ -424,28 +455,27 @@ wss_log.on("connection", function connection_log(ws, req) {
 
 
 /** */
-function fsaLoopStart(ws) {
+function fsaLoopStart() {
 	if (MOCK) {
-		return fsaLoopStartMock(ws);
+		return fsaLoopStartMock();
 	} else {
-		return fsaLoopStartReal(ws);
+		return fsaLoopStartReal();
 	}
 }
 
 /** */
-function fsaLoopStop(ws) {
+function fsaLoopStop() {
 	console.log("fsa loop stop");
-	let i = fsaConnSet.indexOf(ws);
-	fsaConnSet.splice(i, 1);
-	if (fsaConnSet.length == 0) {
+	if (wss_ctrl.clients.size == 0) {
 		clearInterval(fsaLoopInterval);
 		fsaLoopInterval = null;
 	}
 }
+
 /**
  * Setup Interval: read and prepare fsa_view output.
  */
-function fsaLoopStartReal(ws) {
+function fsaLoopStartReal() {
 	console.log("start fsa loop with real data.");
 	if (fsaLoopInterval === null) {
 		fsaLoopInterval = setInterval(() => {
@@ -458,7 +488,7 @@ function fsaLoopStartReal(ws) {
 						throw error;
 					}
 					else {
-						for (const ws_instance of fsaConnSet) {
+						for (const ws_instance of wss_ctrl.clients) {
 							ws_instance.send('{"class":"fsa","data":' + stdout + "}");
 						}
 					}
@@ -466,27 +496,24 @@ function fsaLoopStartReal(ws) {
 			);
 		}, 2000);
 	}
-	fsaConnSet.push(ws);
 }
 
-function fsaLoopStartMock(ws) {
+function fsaLoopStartMock() {
 	let counter = 0;
 	console.log("read fsa.json");
 	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/fsa.json"));
 	data.counter = counter;
-
 	console.log("start fsa loop with %s", data);
 	if (fsaLoopInterval === null) {
 		fsaLoopInterval = setInterval(() => {
-			console.log("fsa send #%d to %d", counter, fsaConnSet.length);
+			console.log("fsa send #%d to %d", counter, wss_ctrl.clients.size);
 			data.counter = counter;
-			for (const ws_instance of fsaConnSet) {
+			for (const ws_instance of wss_ctrl.clients) {
 				ws_instance.send(JSON.stringify(data));
 			}
 			counter++;
 		}, 2000);
 	}
-	fsaConnSet.push(ws);
 }
 
 /**

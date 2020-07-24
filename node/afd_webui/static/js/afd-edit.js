@@ -1,6 +1,9 @@
 "use strict";
 var AFDEDIT = function() {
 	return {
+		/** Websocket protocol scheme. */
+		urlProto: "wss",
+
 		/** urlBase. */
 		urlBase: "localhost:8040",
 
@@ -193,7 +196,7 @@ var AFDEDIT = function() {
 		},
 
 		wsConnectionOpen: function() {
-			AFDEDIT.ws = new WebSocket("ws://" + AFDEDIT.urlBase + "/ctrl", ["json"]),
+			AFDEDIT.ws = new WebSocket(AFDEDIT.urlProto + "://" + AFDEDIT.urlBase + "/ctrl", ["json"]),
 				AFDEDIT.ws.addEventListener("open", function() {
 					console.info("ws-connection open");
 					if (window.location.pathname.endsWith("afd-hcedit.html")) {

@@ -1,6 +1,9 @@
 "use strict";
 var AFDCTRL = function() {
 	return {
+		/** Websocket protocol scheme. */
+		urlProto: "wss",
+
 		/** urlBase. */
 		urlBase: "localhost:8040",
 
@@ -232,7 +235,7 @@ var AFDCTRL = function() {
          * 
          */
 		wsConnectionOpen: function() {
-			AFDCTRL.ws = new WebSocket("ws://" + AFDCTRL.urlBase + "/ctrl", ["json"]),
+			AFDCTRL.ws = new WebSocket(AFDCTRL.urlProto + "://" + AFDCTRL.urlBase + "/ctrl", ["json"]),
 				AFDCTRL.ws.addEventListener("open", function() {
 					const message = {
 						user: "test",

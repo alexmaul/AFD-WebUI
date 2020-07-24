@@ -3,6 +3,12 @@
  */
 var AFDLOG = function() {
 	return {
+		/** Websocket protocol scheme. */
+		urlWsProto: "wss",
+
+		/** Protocol scheme for view-content. */
+		urlViewProto: "https",
+
 		/** urlBase. */
 		urlBase: "localhost:8040",
 
@@ -10,7 +16,7 @@ var AFDLOG = function() {
 		selectedLogAreaLines: {},
 
 		wsConnectionOpen: function() {
-			AFDLOG.ws = new WebSocket("ws://" + AFDLOG.urlBase + "/log", ["json"]),
+			AFDLOG.ws = new WebSocket(AFDLOG.urlWsProto + "://" + AFDLOG.urlBase + "/log", ["json"]),
 				AFDLOG.ws.addEventListener("open", function() {
 					console.info("ws-connection open");
 				});
@@ -31,20 +37,20 @@ var AFDLOG = function() {
 						// TODO append or replace lines.
 					}
 					if ("lines" in message) {
-					    context.html(message.lines);
+						context.html(message.lines);
 					}
 					else {
-					    context.html(message.text);
+						context.html(message.text);
 					}
 					context.find("tr").on("click", function(event) {
 						$(this).toggleClass("selected");
 					});
 					$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
-					/* TODO progress-swirl?
+					/* TODO progress-swirl? */
 					$("#" + message.context + " *").css({
                         "cursor" : "auto"
                     });
-					*/
+					
 				}
 			});
 		},
@@ -98,6 +104,9 @@ var AFDLOG = function() {
 		callAldaFilter: function(logName) {
 			console.debug("callAldaFilter " + logName);
 			let paramSet = {};
+            $("#" + logName + " *").css({
+                "cursor" : "progress"
+            });
 			$.each($("#" + logName + " .filter"), function(i, obj) {
 				if (obj.type == "checkbox") {
 					if (obj.checked == true) {
@@ -211,7 +220,7 @@ var AFDLOG = function() {
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
 			console.debug("view", mode, selectedLogAreaLines);
 			$.each(selectedLogAreaLines, function(i, v) {
-				window.open("http://" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
+				window.open(AFDLOG.urlViewProto + "://" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
 			});
 		}
 	}; /* End returned object. */

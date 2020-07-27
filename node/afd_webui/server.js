@@ -77,9 +77,10 @@ const argv = yargs
 			type: "string",
 			description: "Log directory, if different from AFD log dir."
 		},
-		tls: {
+		"noTls": {
 			type: "boolean",
-			description: "Start as HTTPS-server. Uses TLS"
+			default: false,
+			description: "Do not use TLS. Start as unsecured HTTP-server."
 		},
 		cert: {
 			type: "string",
@@ -284,7 +285,11 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
  */
 var http_module;
 let http_options = {};
-if (argv.tls) {
+if (argv.noTls) {
+	console.info("Start unsecured HTTP server.")
+	http_module = require("http");
+}
+else {
 	http_module = require("https");
 	/*
 	cert: /etc/pki/tls/certs
@@ -292,10 +297,6 @@ if (argv.tls) {
 	*/
 	http_options["cert"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "public-cert.pem"));
 	http_options["key"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "private-key.pem"));
-}
-else {
-	http_module = require("http");
-
 }
 /*
  * Create server objects.

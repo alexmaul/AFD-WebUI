@@ -1,8 +1,15 @@
 "use strict";
-var AFDCTRL = function() {
+
+var AFDUI = function() {
+	/*
+	 * THE global object.
+	 */
 	return {
 		/** Websocket protocol scheme. */
-		urlProto: "ws:",
+		urlWsProto: "ws:",
+
+		/** Protocol scheme for view-content. */
+		urlViewProto: "http:",
 
 		/** urlBase. */
 		urlBase: "localhost:8040",
@@ -15,8 +22,19 @@ var AFDCTRL = function() {
 
 		/** Interval [msec] for heartbeat and re-connect delay. */
 		heartbeatInterval: 3000,
-		reconnectInterval: null,
 
+		updateUrlGlobals: function() {
+			if (window.location.protocol === "https:") {
+				AFDUI.urlWsProto = "wss:";
+				AFDUI.urlViewProto = "https:";
+			}
+			AFDUI.urlBase = window.location.host;
+		}
+	};
+}();
+
+var AFDCTRL = function() {
+	return {
 		/** Initial number of alias rows. */
 		rowNum: 0,
 
@@ -28,6 +46,7 @@ var AFDCTRL = function() {
 
 		/** Hold Websocket connection. */
 		ws: {},
+		reconnectInterval: null,
 
 		/** Set max. number of rows for control-window host display. */
 		setMaxRows: function(rows) {
@@ -166,31 +185,31 @@ var AFDCTRL = function() {
 					AFDCTRL.wsCallAliasCmd("config", Object.keys(this.markedRows));
 					break;
 				case "System Log":
-					window.open(AFDCTRL.urlPathLog + "#system");
+					window.open(AFDUI.urlPathLog + "#system");
 					break;
 				case "Receive Log":
-					window.open(AFDCTRL.urlPathLog + "#receive");
+					window.open(AFDUI.urlPathLog + "#receive");
 					break;
 				case "Transfer Log":
-					window.open(AFDCTRL.urlPathLog + "#transfer");
+					window.open(AFDUI.urlPathLog + "#transfer");
 					break;
 				case "Transfer Debug Log":
-					window.open(AFDCTRL.urlPathLog + "#transfer-debug");
+					window.open(AFDUI.urlPathLog + "#transfer-debug");
 					break;
 				case "Input Log":
-					window.open(AFDCTRL.urlPathLog +
+					window.open(AFDUI.urlPathLog +
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#input");
 					break;
 				case "Output Log":
-					window.open(AFDCTRL.urlPathLog
+					window.open(AFDUI.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#output");
 					break;
 				case "Delete Log":
-					window.open(AFDCTRL.urlPathLog
+					window.open(AFDUI.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#delete");
 					break;
 				case "Queue":
-					window.open(AFDCTRL.urlPathLog
+					window.open(AFDUI.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#queue");
 					break;
                 /*
@@ -209,7 +228,7 @@ var AFDCTRL = function() {
 					AFDCTRL.wsCallAfdCmd("hc", "update");
 					break;
 				case "Edit HOST_CONFIG":
-					window.open(AFDCTRL.urlPathHcEdit
+					window.open(AFDUI.urlPathHcEdit
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true));
 					break;
 				case "Startup AFD":
@@ -237,11 +256,11 @@ var AFDCTRL = function() {
          */
 		wsConnectionOpen: function() {
 			AFDCTRL.ws = new WebSocket(
-				AFDCTRL.urlProto + "//" + AFDCTRL.urlBase + "/ctrl",
+				AFDUI.urlWsProto + "//" + AFDUI.urlBase + "/ctrl",
 				["json"]
 			);
 			AFDCTRL.ws.addEventListener("open", function() {
-				setTimeout(function() { AFDCTRL.wsConnectionHeartbeat() }, 5000);
+				setTimeout(function() { AFDCTRL.wsConnectionHeartbeat() }, AFDUI.heartbeatInterval);
 				if (AFDCTRL.reconnectInterval !== null) {
 					clearInterval(AFDCTRL.reconnectInterval);
 					AFDCTRL.reconnectInterval = null;
@@ -299,7 +318,7 @@ var AFDCTRL = function() {
 			AFDCTRL.ws.pingTimeout = setTimeout(function() {
 				console.warn("Heartbeat timeout, closing WS.");
 				AFDCTRL.ws.close();
-			}, AFDCTRL.heartbeatInterval + 1000);
+			}, AFDUI.heartbeatInterval + 1000);
 		},
 
 		/**
@@ -323,7 +342,7 @@ var AFDCTRL = function() {
 					retry++;
 					console.info("Try to re-connect (#%d) ...", retry);
 					AFDCTRL.wsConnectionOpen();
-				}, AFDCTRL.heartbeatInterval);
+				}, AFDUI.heartbeatInterval);
 			}
 		},
 		/**
@@ -814,12 +833,6 @@ var AFDCTRL = function() {
 
 var AFDEDIT = function() {
 	return {
-		/** Websocket protocol scheme. */
-		urlProto: "ws:",
-
-		/** urlBase. */
-		urlBase: "localhost:8040",
-
 		/** Hold Websocket connection. */
 		ws: {},
 
@@ -1010,7 +1023,7 @@ var AFDEDIT = function() {
 
 		wsConnectionOpen: function() {
 			AFDEDIT.ws = new WebSocket(
-				AFDEDIT.urlProto + "//" + AFDEDIT.urlBase + "/ctrl",
+				AFDUI.urlWsProto + "//" + AFDUI.urlBase + "/ctrl",
 				["json"]
 			);
 			AFDEDIT.ws.addEventListener("open", function() {
@@ -1061,7 +1074,12 @@ var AFDEDIT = function() {
          * 
          */
 		wsConnctionClose: function() {
-			console.debug("close ws connection.");
+			console.info("AFD closed ws connection.");
+			alert(
+				"AFD closed connection!\n\n"
+				+ "Attempts (10) to reconnect failed.\n\n"
+				+ "Please reload this page."
+			);
 		}
 
 	}; /* End returned object. */
@@ -1069,21 +1087,12 @@ var AFDEDIT = function() {
 
 var AFDLOG = function() {
 	return {
-		/** Websocket protocol scheme. */
-		urlWsProto: "ws:",
-
-		/** Protocol scheme for view-content. */
-		urlViewProto: "http:",
-
-		/** urlBase. */
-		urlBase: "localhost:8040",
-
 		/** selectedLogAreaLines. */
 		selectedLogAreaLines: {},
 
 		wsConnectionOpen: function() {
 			AFDLOG.ws = new WebSocket(
-				AFDLOG.urlWsProto + "//" + AFDLOG.urlBase + "/log",
+				AFDUI.urlWsProto + "//" + AFDUI.urlBase + "/log",
 				["json"]
 			);
 			AFDLOG.ws.addEventListener("open", function() {
@@ -1128,7 +1137,12 @@ var AFDLOG = function() {
          * 
          */
 		wsConnctionClose: function() {
-			console.debug("close ws connection.");
+			console.info("AFD closed ws connection.");
+			alert(
+				"AFD closed connection!\n\n"
+				+ "Attempts (10) to reconnect failed.\n\n"
+				+ "Please reload this page."
+			);
 		},
 
         /**
@@ -1289,7 +1303,7 @@ var AFDLOG = function() {
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
 			console.debug("view", mode, selectedLogAreaLines);
 			$.each(selectedLogAreaLines, function(i, v) {
-				window.open(AFDLOG.urlViewProto + "//" + AFDLOG.urlBase + "/view/" + mode + "/" + v);
+				window.open(AFDUI.urlViewProto + "//" + AFDUI.urlBase + "/view/" + mode + "/" + v);
 			});
 		}
 	}; /* End returned object. */

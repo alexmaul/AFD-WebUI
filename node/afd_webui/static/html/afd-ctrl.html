@@ -51,10 +51,7 @@
         /*
          * Set interval-handler to regularly load data and update display.
          */
-		if (window.location.protocol === "https:") {
-			AFDCTRL.urlProto = "wss:";
-		}
-		AFDCTRL.urlBase = window.location.host;
+			AFDUI.updateUrlGlobals();
 		AFDCTRL.wsConnectionOpen();
 		$(document).on("close", function(event) {
 			AFDCTRL.wsConnctionClose();

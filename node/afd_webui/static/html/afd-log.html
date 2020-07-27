@@ -48,11 +48,7 @@
 				});
 				AFDLOG.updateModal(modalList[i]);
 			}
-			if (window.location.protocol === "https:") {
-				AFDLOG.urlWsProto = "wss:";
-				AFDLOG.urlViewProto = "https:";
-			}
-			AFDLOG.urlBase = window.location.host;
+			AFDUI.updateUrlGlobals();
 			AFDLOG.wsConnectionOpen();
 			$(document).on("close", function(event) {
 				AFDLOG.wsConnctionClose();

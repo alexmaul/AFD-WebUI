@@ -452,7 +452,7 @@ var heartbeat_interval = setInterval(() => {
 		ws.isAlive = false;
 		ws.ping(() => { });
 	});
-}, 30000);
+}, 10000);
 
 /*
  * When Websocket-Server establishes an incoming connection ...

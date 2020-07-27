@@ -27,10 +27,7 @@
 				return this.indexOf(suffix, this.length - suffix.length) !== -1;
 			};
 		}
-		if (window.location.protocol === "https:") {
-			AFDEDIT.urlProto = "wss:";
-		}
-		AFDEDIT.urlBase = window.location.host;
+		AFDUI.updateUrlGlobals();
         /*
          * Set interval-handler to regularly load data and update display.
          */

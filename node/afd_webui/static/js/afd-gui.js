@@ -13,8 +13,9 @@ var AFDCTRL = function() {
 		/** urlPathEdit. */
 		urlPathHcEdit: "/static/html/afd-hcedit.html",
 
-		/** Interval [msec] for display update. */
-		updateInterval: 3210,
+		/** Interval [msec] for heartbeat and re-connect delay. */
+		heartbeatInterval: 3000,
+		reconnectInterval: null,
 
 		/** Initial number of alias rows. */
 		rowNum: 0,
@@ -240,7 +241,11 @@ var AFDCTRL = function() {
 				["json"]
 			);
 			AFDCTRL.ws.addEventListener("open", function() {
-				AFDCTRL.wsConnectionHeartbeat();
+				setTimeout(function() { AFDCTRL.wsConnectionHeartbeat() }, 5000);
+				if (AFDCTRL.reconnectInterval !== null) {
+					clearInterval(AFDCTRL.reconnectInterval);
+					AFDCTRL.reconnectInterval = null;
+				}
 				const message = {
 					user: "test",
 					class: "fsa",
@@ -249,14 +254,14 @@ var AFDCTRL = function() {
 				};
 				AFDCTRL.ws.send(JSON.stringify(message));
 			});
-			AFDCTRL.ws.addEventListener("close", function() {
+			AFDCTRL.ws.addEventListener("close", function(event) {
+				console.warn(event.code, event.reason);
 				clearTimeout(AFDCTRL.ws.pingTimeout);
-				alert("AFD closed connection!");
+				AFDCTRL.wsConnectionReconnect();
 			});
 			AFDCTRL.ws.addEventListener("ping", AFDCTRL.wsConnectionHeartbeat
 			);
 			AFDCTRL.ws.addEventListener("error", function(event) {
-				// error handler -> reconnect.
 			});
 			AFDCTRL.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
@@ -291,11 +296,36 @@ var AFDCTRL = function() {
 		 */
 		wsConnectionHeartbeat: function() {
 			clearTimeout(AFDCTRL.ws.pingTimeout);
-			AFDCTRL.ws.pingTimeout = setTimeout(() => {	// TODO: so ähnlich für re-connect.
-				AFDCTRL.ws.terminate();
-			}, 30000 + 1000);
+			AFDCTRL.ws.pingTimeout = setTimeout(function() {
+				console.warn("Heartbeat timeout, closing WS.");
+				AFDCTRL.ws.close();
+			}, AFDCTRL.heartbeatInterval + 1000);
 		},
 
+		/**
+		 *
+		 */
+		wsConnectionReconnect: function() {
+			let retry = 0;
+			if (AFDCTRL.reconnectInterval === null) {
+				AFDCTRL.reconnectInterval = setInterval(function() {
+					if (retry >= 10 && AFDCTRL.reconnectInterval !== null) {
+						console.info("Re-connect failed.");
+						clearInterval(AFDCTRL.reconnectInterval);
+						AFDCTRL.reconnectInterval = null;
+						alert(
+							"AFD closed connection!\n\n"
+							+ "Attempts (10) to reconnect failed.\n\n"
+							+ "Please reload this page."
+						);
+						return;
+					}
+					retry++;
+					console.info("Try to re-connect (#%d) ...", retry);
+					AFDCTRL.wsConnectionOpen();
+				}, AFDCTRL.heartbeatInterval);
+			}
+		},
 		/**
          * 
          */

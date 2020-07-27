@@ -117,6 +117,10 @@ if (MOCK) {
 /* ****************************************************************************
  * Handle start and stop command, pid file, and set signal handlers.
  */
+if (!("afd_work_dir" in argv) || argv.afd_work_dir === "") {
+	console.error("'-w AFD_WORK_DIR' is required!");
+	process.exit(1);
+}
 const AFD_WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
 

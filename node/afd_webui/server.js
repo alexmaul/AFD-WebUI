@@ -202,10 +202,10 @@ const STATUS = {
 	error: 500,
 };
 
-/**
- * Holds interval object sending fsa-status to all ws-connections.
- */
+/** Holds interval object sending fsa-status to all ws-connections. */
 var fsaLoopInterval = null;
+/** Heartbeat interval time and timeout. */
+const HEARTBEAT_INTERVAL_TIME = 10000;
 
 /**
  * Some details from AFD_CONFIG file we use in WebUI server.
@@ -452,7 +452,7 @@ var heartbeat_interval = setInterval(() => {
 		ws.isAlive = false;
 		ws.ping(() => { });
 	});
-}, 10000);
+}, HEARTBEAT_INTERVAL_TIME);
 
 /*
  * When Websocket-Server establishes an incoming connection ...

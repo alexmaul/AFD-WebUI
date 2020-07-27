@@ -21,7 +21,7 @@ var AFDUI = function() {
 		urlPathHcEdit: "/static/html/afd-hcedit.html",
 
 		/** Interval [msec] for heartbeat and re-connect delay. */
-		heartbeatInterval: 3000,
+		heartbeatInterval: 10000,
 
 		updateUrlGlobals: function() {
 			if (window.location.protocol === "https:") {
@@ -283,6 +283,7 @@ var AFDCTRL = function() {
 			AFDCTRL.ws.addEventListener("error", function(event) {
 			});
 			AFDCTRL.ws.addEventListener("message", function(event) {
+				AFDCTRL.wsConnectionHeartbeat();
 				const message = JSON.parse(event.data);
 				console.debug(message);
 				/* evaluate incoming message */

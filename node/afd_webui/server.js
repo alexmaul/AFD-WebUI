@@ -45,6 +45,7 @@ lines:		[ string ]:	log data.
 
 ******************************************************************************/
 
+const process = require("process");
 const yargs = require("yargs");
 const fs = require("fs");
 const path = require("path");
@@ -65,6 +66,7 @@ const argv = yargs
 		port: {
 			alias: "p",
 			type: "number",
+			default: 8040,
 			description: "Bind server to this local port."
 		},
 		pid: {
@@ -77,7 +79,7 @@ const argv = yargs
 			type: "string",
 			description: "Log directory, if different from AFD log dir."
 		},
-		"noTls": {
+		no_tls: {
 			type: "boolean",
 			default: false,
 			description: "Do not use TLS. Start as unsecured HTTP-server."
@@ -108,15 +110,56 @@ const argv = yargs
 	.argv;
 
 let MOCK = argv.mock;
+if (MOCK) {
+	console.log(argv);
+}
 
-const AFD_WEBUI_DIR = path.dirname(process.argv[1]);
-const AFD_WORK_DIR = argv.afd_work_dir;
-/*
- * TODO: currently only "start" is implemented, server automatically starts.
- * implement: - write PID in file - stop
- * 
+/* ****************************************************************************
+ * Handle start and stop command, pid file, and set signal handlers.
  */
+const AFD_WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
+const AFD_WORK_DIR = argv.afd_work_dir;
 
+let pid_file_name;
+if (argv.pid) {
+	pid_file_name = argv.pid;
+}
+else {
+	pid_file_name = path.join(AFD_WORK_DIR, "fifodir", "afdweb.pid");
+}
+if ("stop".indexOf(argv._) != -1) {
+	/* stop server with pid found in pid-file. */
+	console.info("Stopping AFD web-UI ...");
+	try {
+		let data = fs.readFileSync(pid_file_name, { encoding: "utf-8" });
+		let pid = int_or_str(data);
+		console.log(typeof data, data, typeof pid, pid);
+		process.kill(pid, "SIGTERM");
+		fs.unlinkSync(pid_file_name);
+		process.exit(0);
+	}
+	catch (e) {
+		console.error("Can't read PID file '%s'!", pid_file_name);
+		process.exit(1);
+	}
+}
+else {
+	/* execute the rest of this code file. */
+	let pid = `${process.pid}`;
+	console.log("PID:", pid);
+	fs.writeFile(pid_file_name, pid, { encoding: "utf-8" }, () => { });
+}
+function handle_exit(signal) {
+	console.info("Caught signal", signal);
+	process.exit(0);
+}
+process.on('SIGINT', handle_exit);
+process.on('SIGTERM', handle_exit);
+process.on("exit", () => { console.info("Exit AFD web-UI server."); });
+
+/* ****************************************************************************
+ * Some global constants.
+ */
 const AFDCMD_ARGS = {
 	start: ["-t", "-q"],
 	stop: ["-T", "-Q"],
@@ -285,7 +328,7 @@ fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
  */
 var http_module;
 let http_options = {};
-if (argv.noTls) {
+if (argv.no_tls) {
 	console.info("Start unsecured HTTP server.")
 	http_module = require("http");
 }
@@ -1584,6 +1627,7 @@ function exec_cmd_sync_real(cmd, with_awd, args = []) {
 /*******************************************************************************
  * At last we start the server listener.
  */
-server.listen(8040);
+console.info("Binding AFD web-UI server to port %d, start listening ...", argv.port);
+server.listen(argv.port);
 
 /* ***** END **************************************************************** */

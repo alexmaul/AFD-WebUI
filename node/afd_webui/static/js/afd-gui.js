@@ -197,7 +197,7 @@ var AFDCTRL = function() {
 					window.open(AFDUI.urlPathLog + "#transfer-debug");
 					break;
 				case "Input Log":
-					window.open(AFDUI.urlPathLog +
+					window.open(AFDUI.urlPathLog
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true) + "#input");
 					break;
 				case "Output Log":

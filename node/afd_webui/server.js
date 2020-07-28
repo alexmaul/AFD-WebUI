@@ -124,42 +124,45 @@ if (!("afd_work_dir" in argv) || argv.afd_work_dir === "") {
 const AFD_WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
 
-let pid_file_name;
-if (argv.pid) {
-	pid_file_name = argv.pid;
-}
-else {
-	pid_file_name = path.join(AFD_WORK_DIR, "fifodir", "afdweb.pid");
-}
-if ("stop".indexOf(argv._) != -1) {
-	/* stop server with pid found in pid-file. */
-	console.info("Stopping AFD web-UI ...");
-	try {
-		let data = fs.readFileSync(pid_file_name, { encoding: "utf-8" });
-		let pid = int_or_str(data);
-		console.log(typeof data, data, typeof pid, pid);
-		process.kill(pid, "SIGTERM");
-		fs.unlinkSync(pid_file_name);
+(function start_or_stop() {
+	let pid_file_name;
+	if (argv.pid) {
+		pid_file_name = argv.pid;
+	}
+	else {
+		pid_file_name = path.join(AFD_WORK_DIR, "fifodir", "afdweb.pid");
+	}
+	if ("stop".indexOf(argv._) != -1) {
+		/* stop server with pid found in pid-file. */
+		console.info("Stopping AFD web-UI ...");
+		try {
+			let data = fs.readFileSync(pid_file_name, { encoding: "utf-8" });
+			let pid = int_or_str(data);
+			console.log(typeof data, data, typeof pid, pid);
+			process.kill(pid, "SIGTERM");
+			fs.unlinkSync(pid_file_name);
+			process.exit(0);
+		}
+		catch (e) {
+			console.error("Can't read PID file '%s'!", pid_file_name);
+			process.exit(1);
+		}
+	}
+	else {
+		/* execute the rest of this code file. */
+		console.info("Starting AFD web-UI ...");
+		let pid = `${process.pid}`;
+		console.debug("With PID:", pid);
+		fs.writeFile(pid_file_name, pid, { encoding: "utf-8" }, () => { });
+	}
+	function handle_exit(signal) {
+		console.info("Caught signal", signal);
 		process.exit(0);
 	}
-	catch (e) {
-		console.error("Can't read PID file '%s'!", pid_file_name);
-		process.exit(1);
-	}
-}
-else {
-	/* execute the rest of this code file. */
-	let pid = `${process.pid}`;
-	console.log("PID:", pid);
-	fs.writeFile(pid_file_name, pid, { encoding: "utf-8" }, () => { });
-}
-function handle_exit(signal) {
-	console.info("Caught signal", signal);
-	process.exit(0);
-}
-process.on('SIGINT', handle_exit);
-process.on('SIGTERM', handle_exit);
-process.on("exit", () => { console.info("Exit AFD web-UI server."); });
+	process.on('SIGINT', handle_exit);
+	process.on('SIGTERM', handle_exit);
+	process.on("exit", () => { console.info("Exit AFD web-UI server."); });
+})();
 
 /* ****************************************************************************
  * Some global constants.
@@ -277,74 +280,77 @@ fs.readFile(
  *
  * First, instantiate express and add midleware.
  */
-const app = express();
-app.disable('x-powered-by');
-/*
- * User authentication.
- */
-/* TODO: write proper validation! */
-app.use(basicAuth({
-	users: JSON.parse(
-		fs.readFileSync(
-			path.join(AFD_WORK_DIR, "etc", "webui.users"),
-			{ encoding: "latin1" }
-		)),
-	challenge: true,
-	realm: "AFD"
-}));
-app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
-app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
-/*
- * Prepare session context handler.
- */
-const sessionParser = session({
-	saveUninitialized: false,
-	secret: "$eCuRiTy",
-	resave: false
-});
-app.use(sessionParser);
-/**
- * Set dynamic routing for content-view.
- *
- * The worker function needs to send the response object 'res'.
- *
- * GET "/view/<mode>/<path:arcfile>"
- */
-app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
-	view_content(res, req.params.arc, req.params.mode);
-});
-/*
- * Setup template engine.
- */
-app.set('view engine', 'ejs');
-var template_info = null;
-fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
-	{ encoding: "utf8" },
-	(err, data) => {
-		if (!err) {
-			template_info = ejs.compile(data);
-		}
-	}
-);
-/* 
- * If SSL/TLS is requested, load HTTPS module and secure the server. Otherwise 
- * load unsecure HTTP module.
- */
 var http_module;
 let http_options = {};
-if (argv.no_tls) {
-	console.info("Start unsecured HTTP server.")
-	http_module = require("http");
-}
-else {
-	http_module = require("https");
+const app = express();
+var template_info = null;
+
+(function setup_middleware() {
+	app.disable('x-powered-by');
 	/*
-	cert: /etc/pki/tls/certs
-	key:  /etc/pki/tls/private
-	*/
-	http_options["cert"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "public-cert.pem"));
-	http_options["key"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "private-key.pem"));
-}
+	 * User authentication.
+	 */
+	/* TODO: write proper validation! */
+	app.use(basicAuth({
+		users: JSON.parse(
+			fs.readFileSync(
+				path.join(AFD_WORK_DIR, "etc", "webui.users"),
+				{ encoding: "latin1" }
+			)),
+		challenge: true,
+		realm: "AFD"
+	}));
+	app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
+	app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
+	/*
+	 * Prepare session context handler.
+	 */
+	const sessionParser = session({
+		saveUninitialized: false,
+		secret: "$eCuRiTy",
+		resave: false
+	});
+	app.use(sessionParser);
+	/**
+	 * Set dynamic routing for content-view.
+	 *
+	 * The worker function needs to send the response object 'res'.
+	 *
+	 * GET "/view/<mode>/<path:arcfile>"
+	 */
+	app.get('/view/:mode/:arc([a-zA-Z0-9.,_/-]+)', function(req, res) {
+		view_content(res, req.params.arc, req.params.mode);
+	});
+	/*
+	 * Setup template engine.
+	 */
+	app.set('view engine', 'ejs');
+	fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
+		{ encoding: "utf8" },
+		(err, data) => {
+			if (!err) {
+				template_info = ejs.compile(data);
+			}
+		}
+	);
+	/* 
+	 * If SSL/TLS is requested, load HTTPS module and secure the server. Otherwise 
+	 * load unsecure HTTP module.
+	 */
+	if (argv.no_tls) {
+		console.info("Start unsecured HTTP server.")
+		http_module = require("http");
+	}
+	else {
+		http_module = require("https");
+		/*
+		cert: /etc/pki/tls/certs
+		key:  /etc/pki/tls/private
+		*/
+		http_options["cert"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "public-cert.pem"));
+		http_options["key"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "private-key.pem"));
+	}
+})();
 /*
  * Create server objects.
  */
@@ -357,7 +363,7 @@ const wss_log = new WebSocket.Server({ noServer: true, clientTracking: true });
  * 
  * Use seperate ws-server for ctrl and log.
  */
-server.on('upgrade', function upgrade(request, socket, head) {
+server.on('upgrade', function upgrade2ws(request, socket, head) {
 	const pathname = url.parse(request.url).pathname;
 
 	if (pathname === '/ctrl') {
@@ -1631,7 +1637,9 @@ function exec_cmd_sync_real(cmd, with_awd, args = []) {
 /*******************************************************************************
  * At last we start the server listener.
  */
-console.info("Binding AFD web-UI server to port %d, start listening ...", argv.port);
-server.listen(argv.port);
-
+(function start_listener() {
+	console.info("Bind server to port %d, start listening ...", argv.port);
+	server.listen(argv.port);
+	console.log("Started AFD web-UI.");
+})();
 /* ***** END **************************************************************** */

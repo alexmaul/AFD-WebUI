@@ -51,6 +51,7 @@ const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
 const url = require('url');
+const winston = require('winston');
 const express = require('express');
 const session = require('express-session');
 const basicAuth = require('express-basic-auth');
@@ -74,11 +75,6 @@ const argv = yargs
 			type: "string",
 			description: "PID file."
 		},
-		log: {
-			alias: "l",
-			type: "string",
-			description: "Log directory, if different from AFD log dir."
-		},
 		no_tls: {
 			type: "boolean",
 			default: false,
@@ -101,6 +97,11 @@ const argv = yargs
 		type: "string",
 		description: "AFD work directory, per instance.",
 	})
+	.option("verbose", {
+		alias: "v",
+		type: "boolean",
+		default: false
+	})
 	.option("mock", {
 		type: "boolean",
 		default: false
@@ -111,11 +112,11 @@ const argv = yargs
 
 let MOCK = argv.mock;
 if (MOCK) {
-	console.log(argv);
+	console.debug(argv);
 }
 
 /* ****************************************************************************
- * Handle start and stop command, pid file, and set signal handlers.
+ * Set afd-work-dir.
  */
 if (!("afd_work_dir" in argv) || argv.afd_work_dir === "") {
 	console.error("'-w AFD_WORK_DIR' is required!");
@@ -124,6 +125,30 @@ if (!("afd_work_dir" in argv) || argv.afd_work_dir === "") {
 const AFD_WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
 
+/* ****************************************************************************
+ * Setup logging.
+ */
+const logger = (function setup_logging() {
+	var logLevel = "info";
+	var logTransport = [new winston.transports.File({
+		filename: path.join(AFD_WORK_DIR, "log", "webui.log")
+	})];
+	if (argv.verbose) {
+		logLevel = "debug";
+		logTransport.push(new winston.transports.Console());
+	}
+	return winston.createLogger({
+		level: logLevel,
+		format: winston.format.printf(
+			entry => `${new Date().toISOString()} ${entry.level}: ${entry.message}`
+		),
+		transports: logTransport
+	});
+})();
+
+/* ****************************************************************************
+ * Handle start and stop command, pid file, and set signal handlers.
+ */
 (function start_or_stop() {
 	let pid_file_name;
 	if (argv.pid) {
@@ -134,34 +159,34 @@ const AFD_WORK_DIR = argv.afd_work_dir;
 	}
 	if ("stop".indexOf(argv._) != -1) {
 		/* stop server with pid found in pid-file. */
-		console.info("Stopping AFD web-UI ...");
+		logger.info("Stopping AFD web-UI ...");
 		try {
 			let data = fs.readFileSync(pid_file_name, { encoding: "utf-8" });
 			let pid = int_or_str(data);
-			console.log(typeof data, data, typeof pid, pid);
+			logger.debug(`PID from file: ${pid}`);
 			process.kill(pid, "SIGTERM");
 			fs.unlinkSync(pid_file_name);
 			process.exit(0);
 		}
 		catch (e) {
-			console.error("Can't read PID file '%s'!", pid_file_name);
+			logger.error(`Can't read PID file '${pid_file_name}'!`);
 			process.exit(1);
 		}
 	}
 	else {
 		/* execute the rest of this code file. */
-		console.info("Starting AFD web-UI ...");
+		logger.info("Starting AFD web-UI ...");
 		let pid = `${process.pid}`;
-		console.debug("With PID:", pid);
+		logger.debug(`With PID: ${pid}`);
 		fs.writeFile(pid_file_name, pid, { encoding: "utf-8" }, () => { });
 	}
 	function handle_exit(signal) {
-		console.info("Caught signal", signal);
+		logger.info(`Caught signal ${signal}`);
 		process.exit(0);
 	}
 	process.on('SIGINT', handle_exit);
 	process.on('SIGTERM', handle_exit);
-	process.on("exit", () => { console.info("Exit AFD web-UI server."); });
+	process.on("exit", () => { logger.info(`Exit AFD web-UI server.`); });
 })();
 
 /* ****************************************************************************
@@ -270,7 +295,7 @@ fs.readFile(
 					.replace(/\"$/, "");
 			}
 		}
-		console.info("AFD_CONFIG parsed.");
+		logger.info("AFD_CONFIG parsed.");
 	}
 );
 
@@ -338,7 +363,7 @@ var template_info = null;
 	 * load unsecure HTTP module.
 	 */
 	if (argv.no_tls) {
-		console.info("Start unsecured HTTP server.")
+		logger.info("Start unsecured HTTP server.")
 		http_module = require("http");
 	}
 	else {
@@ -384,7 +409,7 @@ server.on('upgrade', function upgrade2ws(request, socket, head) {
  */
 wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 	const ip = req.socket.remoteAddress;
-	console.info("connection ctrl open from %s.", ip);
+	logger.info(`Connection ctrl open from ${ip}`);
 	ws.isAlive = true;
 	ws.on('pong', heartbeat);
 	/*
@@ -392,7 +417,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
      */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.debug("CTRL RCVD:", ip, message);
+		logger.debug(`CTRL RCVD: ${ip}, ${message_raw}`);
 		/* */
 		switch (message.class) {
 			case "fsa":
@@ -415,7 +440,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 				action_alias(message, ws);
 				break;
 			default:
-				console.warn("unknown class ...");
+				logger.warn("unknown class ...");
 		}
 	});
 
@@ -425,7 +450,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
 	ws.on("close", () => {
 		fsaLoopStop();
 		heartbeatStop();
-		console.info("connection ctrl close from %s", ip);
+		logger.info(`Connection ctrl close from ${ip}`);
 	});
 
 	/*
@@ -439,7 +464,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
  */
 function heartbeatStop() {
 	if (wss_ctrl.clients.size == 0) {
-		console.log("clear heartbeat interval");
+		logger.debug("clear heartbeat interval");
 		clearInterval(heartbeat_interval);
 		heartbeat_interval = null;
 	}
@@ -452,7 +477,7 @@ function heartbeat() {
 var heartbeat_interval = setInterval(() => {
 	wss_ctrl.clients.forEach((ws) => {
 		if (ws.isAlive === false) {
-			console.info("connection ctrl cut from %s", ws);
+			logger.info(`Connection ctrl cut from ${ws}`);
 			return ws.terminate();
 		}
 		ws.isAlive = false;
@@ -465,16 +490,16 @@ var heartbeat_interval = setInterval(() => {
  */
 wss_log.on("connection", function connection_log(ws, req) {
 	const ip = req.socket.remoteAddress;
-	console.info("connection log open from %s.", ip);
+	logger.info(`Connection log open from ${ip}`);
 	/*
      * Evaluate incoming message, dispatch actions to functions.
      */
 	ws.on("message", function incoming(message_raw) {
 		const message = JSON.parse(message_raw);
-		console.debug("LOG RCVD:", ip, message);
+		logger.debug(`LOG RCVD: ${ip}, ${message_raw}`);
 		/* */
 		if (message.class !== "log") {
-			console.warn("unknown class ...");
+			logger.warn("unknown class ...");
 			return;
 		}
 		switch (message.context) {
@@ -498,7 +523,7 @@ wss_log.on("connection", function connection_log(ws, req) {
      * When a connection is closed by the client ...
      */
 	ws.on("close", () => {
-		console.info("connection log close from %s", ip);
+		logger.info(`Connection log close from ${ip}`);
 	});
 
 	/*
@@ -519,7 +544,7 @@ function fsaLoopStart() {
 
 /** */
 function fsaLoopStop() {
-	console.log("fsa loop stop");
+	logger.debug("fsa loop stop");
 	if (wss_ctrl.clients.size == 0) {
 		clearInterval(fsaLoopInterval);
 		fsaLoopInterval = null;
@@ -530,7 +555,7 @@ function fsaLoopStop() {
  * Setup Interval: read and prepare fsa_view output.
  */
 function fsaLoopStartReal() {
-	console.log("start fsa loop with real data.");
+	logger.debug("start fsa loop with real data.");
 	if (fsaLoopInterval === null) {
 		fsaLoopInterval = setInterval(() => {
 			execFile("fsa_view_json",
@@ -538,7 +563,7 @@ function fsaLoopStartReal() {
 				{ encoding: "latin1" },
 				(error, stdout, stderr) => {
 					if (error) {
-						console.error(stderr);
+						logger.error(stderr);
 						throw error;
 					}
 					else {
@@ -554,13 +579,13 @@ function fsaLoopStartReal() {
 
 function fsaLoopStartMock() {
 	let counter = 0;
-	console.log("read fsa.json");
+	logger.debug("read fsa.json");
 	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/fsa.json"));
 	data.counter = counter;
-	console.log("start fsa loop with %s", data);
+	logger.debug(`start fsa loop with mocked data.`);
 	if (fsaLoopInterval === null) {
 		fsaLoopInterval = setInterval(() => {
-			console.log("fsa send #%d to %d", counter, wss_ctrl.clients.size);
+			logger.debug(`fsa send #${counter} to ${wss_ctrl.clients.size}`);
 			data.counter = counter;
 			for (const ws_instance of wss_ctrl.clients) {
 				ws_instance.send(JSON.stringify(data));
@@ -612,7 +637,7 @@ function action_afd(message, ws) {
 				}
 			}
 			catch (e) {
-				console.error(e);
+				logger.error(e);
 				ws.send(JSON.stringify({
 					class: message.class,
 					command: message.command,
@@ -633,20 +658,20 @@ function action_afd(message, ws) {
 					cmd_opt = "-s"
 					break;
 				default:
-					console.log("Command unclear?");
+					logger.warn(`Unclear command '${message.command}'!`);
 			}
 			break;
 		default:
-			console.log("Command unclear?");
+			logger.warn(`Unclear action '${message.action}'!`);
 	}
 	if (cmd !== null) {
 		exec_cmd(cmd, cmd_opt,
 			(error, stdout, stderr) => {
 				if (error) {
-					console.warn(error, stderr);
+					logger.warn(`${cmd} ${cmd_opt} -> <${error}> ${stderr}`);
 				}
 				else {
-					console.debug("%s %s :: %s", cmd, cmd_opt, stdout);
+					logger.debug(`${cmd} ${cmd_opt} -> ${stdout}`);
 				}
 			}
 		);
@@ -687,7 +712,7 @@ function action_alias(message, ws) {
 					{ encoding: "latin1", flag: "w" },
 					(err) => {
 						if (err) {
-							console.error("Error writing INFO file: %s", err);
+							logger.error(`Error writing INFO file: ${err}`);
 						}
 					}
 				);
@@ -698,7 +723,7 @@ function action_alias(message, ws) {
 				exec_cmd("get_dc_data", true,
 					["-h", alias],
 					(error, dc_data, stderr) => {
-						console.log("EXEC->", error, dc_data, stderr);
+						logger.debug(`EXEC-> ${error}, ${dc_data}, ${stderr}`);
 						if (!error) {
 							const msg = {
 								class: "alias",
@@ -719,20 +744,12 @@ function action_alias(message, ws) {
 					AFDCMD_ARGS[message.action].concat(message.alias),
 					(error, stdout, stderr) => {
 						if (error) {
-							console.warn("afdcmd %s %s -> %s",
-								message.action,
-								message.alias,
-								stderr
-							);
+							logger.warn(`afdcmd ${message.action} ${message.alias} -> ${stderr}`);
 							message["status"] = STATUS.error;
 							ws.send(JSON.stringify(message));
 						}
 						else {
-							console.log("afdcmd %s %s -> %s",
-								message.action,
-								message.alias,
-								stdout
-							);
+							logger.debug(`afdcmd ${message.action} ${message.alias} -> ${stdout}`);
 						}
 
 					}
@@ -764,7 +781,7 @@ function collect_info(host, callback) {
 	};
 	exec_cmd("fsa_view", true, [host], (err, raw, _) => {
 		if (err) {
-			console.warn(err);
+			logger.warn(err);
 			return;
 		}
 		raw.split("\n").forEach((l) => {
@@ -819,12 +836,12 @@ function collect_info(host, callback) {
 				field_values["protocol"] = le[1].split(" ")[0];
 			}
 		});
-		console.debug(field_values);
+		logger.debug(field_values);
 		let fn_info = path.join(AFD_WORK_DIR, "etc", "INFO-" + field_values["hostname"])
 		fs.readFile(fn_info, (err, data) => {
 			if (err) {
 				if (err.code === "ENOENT") {
-					console.error("File does not exist: %s", fn_info);
+					logger.error(`File does not exist: ${fn_info}`);
 				}
 				else {
 					throw err;
@@ -881,7 +898,7 @@ function search_host(action, form_json) {
 				}
 			}
 			catch (e) {
-				console.warn(e);
+				logger.warn(e);
 			}
 		}
 		else {
@@ -1256,11 +1273,14 @@ function save_hostconfig(form_json) {
 		hc_text,
 		{ encoding: "latin1" },
 		(err) => {
-			if (!err) {
+			if (err) {
+				logger.warn(err);
+			}
+			else {
 				fs.rename(
 					tmp_fn_hc,
 					path.join(AFD_WORK_DIR, "etc", "HOST_CONFIG"),
-					() => { console.log("host_config updated."); }
+					() => { logger.info("host_config updated."); }
 				);
 			}
 		}
@@ -1285,7 +1305,7 @@ function log_from_file(message, ws) {
 	],
 		(error, stdout, stderr) => {
 			if (error) {
-				console.warn(error, stderr);
+				logger.warn(`${error}, ${stderr}`);
 			}
 			else {
 				const data = {
@@ -1386,7 +1406,7 @@ function log_from_alda(message, ws) {
 	if (message.context == "output") {
 		exec_cmd("alda", true, cmd_par, (error, stdout, stderr) => {
 			if (error) {
-				console.warn(error, stderr);
+				logger.warn(`${error}, ${stderr}`);
 			}
 			else {
 				// Parse each line, and set archive flag.
@@ -1422,7 +1442,7 @@ function log_from_alda(message, ws) {
 		exec_cmd("alda", true, cmd_par,
 			(error, stdout, stderr) => {
 				if (error) {
-					console.warn(error, stderr);
+					logger.warn(`${error}, ${stderr}`);
 				}
 				else {
 					data.lines = stdout.split("\n");
@@ -1441,7 +1461,7 @@ function log_from_alda(message, ws) {
  */
 function view_content(response, arcfile, mode = "auto") {
 	const arcfile_path = path.join(AFD_WORK_DIR, "archive", arcfile);
-	console.debug("View:", arcfile_path);
+	logger.debug(`View: ${arcfile_path}`);
 	let view_cmd;
 	let view_args;
 	let push_filename = true;
@@ -1449,7 +1469,7 @@ function view_content(response, arcfile, mode = "auto") {
 		if (mode == "auto") {
 			/* Test filename with all patterns. */
 			for (const pat in VIEW_DATA.filter) {
-				console.log("Test with", pat);
+				logger.debug(`Test with ${pat}`);
 				if (RegExp(pat).test(arcfile)) {
 					const i = VIEW_DATA.filter[pat].indexOf(" ");
 					view_cmd = VIEW_DATA.filter[pat].substring(0, i);
@@ -1489,7 +1509,7 @@ function view_content(response, arcfile, mode = "auto") {
 					);
 				}
 				catch (e) {
-					console.warn("View with %s: %s", view_cmd, e);
+					logger.warn(`View with ${view_cmd}: ${e}`);
 					response.sendStatus(500);
 				}
 			}
@@ -1505,7 +1525,7 @@ function view_content(response, arcfile, mode = "auto") {
 						view_cmd, false, view_args,
 						(error, stdout, stderr) => {
 							if (error) {
-								console.warn(error, stderr);
+								logger.warn(`${error}, ${stderr}`);
 								response.sendStatus(404);
 							}
 							else {
@@ -1515,7 +1535,7 @@ function view_content(response, arcfile, mode = "auto") {
 						});
 				}
 				catch (e) {
-					console.warn("View with %s: %s", view_cmd, e);
+					logger.warn(`View with ${view_cmd}: ${e}`);
 					response.sendStatus(500);
 				}
 			}
@@ -1536,6 +1556,7 @@ function view_content(response, arcfile, mode = "auto") {
 async function webservice_send_file(rest_url, params, dataReadStream, callback) {
 	const request = require("request");
 	const formData = {};
+	logger.debug(`Connect webservice ${rest_url}`);
 	for (const p of params) {
 		const pe = p.split(":");
 		if (pe[1] === "%s") {
@@ -1555,7 +1576,7 @@ async function webservice_send_file(rest_url, params, dataReadStream, callback) 
 		},
 		(err, _, body) => {
 			if (err) {
-				console.warn(err);
+				logger.warn(err);
 				callback("Error");
 			}
 			else {
@@ -1570,27 +1591,41 @@ async function webservice_send_file(rest_url, params, dataReadStream, callback) 
  ******************************************************************************/
 
 function exec_cmd(cmd, with_awd, args, callback) {
-	if (MOCK) {
-		exec_cmd_mock(cmd, with_awd, args, callback);
-	} else {
-		exec_cmd_real(cmd, with_awd, args, callback);
+	try {
+		if (MOCK) {
+			exec_cmd_mock(cmd, with_awd, args, callback);
+		} else {
+			exec_cmd_real(cmd, with_awd, args, callback);
+		}
+	}
+	catch (e) {
+		logger.error("exec_cmd");
+		logger.error(`${cmd}, ${with_awd}, ${args}`);
+		logger.error(e);
 	}
 }
 
 function exec_cmd_sync(cmd, with_awd, args) {
-	if (MOCK) {
-		return exec_cmd_sync_mock(cmd, with_awd, args);
-	} else {
-		return exec_cmd_sync_real(cmd, with_awd, args);
+	try {
+		if (MOCK) {
+			return exec_cmd_sync_mock(cmd, with_awd, args);
+		} else {
+			return exec_cmd_sync_real(cmd, with_awd, args);
+		}
+	}
+	catch (e) {
+		logger.error("exec_cmd_sync");
+		logger.error(`${cmd}, ${with_awd}, ${args}`);
+		logger.error(e);
 	}
 }
 function exec_cmd_mock(cmd, with_awd, args = [], callback) {
-	console.debug("Mock command: %s %s", cmd, args);
+	logger.debug(`Mock command: ${cmd} ${args}`);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
 }
 function exec_cmd_sync_mock(cmd, with_awd, args) {
-	console.debug("Mock command (sync): %s %s", cmd, args);
+	logger.debug(`Mock command (sync): ${cmd} ${args}`);
 	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
 	return mock_text;
 }
@@ -1603,19 +1638,18 @@ function exec_cmd_sync_mock(cmd, with_awd, args) {
  */
 function exec_cmd_real(cmd, with_awd, args = [], callback) {
 	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
-	console.debug("exec_cmd prepare command: %s %s", cmd, largs);
+	logger.debug(`exec_cmd prepare command: ${cmd} ${largs}`);
 	execFile(cmd,
 		largs,
 		{ encoding: "latin1" },
 		(error, stdout, stderr) => {
-			console.log("RAW:", error, stdout, stderr);
+			logger.debug(`RAW: ${error} ${stdout} ${stderr}`);
 			if (callback) {
-				console.debug("cmd: %s -> len=%d", cmd, stdout.length)
+				logger.debug(`cmd: ${cmd} -> len=${stdout.length}`);
 				callback(error, stdout, stderr);
 			}
 			else if (error) {
-				console.error(stderr);
-				console.error(error);
+				logger.error(`${error}, ${stderr}`);
 			}
 		}
 	);
@@ -1626,7 +1660,7 @@ function exec_cmd_real(cmd, with_awd, args = [], callback) {
  */
 function exec_cmd_sync_real(cmd, with_awd, args = []) {
 	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
-	console.debug("exec_cmd_sync prepare command (sync): %s %s", cmd, largs);
+	logger.debug(`exec_cmd_sync prepare command (sync): ${cmd} ${largs}`);
 	const stdout = execFileSync(cmd,
 		largs,
 		{ encoding: "latin1" }
@@ -1638,8 +1672,10 @@ function exec_cmd_sync_real(cmd, with_awd, args = []) {
  * At last we start the server listener.
  */
 (function start_listener() {
-	console.info("Bind server to port %d, start listening ...", argv.port);
+	logger.info(`Bind server to port ${argv.port}, start listening ...`);
 	server.listen(argv.port);
-	console.log("Started AFD web-UI.");
 })();
+
+logger.info("AFD web-UI started.");
+
 /* ***** END **************************************************************** */

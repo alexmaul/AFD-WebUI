@@ -665,7 +665,7 @@ function action_afd(message, ws) {
 			logger.warn(`Unclear action '${message.action}'!`);
 	}
 	if (cmd !== null) {
-		exec_cmd(cmd, cmd_opt,
+		exec_cmd(cmd, true, cmd_opt,
 			(error, stdout, stderr) => {
 				if (error) {
 					logger.warn(`${cmd} ${cmd_opt} -> <${error}> ${stderr}`);

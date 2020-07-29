@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 mkdir afd_webui/certs
 cd afd_webui/certs
 openssl genrsa -out private-key.pem 1024

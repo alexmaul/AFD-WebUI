@@ -178,7 +178,7 @@ var AFDCTRL = function() {
                  * Menu: View
                  */
 				case "Info":
-					AFDCTRL.wsViewModalInfo(Object.keys(this.markedRows));
+					AFDCTRL.wsViewModalHostInfo(Object.keys(this.markedRows));
 					break;
 				case "Configuration":
 					console.log("callAliasWindow:", "config", Object.keys(this.markedRows));
@@ -297,7 +297,7 @@ var AFDCTRL = function() {
 								AFDCTRL.openWindowPlaintext(message.alias[0], message.text);
 								break;
 							case "info":
-								$("#modalInfoBody").append(message.text);
+								$("#modalHostInfoBody").append(message.text);
 								break;
 							case "select":
 							case "deselect":
@@ -458,8 +458,8 @@ var AFDCTRL = function() {
          * TODO: change rendering info. receive data as json and render template
          * in browser instead on server.
          */
-		wsViewModalInfo: function(aliasList) {
-			console.info("viewModalInfo:", aliasList);
+		wsViewModalHostInfo: function(aliasList) {
+			console.info("viewModalHostInfo:", aliasList);
 			if (!AFDCTRL.isAliasSelected(aliasList)) {
 				return;
 			}
@@ -474,28 +474,28 @@ var AFDCTRL = function() {
 				};
 				AFDCTRL.ws.send(JSON.stringify(message));
 			});
-			$("#modalInfo").modal("show");
+			$("#modalHostInfo").modal("show");
 		},
 
 		/**
          * Remove host info from modal. Close modal if removing last info.
          */
-		closeInfo: function(infoHost) {
-			console.info("closeInfo:", infoHost);
+		closeHostInfo: function(infoHost) {
+			console.info("closeHostInfo:", infoHost);
 			$("#infoBox_" + infoHost).remove();
-			if ($("#modalInfoBody").children().length == 0) {
-				$("#modalInfo").modal("hide");
+			if ($("#modalHostInfoBody").children().length == 0) {
+				$("#modalHostInfo").modal("hide");
 			} else {
-				$("#modalInfo").modal("handleUpdate");
+				$("#modalHostInfo").modal("handleUpdate");
 			}
 		},
 
 		/**
          * Send edited text for saving in INFO-file.
          */
-		wsSaveInfoText: function(infoHost) {
+		wsSaveHostInfoText: function(infoHost) {
 			let infoText = $("#infoArea_" + infoHost)[0];
-			console.info("saveInfoText", infoHost);
+			console.info("saveHostInfoText", infoHost);
 			console.log(infoText.value);
 			const message = {
 				user: "test",
@@ -1173,6 +1173,7 @@ var AFDLOG = function() {
 			const msg = {
 				class: "log",
 				context: logName,
+				action: "list",
 				filter: {
 					file: fileNumber,
 					level: levelList.join("|")
@@ -1203,6 +1204,7 @@ var AFDLOG = function() {
 			const msg = {
 				class: "log",
 				context: logName,
+				action: "list",
 				filter: paramSet
 			};
 			console.debug(msg);
@@ -1306,7 +1308,37 @@ var AFDLOG = function() {
 			$.each(selectedLogAreaLines, function(i, v) {
 				window.open(AFDUI.urlViewProto + "//" + AFDUI.urlBase + "/view/" + mode + "/" + v);
 			});
+		},
+
+		/**
+		 *
+		 */
+		callFileInfo: function(logName) {
+			console.debug("callFileInfo", logName);
+			let selectedLogAreaLines = [];
+			$.each($("#" + logName + " .selected"), function(i, obj) {
+				if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
+					selectedLogAreaLines.push({
+						jsid: obj.attributes["jsid"],
+						file: obj.childNodes[2].innerText
+					});
+				}
+			});
+			if (selectedLogAreaLines.length == 0) {
+				alert("Select archived log entry first!");
+				return;
+			}
+			console.log("selectedLogAreaLines", selectedLogAreaLines);
+			const msg = {
+				class: "log",
+				context: logName,
+				action: "info",
+				filter: selectedLogAreaLines
+			};
+			console.debug("send message", msg);
+			AFDLOG.ws.send(JSON.stringify(msg));
 		}
+
 	}; /* End returned object. */
 }();
 

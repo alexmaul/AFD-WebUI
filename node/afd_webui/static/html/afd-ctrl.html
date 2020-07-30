@@ -40,9 +40,9 @@
         /*
          * Set update function for modal events.
          */
-		$("#modalInfo").on("hide.bs.modal", function(event) {
-			console.debug("clear modalInfoBody");
-			$("#modalInfoBody").children().remove();
+		$("#modalHostInfo").on("hide.bs.modal", function(event) {
+			console.debug("clear modalHostInfoBody");
+			$("#modalHostInfoBody").children().remove();
 		});
         /*
          * Initial load data.
@@ -201,20 +201,20 @@
 		</table>
 	</div>
 
-	<!-- Begin modal INFO -->
-	<div class="modal fade" id="modalInfo" tabindex="-1" role="dialog"
-		aria-labelledby="modalInfoLabel" aria-hidden="true">
+	<!-- Begin modal HOST INFO -->
+	<div class="modal fade" id="modalHostInfo" tabindex="-1" role="dialog"
+		aria-labelledby="modalHostInfoLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg modal-dialog-scrollable"
 			role="document">
 			<div class="modal-content info-box">
 				<div class="modal-header">
-					<h5 class="modal-title" id="modalInfoLabel">Host Information</h5>
+					<h5 class="modal-title" id="modalHostInfoLabel">Host Information</h5>
 					<button type="button" class="close" data-dismiss="modal"
 						aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body" id="modalInfoBody"></div>
+				<div class="modal-body" id="modalHostInfoBody"></div>
 				<!--
                 <div class="modal-footer">
                 </div>
@@ -222,7 +222,7 @@
 			</div>
 		</div>
 	</div>
-	<!-- End modal INFO -->
+	<!-- End modal HOST INFO -->
 
 	<!-- Begin modal SELECT -->
 	<div class="modal fade" id="modalSelect" tabindex="-1" role="dialog"

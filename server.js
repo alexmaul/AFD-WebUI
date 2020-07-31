@@ -5,6 +5,15 @@
 /******************************************************************************
 	AFD WebUI Server
 	================
+
+Bound URL paths
+---------------
+/ + /ui	: http/https -> index.html.
+/view	: http/https, view file from archive.
+/ctrl	: ws/wss, afd_ctrl.
+/log	: ws/wss, show_log page.
+
+
 All communication between WebUI server and client is done by exchanging JSON 
 via Websocket.
 
@@ -328,8 +337,8 @@ var templates = {};
 		challenge: true,
 		realm: "AFD"
 	}));
-	app.use("/static", express.static(path.join(AFD_WEBUI_DIR, "static")));
-	app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "static")));
+	app.use("/ui", express.static(path.join(AFD_WEBUI_DIR, "public")));
+	app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "public")));
 	/*
 	 * Prepare session context handler.
 	 */
@@ -618,7 +627,7 @@ function fsaLoopStartReal() {
 function fsaLoopStartMock() {
 	let counter = 0;
 	logger.debug("read fsa.json");
-	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/fsa.json"));
+	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/mock/fsa.json"));
 	data.counter = counter;
 	logger.debug(`start fsa loop with mocked data.`);
 	if (fsaLoopInterval === null) {
@@ -1710,12 +1719,12 @@ function exec_cmd_sync(cmd, with_awd, args) {
 }
 function exec_cmd_mock(cmd, with_awd, args = [], callback) {
 	logger.debug(`Mock command: ${cmd} ${args}`);
-	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
+	const mock_text = fs.readFileSync("mock/dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(undefined, mock_text, undefined);
 }
 function exec_cmd_sync_mock(cmd, with_awd, args) {
 	logger.debug(`Mock command (sync): ${cmd} ${args}`);
-	const mock_text = fs.readFileSync("./dummy." + cmd + ".txt", { encoding: "utf8" });
+	const mock_text = fs.readFileSync("mock/dummy." + cmd + ".txt", { encoding: "utf8" });
 	return mock_text;
 }
 

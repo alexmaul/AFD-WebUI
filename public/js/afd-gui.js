@@ -15,10 +15,10 @@ var AFDUI = function() {
 		urlBase: "localhost:8040",
 
 		/** urlPathLog. */
-		urlPathLog: "/static/html/afd-log.html",
+		urlPathLog: "/ui/html/afd-log.html",
 
 		/** urlPathEdit. */
-		urlPathHcEdit: "/static/html/afd-hcedit.html",
+		urlPathHcEdit: "/ui/html/afd-hcedit.html",
 
 		/** Interval [msec] for heartbeat and re-connect delay. */
 		heartbeatInterval: 10000,

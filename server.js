@@ -543,7 +543,6 @@ wss_log.on("connection", function connection_log(ws, req) {
 		else if (message.action === "info") {
 			switch (message.context) {
 				case "input":
-					break;
 				case "output":
 					view_file_info(
 						message.context,
@@ -1530,12 +1529,14 @@ function view_file_info(context, filter, callback) {
 			default:
 				return;
 		}
+		console.log(cmd, cmd_args);
 		exec_cmd(cmd, true, cmd_args,
 			(error, stdout, stderr) => {
 				if (error) {
 					logger.warn(error, stderr);
 				}
 				else {
+					console.log(error,stdout,stderr);
 					const f = felem.file.replace(/\./g, "_");
 					const inf = {
 						fileInfoBoxId: `${felem.jsid}_${f}`,

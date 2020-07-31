@@ -1319,11 +1319,19 @@ var AFDLOG = function() {
 		callFileInfo: function(logName) {
 			console.debug("callFileInfo", logName);
 			let selectedLogAreaLines = [];
+			const copy_attrs = [
+				"jid", "fnloc", "fnrem", "sz",
+				"dti", "dto", "dtd", "arcd", "arcf"
+			];
 			$.each($("#" + logName + " .selected"), function(i, obj) {
-				selectedLogAreaLines.push({
-					jsid: obj.attributes["jsid"].value,
-					file: obj.childNodes[2].innerText
-				});
+				const lo = {};
+				for (const an of copy_attrs) {
+					const a = obj.attributes[an];
+					if (a) {
+						lo[an] = a.value;
+					}
+				}
+				selectedLogAreaLines.push(lo);
 			});
 			if (selectedLogAreaLines.length == 0) {
 				alert("Select at least log entry first!");

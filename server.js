@@ -1369,16 +1369,19 @@ function log_from_file(message, ws) {
 
 function log_from_alda(message, ws) {
 	let alda_output_format = {
-		input: ["-o", "<tr jsid='%II'><td class='clst-dd'>%ITm.%ITd.</td>"
+		input: ["-o", "<tr jid='%Uj,' fnloc='%IF' sz='%ISB' dti='%ITy/%ITm/%ITd %ITH:%ITM:%ITS'>"
+			+ "<td class='clst-dd'>%ITm.%ITd.</td>"
 			+ "<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
 			+ "<td class='clst-fs'>%ISB</td></tr>"],
-		output: ["-o", "<tr jsid='%OJ' archive='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
+		output: ["-o", "<tr jid='%OJ' fnloc='%Of' fnrem='%OF' sz='%ISB'"
+			+ " dto='%ITy/%ITm/%ITd %ITH:%ITM:%ITS' arcd='|%OA|' arcf='%xOZu_%xOU_%xOL_%Of'>"
 			+ "<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
 			+ "%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"
 			+ "<td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td>"
 			+ "<td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td>"
 			+ "</tr>"],
-		delete: ["-o", "<tr jsid='%DJ'><td class='clst-dd'>%DTm.%DTd.</td>"
+		delete: ["-o", "<tr jid='%DJ' fnloc='%DF' sz='%ISB' dtd='%ITy/%ITm/%ITd %ITH:%ITM:%ITS'"
+			+ "><td class='clst-dd'>%DTm.%DTd.</td>"
 			+ "<td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td>"
 			+ "<td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td>"
 			+ "<td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td>"
@@ -1403,6 +1406,9 @@ function log_from_alda(message, ws) {
 	}
 	else {
 		logtype = message.context[0].toUpperCase();
+	}
+	if (logtype === "I") {
+		logtype += "U";
 	}
 	let archived_only;
 	if (message.filter["archived-only"]) {
@@ -1458,14 +1464,15 @@ function log_from_alda(message, ws) {
 				logger.warn(`${error}, ${stderr}`);
 			}
 			else {
-				// Parse each line, and set archive flag.
+				/* Parse each line, and set archive flag. */
 				let new_data = [];
 				for (const data_line of stdout.split("\n")) {
 					if (!data_line) {
 						continue;
 					}
 					let parts = data_line.split("|");
-					if (parts[1][0] != "/") {
+					if (parts[1] !== "") {
+						console.log(parts);
 						try {
 							fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
 							parts[parts.length - 2] = "Y";
@@ -1475,7 +1482,6 @@ function log_from_alda(message, ws) {
 						}
 					}
 					else {
-						parts[1] = "";
 						parts[parts.length - 2] = "N";
 					}
 					if (!archived_only || parts[parts.length - 2] == "Y") {
@@ -1536,7 +1542,7 @@ function view_file_info(context, filter, callback) {
 					logger.warn(error, stderr);
 				}
 				else {
-					console.log(error,stdout,stderr);
+					console.log(error, stdout, stderr);
 					const f = felem.file.replace(/\./g, "_");
 					const inf = {
 						fileInfoBoxId: `${felem.jsid}_${f}`,

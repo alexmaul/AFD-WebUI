@@ -482,7 +482,7 @@ var AFDCTRL = function() {
          */
 		closeHostInfo: function(infoHost) {
 			console.info("closeHostInfo:", infoHost);
-			$("#infoBox_" + infoHost).remove();
+			$("#hostInfoBox_" + infoHost).remove();
 			if ($("#modalHostInfoBody").children().length == 0) {
 				$("#modalHostInfo").modal("hide");
 			} else {
@@ -496,7 +496,6 @@ var AFDCTRL = function() {
 		wsSaveHostInfoText: function(infoHost) {
 			let infoText = $("#infoArea_" + infoHost)[0];
 			console.info("saveHostInfoText", infoHost);
-			console.log(infoText.value);
 			const message = {
 				user: "test",
 				class: "alias",
@@ -1111,25 +1110,31 @@ var AFDLOG = function() {
 				console.debug(message);
 				/* evaluate incoming message */
 				if (message.class == "log") {
-					let context = $("#" + message.context + "-area");
-					if (message.append) {
-						// TODO append or replace lines.
+					switch (message.action) {
+						case "list":
+							const context = $("#" + message.context + "-area");
+							if (message.append) {
+								// TODO append or replace lines.
+							}
+							if ("lines" in message) {
+								context.html(message.lines);
+							}
+							else {
+								context.html(message.text);
+							}
+							context.find("tr").on("click", function(event) {
+								$(this).toggleClass("selected");
+							});
+							$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
+							/* TODO progress-swirl? */
+							$("#" + message.context + " *").css({
+								"cursor": "auto"
+							});
+							break;
+						case "info":
+							$("#modalFileInfoBody").append(message.data.text);
+							break;
 					}
-					if ("lines" in message) {
-						context.html(message.lines);
-					}
-					else {
-						context.html(message.text);
-					}
-					context.find("tr").on("click", function(event) {
-						$(this).toggleClass("selected");
-					});
-					$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
-					/* TODO progress-swirl? */
-					$("#" + message.context + " *").css({
-						"cursor": "auto"
-					});
-
 				}
 			});
 		},
@@ -1263,6 +1268,13 @@ var AFDLOG = function() {
 		},
 
 		/**
+		 * Remove class from all selected log-lines.
+		 */
+		unselectLogLines: function(logName) {
+			$("#" + logName + "-area").find("tr.selected").toggleClass("selected");
+		},
+
+		/**
 		 * Show or hide modal with selection form.
 		 */
 		toggleModal: function(modal) {
@@ -1289,6 +1301,46 @@ var AFDLOG = function() {
 		},
 
 		/**
+         * Remove host info from modal. Close modal if removing last info.
+         */
+		closeFileInfo: function(fileInfo) {
+			console.info("closeFileInfo:", fileInfo);
+			$("#fileInfoBox_" + fileInfo).remove();
+			if ($("#modalFileInfoBody").children().length == 0) {
+				$("#modalFileInfo").modal("hide");
+			} else {
+				$("#modalFileInfo").modal("handleUpdate");
+			}
+		},
+
+		/**
+		 *
+		 */
+		callFileInfo: function(logName) {
+			console.debug("callFileInfo", logName);
+			let selectedLogAreaLines = [];
+			$.each($("#" + logName + " .selected"), function(i, obj) {
+				selectedLogAreaLines.push({
+					jsid: obj.attributes["jsid"].value,
+					file: obj.childNodes[2].innerText
+				});
+			});
+			if (selectedLogAreaLines.length == 0) {
+				alert("Select at least log entry first!");
+				return;
+			}
+			const msg = {
+				class: "log",
+				context: logName,
+				action: "info",
+				filter: selectedLogAreaLines
+			};
+			console.debug("send message", msg);
+			AFDLOG.ws.send(JSON.stringify(msg));
+			$("#modalFileInfo").modal("show");
+		},
+
+		/**
 		 * View file content for each selected one in a new window.
 		 */
 		callView: function(logName) {
@@ -1308,35 +1360,6 @@ var AFDLOG = function() {
 			$.each(selectedLogAreaLines, function(i, v) {
 				window.open(AFDUI.urlViewProto + "//" + AFDUI.urlBase + "/view/" + mode + "/" + v);
 			});
-		},
-
-		/**
-		 *
-		 */
-		callFileInfo: function(logName) {
-			console.debug("callFileInfo", logName);
-			let selectedLogAreaLines = [];
-			$.each($("#" + logName + " .selected"), function(i, obj) {
-				if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
-					selectedLogAreaLines.push({
-						jsid: obj.attributes["jsid"],
-						file: obj.childNodes[2].innerText
-					});
-				}
-			});
-			if (selectedLogAreaLines.length == 0) {
-				alert("Select archived log entry first!");
-				return;
-			}
-			console.log("selectedLogAreaLines", selectedLogAreaLines);
-			const msg = {
-				class: "log",
-				context: logName,
-				action: "info",
-				filter: selectedLogAreaLines
-			};
-			console.debug("send message", msg);
-			AFDLOG.ws.send(JSON.stringify(msg));
 		}
 
 	}; /* End returned object. */

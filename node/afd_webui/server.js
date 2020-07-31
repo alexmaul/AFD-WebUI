@@ -311,7 +311,7 @@ fs.readFile(
 var http_module;
 let http_options = {};
 const app = express();
-var template_info = null;
+var templates = {};
 
 (function setup_middleware() {
 	app.disable('x-powered-by');
@@ -353,14 +353,23 @@ var template_info = null;
 	 * Setup template engine.
 	 */
 	app.set('view engine', 'ejs');
-	fs.readFile(path.join(AFD_WEBUI_DIR, "templates", "info.html"),
-		{ encoding: "utf8" },
-		(err, data) => {
-			if (!err) {
-				template_info = ejs.compile(data);
+	fs.readdir(path.join(AFD_WEBUI_DIR, "templates"), (err, template_files) => {
+		if (!err) {
+			for (const fn of template_files) {
+				if (fn.endsWith(".html")) {
+					fs.readFile(path.join(AFD_WEBUI_DIR, "templates", fn),
+						{ encoding: "utf8" },
+						(err, data) => {
+							if (!err) {
+								logger.debug(`Load template ${fn}`);
+								templates[fn] = ejs.compile(data);
+							}
+						}
+					);
+				}
 			}
 		}
-	);
+	});
 	/* 
 	 * If SSL/TLS is requested, load HTTPS module and secure the server. Otherwise 
 	 * load unsecure HTTP module.
@@ -879,7 +888,7 @@ function collect_host_info(host, callback) {
 			else {
 				field_values["info_text"] = data;
 			}
-			callback(host, template_info(field_values))
+			callback(host, templates["host_info.html"](field_values))
 		});
 	});
 }
@@ -1403,7 +1412,6 @@ function log_from_alda(message, ws) {
 	}
 	for (const key in message.filter) {
 		let val = message.filter[key];
-		console.log(key, val);
 		if (key in par_tr && par_tr[key] === null) {
 			continue;
 		}
@@ -1515,8 +1523,18 @@ function view_file_info(context, filter, callback) {
 		}
 		exec_cmd(cmd, true, cmd_args,
 			(error, stdout, stderr) => {
-				if (!error) {
-					info_set.text = stdout;
+				if (error) {
+					logger.warn(error, stderr);
+				}
+				else {
+					const f = felem.file.replace(/\./g, "_");
+					const inf = {
+						fileInfoBoxId: `${felem.jsid}_${f}`,
+						jsid: felem.jsid,
+						filename: felem.file,
+						info_text: stdout
+					};
+					info_set.text = templates["file_info.html"](inf);
 					callback(info_set);
 				}
 			});

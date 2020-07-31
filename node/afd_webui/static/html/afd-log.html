@@ -18,12 +18,6 @@
 <link rel="stylesheet" type="text/css" href="/static/css/afd-gui.css">
 <script type="application/javascript" src="/static/js/afd-gui.js"></script>
 <script type="application/javascript">
-	
-	
-	
-	
-	
-	
 (function() {
 	$(document).ready(
 		function() {
@@ -67,12 +61,6 @@
 			});
 		});
 })();
-
-
-
-
-
-
 </script>
 <title>AFD - Test</title>
 </head>
@@ -456,6 +444,11 @@
 					<td colspan="5">
 						<button type="submit" class="btn btn-primary button-action"
 							onClick="javascript:AFDLOG.callAldaFilter('input');">Search</button>
+						<button type="button" class="btn btn-primary button-action"
+							id="input-info"
+							onClick="javascript:AFDLOG.callFileInfo('input');">Info</button>
+						<button type="button" class="btn btn-secondary"
+							onClick="javascript:AFDLOG.unselectLogLines('input');">Unselect</button>
 					</td>
 				</tr>
 			</table>
@@ -671,6 +664,8 @@
 						<button type="button" class="btn btn-primary button-action"
 							id="output-info"
 							onClick="javascript:AFDLOG.callFileInfo('output');">Info</button>
+						<button type="button" class="btn btn-secondary"
+							onClick="javascript:AFDLOG.unselectLogLines('output');">Unselect</button>
 					</td>
 				</tr>
 			</table>

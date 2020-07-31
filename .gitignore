@@ -8,3 +8,5 @@
 /sync2httpd
 /*.log
 /*.h
+/certs/
+/node_modules/

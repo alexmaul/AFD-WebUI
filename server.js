@@ -1369,19 +1369,19 @@ function log_from_file(message, ws) {
 
 function log_from_alda(message, ws) {
 	let alda_output_format = {
-		input: ["-o", "<tr jid='%Uj,' fnloc='%IF' sz='%ISB' dti='%ITy/%ITm/%ITd %ITH:%ITM:%ITS'>"
+		input: ["-o", "<tr jid='%Uj,' fnl='%IF' uu='%IU' sz='%ISB' dti='%ITy/%ITm/%ITd %ITH:%ITM:%ITS'>"
 			+ "<td class='clst-dd'>%ITm.%ITd.</td>"
 			+ "<td class='clst-hh'>%ITH:%ITM:%ITS</td><td>%IF</td>"
 			+ "<td class='clst-fs'>%ISB</td></tr>"],
-		output: ["-o", "<tr jid='%OJ' fnloc='%Of' fnrem='%OF' sz='%ISB'"
-			+ " dto='%ITy/%ITm/%ITd %ITH:%ITM:%ITS' arcd='|%OA|' arcf='%xOZu_%xOU_%xOL_%Of'>"
+		output: ["-o", "<tr jid='%OJ' fnl='%Of' fnr='%OF' uu='%OU' sz='%OSB' trt='%ODA'"
+			+ " dto='%OTy/%OTm/%OTd %OTH:%OTM:%OTS' arc='|%OA/%xOZu_%xOU_%xOL_%Of|'>"
 			+ "<td class='clst-dd'>%OTm.%OTd.</td><td class='clst-hh'>"
 			+ "%OTH:%OTM:%OTS</td><td>%Of</td><td class='clst-hn'>%OH</td>"
 			+ "<td class='clst-tr'>%OP</td><td class='clst-fs'>%OSB</td>"
 			+ "<td class='clst-tt'>%ODA</td><td class='clst-aa'>|N|</td>"
 			+ "</tr>"],
-		delete: ["-o", "<tr jid='%DJ' fnloc='%DF' sz='%ISB' dtd='%ITy/%ITm/%ITd %ITH:%ITM:%ITS'"
-			+ "><td class='clst-dd'>%DTm.%DTd.</td>"
+		delete: ["-o", "<tr jid='%DJ' fnl='%DF' uu='%DU' dtd='%DTy/%DTm/%DTd %DTH:%DTM:%DTS'>"
+			+ "<td class='clst-dd'>%DTm.%DTd.</td>"
 			+ "<td class='clst-hh'>%DTH:%DTM:%DTS</td><td>%DF</td>"
 			+ "<td class='clst-fs'>%DSB</td><td class='clst-hn'>%DH</td>"
 			+ "<td class='clst-rn'>%DR</td><td class='clst-pu'>%DW</td>"
@@ -1471,17 +1471,18 @@ function log_from_alda(message, ws) {
 						continue;
 					}
 					let parts = data_line.split("|");
-					if (parts[1] !== "") {
-						console.log(parts);
+					if (parts[1][0] !== "/") {
 						try {
 							fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
 							parts[parts.length - 2] = "Y";
 						}
 						catch (_) {
+							parts[1] = "";
 							parts[parts.length - 2] = "D";
 						}
 					}
 					else {
+						parts[1] = "";
 						parts[parts.length - 2] = "N";
 					}
 					if (!archived_only || parts[parts.length - 2] == "Y") {
@@ -1489,6 +1490,7 @@ function log_from_alda(message, ws) {
 					}
 				}
 				data.lines = new_data;
+				console.debug("Lines from alda:" + data.lines.length);
 				ws.send(JSON.stringify(data));
 			}
 		});
@@ -1517,25 +1519,32 @@ function log_from_alda(message, ws) {
 function view_file_info(context, filter, callback) {
 	for (const felem of filter) {
 		let info_set = {
-			jsid: felem.jsid,
-			file: felem.file,
+			jid: felem.jid,
+			fnl: felem.fnl,
+			uu: felem.uu,
 		};
+		if ("fnr" in felem) {
+			info_set.fnr = felem.fnr;
+		}
 		let cmd = null;
 		let cmd_args = [];
 		switch (context) {
 			case "input":
 				cmd = "jid_view";
-				cmd_args = [parseInt(felem.jsid).toString(16)];
+				cmd_args = felem.jid
+					.split(",")
+					.map(d => {
+						return parseInt(d).toString(16)
+					});
 				break;
 			case "output":
 			case "delete":
 				cmd = "jid_view";
-				cmd_args = [parseInt(felem.jsid).toString(16)];
+				cmd_args = [parseInt(felem.jid).toString(16)];
 				break;
 			default:
 				return;
 		}
-		console.log(cmd, cmd_args);
 		exec_cmd(cmd, true, cmd_args,
 			(error, stdout, stderr) => {
 				if (error) {
@@ -1543,14 +1552,23 @@ function view_file_info(context, filter, callback) {
 				}
 				else {
 					console.log(error, stdout, stderr);
-					const f = felem.file.replace(/\./g, "_");
-					const inf = {
-						fileInfoBoxId: `${felem.jsid}_${f}`,
-						jsid: felem.jsid,
-						filename: felem.file,
-						info_text: stdout
-					};
-					info_set.text = templates["file_info.html"](inf);
+					let text = `Local name : ${felem.fnl}\nRemote name: ${felem.fnr}\nFile size  : ${felem.sz} Bytes\n`;
+					if ("dto" in felem) {
+						text += `Output time: ${felem.dto}\nTrans time : ${felem.trt} sec\n`;
+					}
+					else if ("dti" in felem) {
+						text += `Input time : ${felem.dti}\n`;
+					}
+					else if ("dtd" in felem) {
+						text += `Delete time : ${felem.dtd}\n`;
+					}
+					const f = felem.fnl.replace(/\./g, "_").replace(/,/g, "_");
+					info_set.text = templates["file_info.html"]({
+						fileInfoBoxId: `${felem.uu}_${f}`,
+						jid: felem.jid,
+						filename: felem.fnl,
+						info_text: text + stdout
+					});
 					callback(info_set);
 				}
 			});

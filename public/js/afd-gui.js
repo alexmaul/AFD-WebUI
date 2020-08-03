@@ -1320,8 +1320,8 @@ var AFDLOG = function() {
 			console.debug("callFileInfo", logName);
 			let selectedLogAreaLines = [];
 			const copy_attrs = [
-				"jid", "fnloc", "fnrem", "sz",
-				"dti", "dto", "dtd", "arcd", "arcf"
+				"jid", "fnl", "fnr", "uu", "sz",
+				"dti", "dto", "dtd", "trt", "arc"
 			];
 			$.each($("#" + logName + " .selected"), function(i, obj) {
 				const lo = {};
@@ -1353,19 +1353,19 @@ var AFDLOG = function() {
 		 */
 		callView: function(logName) {
 			console.debug("callView " + logName);
-			let selectedLogAreaLines = [];
+			let selectedLogAreaArcFiles = [];
 			$.each($("#" + logName + " .selected"), function(i, obj) {
 				if (obj.childNodes[obj.childElementCount - 1].innerText == "Y") {
-					selectedLogAreaLines.push(obj.attributes["archive"].value);
+					selectedLogAreaArcFiles.push(obj.attributes["arc"].value);
 				}
 			});
-			if (selectedLogAreaLines.length == 0) {
+			if (selectedLogAreaArcFiles.length == 0) {
 				alert("Select archived log entry first!");
 				return;
 			}
 			let mode = $("#" + logName + "-view-mode").text().split(" ")[1].toLowerCase();
-			console.debug("view", mode, selectedLogAreaLines);
-			$.each(selectedLogAreaLines, function(i, v) {
+			console.debug("view", mode, selectedLogAreaArcFiles);
+			$.each(selectedLogAreaArcFiles, function(i, v) {
 				window.open(AFDUI.urlViewProto + "//" + AFDUI.urlBase + "/view/" + mode + "/" + v);
 			});
 		}

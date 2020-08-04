@@ -1619,7 +1619,7 @@ function view_content(response, arcfile, mode = "auto") {
 			/* With the selected/determined program we start some conversion
 			 * and send the result to the response object.
 			 */
-			if (view_cmd.startsWith("http://")) {
+			if (view_cmd.startsWith("http://") || view_cmd.startsWith("https://")) {
 				/* Use HTTP/POST to send the file content to some webservice.
 				 * As return we expect text/plain or text/html.
 				 */

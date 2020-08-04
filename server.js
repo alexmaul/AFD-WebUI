@@ -1533,9 +1533,7 @@ function view_file_info(context, filter, callback) {
 				cmd = "jid_view";
 				cmd_args = felem.jid
 					.split(",")
-					.map(d => {
-						return parseInt(d).toString(16)
-					});
+					.map(d => parseInt(d).toString(16));
 				break;
 			case "output":
 			case "delete":

@@ -2,7 +2,7 @@
 "use strict";
 /* jslint node: true */
 
-/******************************************************************************
+/** ****************************************************************************
 	AFD WebUI Server
 	================
 
@@ -55,7 +55,7 @@ append: 	bool:		true|false, if the lines/text should be appended to
 lines:		[ string ]:	log data.
 data:		{}:			optional, object with file info details.
 
-******************************************************************************/
+***************************************************************************** */
 
 const process = require("process");
 const yargs = require("yargs");
@@ -643,6 +643,9 @@ function fsaLoopStartMock() {
 
 /**
  * Dispatch to AFD controlling functions.
+ *
+ * @param {Object} message - received JSON message.
+ * @param {Websocket.Server} ws - connection Object.
  */
 function action_afd(message, ws) {
 	let cmd = null;
@@ -726,6 +729,9 @@ function action_afd(message, ws) {
 
 /**
  * Dispatch to alias/host related functions.
+ *
+ * @param {Object} message - received JSON message.
+ * @param {Websocket.Server} ws - connection Object.
  */
 function action_alias(message, ws) {
 	switch (message.action) {
@@ -809,15 +815,20 @@ function action_alias(message, ws) {
 	}
 }
 
-/*******************************************************************************
- * ALias/host realted functions.
- ******************************************************************************/
+/* *****************************************************************************
+ * Alias/host realted functions.
+ * ************************************************************************** */
 
 /**
  * Collect information for one host. Details are inserted in rendered html
  * template, which is send via callback.
  * 
- * callback: (alias, html)
+ * @param {string} host - Hostname/alias.
+ * @param {returnHostInfoTemplate} callback.
+ *
+ * @callback returnHostInfoTemplate
+ * @param {string} alias - Hostname/alias.
+ * @param {string} html - MIME:text/html.
  */
 function collect_host_info(host, callback) {
 	let field_values = {
@@ -1130,6 +1141,8 @@ function int_or_str(s) {
 
 /**
  * Create a map host->[protocol, ...]
+ *
+ * @return {Object} List of protocols per alias.
  */
 function collect_protocols() {
 	const proto_list = {};

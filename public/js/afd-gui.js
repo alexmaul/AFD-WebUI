@@ -1099,7 +1099,7 @@ var AFDLOG = function() {
 				console.info("ws-connection open");
 			});
 			AFDLOG.ws.addEventListener("close", function() {
-				alert("AFD closed connection!");
+				alert("AFD closed connection!\n\nPlease reload this page.");
 			});
 			AFDLOG.ws.addEventListener("error", function(event) {
 				// error handler -> reconnect.

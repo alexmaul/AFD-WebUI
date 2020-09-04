@@ -246,6 +246,9 @@ const STATUS = {
 
 /** Holds interval object sending fsa-status to all ws-connections. */
 var fsaLoopInterval = null;
+/** Interval time [ms] for FSA update. */
+const FSA_LOOP_INTERVAL_TIME = 2000;
+
 /** Heartbeat interval time and timeout. */
 const HEARTBEAT_INTERVAL_TIME = 10000;
 
@@ -256,7 +259,10 @@ const HEARTBEAT_INTERVAL_TIME = 10000;
  * stored as a list of strings instead of as a string.
  */
 const AFD_CONFIG = {};
+
+/** Holds the commands with filter/pattern for Output-Log/View. */
 const VIEW_DATA = { named: {}, filter: {} };
+
 /**
  * Read AFD_CONFIG.
  */
@@ -599,6 +605,12 @@ function fsaLoopStop() {
 	}
 }
 
+/*
+TODO: fsa aus textausgabe von fsa_view lesen.
+siehe auch collect_protocols() (Z.1170), wird in Z.925 und Z.1215 aufgerufen.
+	stattdessen protokolle in globale variable merken.
+*/
+
 /**
  * Setup Interval: read and prepare fsa_view output.
  */
@@ -621,7 +633,7 @@ function fsaLoopStartReal() {
 					}
 				}
 			);
-		}, 2000);
+		}, FSA_LOOP_INTERVAL_TIME);
 	}
 }
 
@@ -639,7 +651,7 @@ function fsaLoopStartMock() {
 				ws_instance.send(JSON.stringify(data));
 			}
 			counter++;
-		}, 2000);
+		}, FSA_LOOP_INTERVAL_TIME);
 	}
 }
 
@@ -818,7 +830,7 @@ function action_alias(message, ws) {
 }
 
 /* *****************************************************************************
- * Alias/host realted functions.
+ * Alias/host related functions.
  * ************************************************************************** */
 
 /**
@@ -997,115 +1009,134 @@ const HC_FIELD_COLUMN = 3;
 const HC_FIELD_BIT = 4;
 const HC_FIELDS = [
 	/* field-name, radio-value, default, column, bit */
-	["alias", null, "", 0, -1],  // AH - Alias hostname
-	["host_name_real1", null, "", 1, -1],  // HN1 - Real hostname 1
-	["host_name_real2", null, "", 2, -1],  // HN2 - Real hostname 2
-	["host_switch_enable", null, "no", 3, -2],  // HT - Host toggle enable
-	["host_switch_char1", null, "", 3, -2],  // HT - Host toggle character 1
-	["host_switch_char2", null, "", 3, -2],  // HT - Host toggle character 2
-	["host_switch_auto", null, "no", 3, -2],  // HT - Automatic host
-	// switching: yes={}, no=[]
-	["proxy_name", null, "", 4, -1],  // PXY - Proxy name
-	["max_parallel_transfer", null, "3", 5, -1],  // AT - Allowed transfers
-	["max_errors", null, "10", 6, -1],  // ME - Max. errors
-	["retry_interval", null, "120", 7, -1],  // RI - Retry interval
-	["transfer_block_size", null, "4 KB", 8, -1],  // TB - Transfer block size
-	["successful_retries", null, "0", 9, -1],  // SR - Successful retries
-	["filesize_offset_for_append", null, "null", 10, -1],  // FSO - File size
-	// offset
-	["transfer_timeout", null, "60", 11, -1],  // TT - Transfer timeout
-	["no_burst", null, "0", 12, -1],  // NB - Number of no bursts
-	["host_status", null, "0", 13, -1],  // HS - Mostly irrelevant for
-	// HC-edit page!
-	["ignore_error_warning", null, "no", 13, 4],  // HS:5 - Error status
-	// offline
-	["do_not_delete", null, "no", 13, 15],  // HS:16 - Do not delete files due
-	// age-limit and 'delete queued
-	// files'
-	["ftp_mode_passive", null, "no", 14, 0],  // SF:1 - FTP passive mode
-	["ftp_idle_time", null, "no", 14, 1],  // SF:2 - Set FTP idle time to
-	// transfer timeout
-	["ftp_keep_alive", null, "no", 14, 2],  // SF:3 - Send STAT command to keep
-	// control connection alive.
-	["ftp_fast_rename", null, "no", 14, 3],  // SF:4 - Combine RNFR and RNTO
-	// to one command.
-	["ftp_fast_cd", null, "no", 14, 4],  // SF:5 - Do not do a cd, always use
-	// absolute path.
-	["ftp_no_type_i", null, "no", 14, 5],  // SF:6 - Do not send TYPE I
-	// command.
-	["ftp_mode_epsv", null, "no", 14, 6],  // SF:7 - Use extended active or
-	// extended passive mode.
-	["disable_burst", null, "no", 14, 7],  // SF:8 - If set bursting is
-	// disabled.
-	["ftp_allow_redirect", null, "no", 14, 8],  // SF:9 - If set FTP passive
-	// mode allows to be redirected
-	// to another address.
-	["use_local_scheme", null, "no", 14, 9],  // SF:10 - When set it will
-	// replace the given scheme with
-	// file if the hostname matches
-	// local hostname or one in
-	// local_interface.list.
-	["tcp_keep_alive", null, "no", 14, 10],  // SF:11 - Set TCP keepalive.
-	["sequence_locking", null, "no", 14, 11],  // SF:12 - Set sequence locking.
-	["enable_compress", null, "no", 14, 12],  // SF:13 - Enable compression.
-	["keep_timestamp", null, "no", 14, 13],  // SF:14 - Keep time stamp of
-	// source file.
-	["sort_names", null, "no", 14, 14],  // SF:15 - Sort file names.
-	["no_ageing_jobs", null, "no", 14, 15],  // SF:16 - No ageing jobs.
-	["check_local_remote_match_size", null, "no", 14, 16],  // SF:17 - Check if
-	// local and remote
-	// size match.
-	["is_timeout_transfer", null, "no", 14, 17],  // SF:18 - Timeout transfer.
-	["keep_connected_direction", "send", "no", 14, 18],  // SF:19 - Keep
-	// connected no
-	// fetching.
-	["keep_connected_direction", "fetch", "no", 14, 19],  // SF:20 - Keep
-	// connected no
-	// sending.
-	["ftps_clear_ctrlcon", null, "no", 14, 20],  // SF:21 - FTPS Clear
-	// Control Connection.
-	["ftp_use_list", null, "no", 14, 21],  // SF:22 - Use FTP LIST for
-	// directory listing.
-	["tls_strict_verification", null, "no", 14, 22],  // SF:23 - TLS uses
-	// strict verification
-	// of host.
-	["ftp_disable_mlst", null, "no", 14, 23],  // SF:24 - Disables FTP MLST for
-	// directory listing.
-	["keep_connected_disconnect", null, "no", 14, 24],  // SF:25 - Disconnect
-	// after given keep
-	// connected time.
-	["transfer_rate_limit", null, "0", 15, -1],  // TRL - Transfer rate limit
-	["time_to_live", null, "0", 16, -1],  // TTL - TCP time-to-live
-	["socket_send_buffer", null, "0", 17, -1],  // SSB - Socket send buffer
-	["socket_receive_buffer", null, "0", 18, -1],  // SRB - Socket receive
-	// buffer
-	["dupcheck_timeout", null, "0", 19, -1],  // DT - Duplicate check timeout
-	["dupcheck_type", "name", "no", 20, 0],  // DF:1 - Only do CRC checksum
-	// for filename.
-	["dupcheck_type", "content", "no", 20, 1],  // DF:2 - Only do CRC checksum
-	// for file content.
-	["dupcheck_type", "name-content", "no", 20, 2],  // DF:3 - Checksum for
-	// filename and content.
-	["dupcheck_type", "name-no-suffix", "no", 20, 3],  // DF:4 - Checksum of
-	// filename without last
-	// suffix.
-	["dupcheck_type", "name-size", "no", 20, 4],  // DF:5 - Checksum of
-	// filename and size.
-	["dupcheck_crc", "crc32", "no", 20, 15],  // DF:16 - Do a CRC32 checksum.
-	["dupcheck_crc", "crc32c", "no", 20, 16],  // DF:17 - Do a CRC32C checksum.
-	["dupcheck_delete", null, "yes", 20, 23],  // DF:24 - Delete the file.
-	["dupcheck_store", null, "no", 20, 24],  // DF:25 - Store the duplicate
-	// file.
-	["dupcheck_warn", null, "no", 20, 25],  // DF:26 - Warn in SYSTEM_LOG.
-	["dupcheck_timeout_fixed", null, "no", 20, 30],  // DF:31 - Timeout is
-	// fixed, ie. not
-	// cumulative.
-	["dupcheck_reference", "recipient", "no", 20, 31],  // DF:32 - Use full
-	// recipient as
-	// reference instead of
-	// alias name.
-	["keep_connected", null, "0", 21, -1],  // KC - Keep connected
-	["warn_time", null, "0", 22, -1],  // WT - Warn time [secs]
+
+	// AH - Alias hostname
+	["alias", null, "", 0, -1],
+	// HN1 - Real hostname 1
+	["host_name_real1", null, "", 1, -1],
+	// HN2 - Real hostname 2
+	["host_name_real2", null, "", 2, -1],
+	// HT - Host toggle enable
+	["host_switch_enable", null, "no", 3, -2],
+	// HT - Host toggle character 1
+	["host_switch_char1", null, "", 3, -2],
+	// HT - Host toggle character 2
+	["host_switch_char2", null, "", 3, -2],
+	// HT - Automatic host switching: yes={}, no=[]
+	["host_switch_auto", null, "no", 3, -2],
+	// PXY - Proxy name
+	["proxy_name", null, "", 4, -1],
+	// AT - Allowed transfers
+	["max_parallel_transfer", null, "3", 5, -1],
+	// ME - Max. errors
+	["max_errors", null, "10", 6, -1],
+	// RI - Retry interval
+	["retry_interval", null, "120", 7, -1],
+	// TB - Transfer block size
+	["transfer_block_size", null, "4 KB", 8, -1],
+	// SR - Successful retries
+	["successful_retries", null, "0", 9, -1],
+	// FSO - File size offset
+	["filesize_offset_for_append", null, "null", 10, -1],
+	// TT - Transfer timeout
+	["transfer_timeout", null, "60", 11, -1],
+	// NB - Number of no bursts
+	["no_burst", null, "0", 12, -1],
+	// HS - Mostly irrelevant for HC-edit page!
+	["host_status", null, "0", 13, -1],
+	// HS:5 - Error status offline
+	["ignore_error_warning", null, "no", 13, 4],
+	// HS:16 - Do not delete files due age-limit and 'delete queued files'
+	["do_not_delete", null, "no", 13, 15],
+	// SF:1 - FTP passive mode
+	["ftp_mode_passive", null, "no", 14, 0],
+	// SF:2 - Set FTP idle time to transfer timeout
+	["ftp_idle_time", null, "no", 14, 1],
+	// SF:3 - Send STAT command to keep control connection alive.
+	["ftp_keep_alive", null, "no", 14, 2],
+	// SF:4 - Combine RNFR and RNTO to one command.
+	["ftp_fast_rename", null, "no", 14, 3],
+	// SF:5 - Do not do a cd, always use absolute path.
+	["ftp_fast_cd", null, "no", 14, 4],
+	// SF:6 - Do not send TYPE I command.
+	["ftp_no_type_i", null, "no", 14, 5],
+	// SF:7 - Use extended active or extended passive mode.
+	["ftp_mode_epsv", null, "no", 14, 6],
+	// SF:8 - If set bursting is disabled.
+	["disable_burst", null, "no", 14, 7],
+	// SF:9 - If set FTP passive mode allows to be redirected to another address.
+	["ftp_allow_redirect", null, "no", 14, 8],
+	// SF:10 - When set it will replace the given scheme with file if the 
+	// hostname matches local hostname or one in local_interface.list.
+	["use_local_scheme", null, "no", 14, 9],
+	// SF:11 - Set TCP keepalive.
+	["tcp_keep_alive", null, "no", 14, 10],
+	// SF:12 - Set sequence locking.
+	["sequence_locking", null, "no", 14, 11],
+	// SF:13 - Enable compression.
+	["enable_compress", null, "no", 14, 12],
+	// SF:14 - Keep time stamp of source file.
+	["keep_timestamp", null, "no", 14, 13],
+	// SF:15 - Sort file names.
+	["sort_names", null, "no", 14, 14],
+	// SF:16 - No ageing jobs.
+	["no_ageing_jobs", null, "no", 14, 15],
+	// SF:17 - Check if local and remote size match.
+	["check_local_remote_match_size", null, "no", 14, 16],
+	// SF:18 - Timeout transfer.
+	["is_timeout_transfer", null, "no", 14, 17],
+	// SF:19 - Keep connected no fetching.
+	["keep_connected_direction", "send", "no", 14, 18],
+	// SF:20 - Keep connected no sending.
+	["keep_connected_direction", "fetch", "no", 14, 19],
+	// SF:21 - FTPS Clear Control Connection.
+	["ftps_clear_ctrlcon", null, "no", 14, 20],
+	// SF:22 - Use FTP LIST for directory listing.
+	["ftp_use_list", null, "no", 14, 21],
+	// SF:23 - TLS uses strict verification of host.
+	["tls_strict_verification", null, "no", 14, 22],
+	// SF:24 - Disables FTP MLST for directory listing.
+	["ftp_disable_mlst", null, "no", 14, 23],
+	// SF:25 - Disconnect after given keep  connected time.
+	["keep_connected_disconnect", null, "no", 14, 24],
+	// TRL - Transfer rate limit
+	["transfer_rate_limit", null, "0", 15, -1],
+	// TTL - TCP time-to-live
+	["time_to_live", null, "0", 16, -1],
+	// SSB - Socket send buffer
+	["socket_send_buffer", null, "0", 17, -1],
+	// SRB - Socket receive uffer
+	["socket_receive_buffer", null, "0", 18, -1],
+	// DT - Duplicate check timeout
+	["dupcheck_timeout", null, "0", 19, -1],
+	// DF:1 - Only do CRC checksum for filename.
+	["dupcheck_type", "name", "no", 20, 0],
+	// DF:2 - Only do CRC checksum for file content.
+	["dupcheck_type", "content", "no", 20, 1],
+	// DF:3 - Checksum for ilename and content.
+	["dupcheck_type", "name-content", "no", 20, 2],
+	// DF:4 - Checksum of lename without last ffix.
+	["dupcheck_type", "name-no-suffix", "no", 20, 3],
+	// DF:5 - Checksum of filename and size.
+	["dupcheck_type", "name-size", "no", 20, 4],
+	// DF:16 - Do a CRC32 checksum.
+	["dupcheck_crc", "crc32", "no", 20, 15],
+	// DF:17 - Do a CRC32C checksum.
+	["dupcheck_crc", "crc32c", "no", 20, 16],
+	// DF:24 - Delete the file.
+	["dupcheck_delete", null, "yes", 20, 23],
+	// DF:25 - Store the duplicate file.
+	["dupcheck_store", null, "no", 20, 24],
+	// DF:26 - Warn in SYSTEM_LOG.
+	["dupcheck_warn", null, "no", 20, 25],
+	// DF:31 - Timeout is fixed, ie. not cumulative.
+	["dupcheck_timeout_fixed", null, "no", 20, 30],
+	// DF:32 - Use full recipient as reference instead of alias name.
+	["dupcheck_reference", "recipient", "no", 20, 31],
+	// KC - Keep connected
+	["keep_connected", null, "0", 21, -1],
+	// WT - Warn time [secs]
+	["warn_time", null, "0", 22, -1],
 ];
 
 var HC_COMMENT = "";

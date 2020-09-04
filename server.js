@@ -134,8 +134,10 @@ if (!("afd_work_dir" in argv) || argv.afd_work_dir === "") {
 	console.error("'-w AFD_WORK_DIR' is required!");
 	process.exit(1);
 }
-const AFD_WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
+const WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
+const WEBUI_PID = "webui.pid";
+const WEBUI_LOG = "webui.log";
 
 /* ****************************************************************************
  * Setup logging.
@@ -143,7 +145,7 @@ const AFD_WORK_DIR = argv.afd_work_dir;
 const logger = (function setup_logging() {
 	var logLevel = "info";
 	var logTransport = [new winston.transports.File({
-		filename: path.join(AFD_WORK_DIR, "log", "webui.log")
+		filename: path.join(AFD_WORK_DIR, "log", WEBUI_LOG)
 	})];
 	if (argv.verbose) {
 		logLevel = "debug";
@@ -167,7 +169,7 @@ const logger = (function setup_logging() {
 		pid_file_name = argv.pid;
 	}
 	else {
-		pid_file_name = path.join(AFD_WORK_DIR, "fifodir", "afdweb.pid");
+		pid_file_name = path.join(AFD_WORK_DIR, "fifodir", WEBUI_PID);
 	}
 	if ("stop".indexOf(argv._) != -1) {
 		/* stop server with pid found in pid-file. */
@@ -337,8 +339,8 @@ var templates = {};
 		challenge: true,
 		realm: "AFD"
 	}));
-	app.use("/ui", express.static(path.join(AFD_WEBUI_DIR, "public")));
-	app.use("/$", express.static(path.join(AFD_WEBUI_DIR, "public")));
+	app.use("/ui", express.static(path.join(WEBUI_DIR, "public")));
+	app.use("/$", express.static(path.join(WEBUI_DIR, "public")));
 	/*
 	 * Prepare session context handler.
 	 */
@@ -362,11 +364,11 @@ var templates = {};
 	 * Setup template engine.
 	 */
 	app.set('view engine', 'ejs');
-	fs.readdir(path.join(AFD_WEBUI_DIR, "templates"), (err, template_files) => {
+	fs.readdir(path.join(WEBUI_DIR, "templates"), (err, template_files) => {
 		if (!err) {
 			for (const fn of template_files) {
 				if (fn.endsWith(".html")) {
-					fs.readFile(path.join(AFD_WEBUI_DIR, "templates", fn),
+					fs.readFile(path.join(WEBUI_DIR, "templates", fn),
 						{ encoding: "utf8" },
 						(err, data) => {
 							if (!err) {
@@ -393,8 +395,8 @@ var templates = {};
 		cert: /etc/pki/tls/certs
 		key:  /etc/pki/tls/private
 		*/
-		http_options["cert"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "public-cert.pem"));
-		http_options["key"] = fs.readFileSync(path.join(AFD_WEBUI_DIR, "certs", "private-key.pem"));
+		http_options["cert"] = fs.readFileSync(path.join(WEBUI_DIR, "certs", "public-cert.pem"));
+		http_options["key"] = fs.readFileSync(path.join(WEBUI_DIR, "certs", "private-key.pem"));
 	}
 })();
 /*
@@ -626,7 +628,7 @@ function fsaLoopStartReal() {
 function fsaLoopStartMock() {
 	let counter = 0;
 	logger.debug("read fsa.json");
-	let data = JSON.parse(fs.readFileSync(AFD_WEBUI_DIR + "/mock/fsa.json"));
+	let data = JSON.parse(fs.readFileSync(WEBUI_DIR + "/mock/fsa.json"));
 	data.counter = counter;
 	logger.debug(`start fsa loop with mocked data.`);
 	if (fsaLoopInterval === null) {
@@ -1108,7 +1110,7 @@ const HC_FIELDS = [
 
 var HC_COMMENT = "";
 fs.readFile(
-	path.join(AFD_WEBUI_DIR, "templates", "host_config.txt"),
+	path.join(WEBUI_DIR, "templates", "host_config.txt"),
 	{ encoding: "latin1" },
 	(err, data) => {
 		if (!err) {
@@ -1447,7 +1449,7 @@ function log_from_alda(message, ws) {
 		}
 		else if (key == "recipient") {
 			let rl = val.split(",").map(v => "%" + v).join(",");
-			par_lst.push(`${par_tr[key]}'${rl}'`);
+			par_lst.push(par_tr[key], rl);
 		}
 		else if (key == "output-filename-remote" && ["on", "yes", "true"].indexOf(val) >= 0) {
 			alda_output_line[1] = alda_output_line[1].replace("%Of", "%OF");
@@ -1456,8 +1458,7 @@ function log_from_alda(message, ws) {
 			par_lst.push(par_tr[key]);
 		}
 		else if (key in par_tr) {
-			par_lst.push(par_tr[key]);
-			par_lst.push(val);
+			par_lst.push(par_tr[key], val);
 		}
 	}
 	let cmd_par = ["-f", "-L", logtype].concat(par_lst).concat(alda_output_line);

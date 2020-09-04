@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 mkdir certs
 cd certs
 openssl genrsa -out private-key.pem 1024

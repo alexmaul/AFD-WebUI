@@ -688,7 +688,7 @@ function parse_fsa(text) {
 					break;
 				case "Debug mode":
 					if (le[1] == "OFF") {
-						field_values.debug_mode = "none";
+						field_values.debug_mode = null;
 					}
 					else {
 						field_values.debug_mode = le[1];

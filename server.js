@@ -263,6 +263,9 @@ const AFD_CONFIG = {};
 /** Holds the commands with filter/pattern for Output-Log/View. */
 const VIEW_DATA = { named: {}, filter: {} };
 
+/** */
+const COLLECTED_PROTOCOLS = {};
+
 /**
  * Read AFD_CONFIG.
  */
@@ -586,16 +589,6 @@ wss_log.on("connection", function connection_log(ws, req) {
 	// TODO:
 });
 
-
-/** */
-function fsaLoopStart() {
-	if (MOCK) {
-		return fsaLoopStartMock();
-	} else {
-		return fsaLoopStartReal();
-	}
-}
-
 /** */
 function fsaLoopStop() {
 	logger.debug("fsa loop stop");
@@ -605,54 +598,135 @@ function fsaLoopStop() {
 	}
 }
 
-/*
-TODO: fsa aus textausgabe von fsa_view lesen.
-siehe auch collect_protocols() (Z.1170), wird in Z.925 und Z.1215 aufgerufen.
-	stattdessen protokolle in globale variable merken.
-*/
-
 /**
- * Setup Interval: read and prepare fsa_view output.
+ * Create Interval sending status to clients.
  */
-function fsaLoopStartReal() {
-	logger.debug("start fsa loop with real data.");
+function fsaLoopStart() {
+	logger.debug("start fsa loop.");
 	if (fsaLoopInterval === null) {
 		fsaLoopInterval = setInterval(() => {
-			execFile("fsa_view_json",
-				["-w", AFD_WORK_DIR],
-				{ encoding: "latin1" },
-				(error, stdout, stderr) => {
-					if (error) {
-						logger.error(stderr);
-						throw error;
-					}
-					else {
-						for (const ws_instance of wss_ctrl.clients) {
-							ws_instance.send('{"class":"fsa","data":' + stdout + "}");
-						}
-					}
+			exec_cmd("fsa_view", true, [], (error, stdout, stderr) => {
+				if (error) {
+					logger.error(stderr);
+					throw error;
 				}
-			);
+				const fsa = parse_fsa(stdout);
+				for (const ws_instance of wss_ctrl.clients) {
+					ws_instance.send(JSON.stringify(fsa));
+				}
+			});
 		}, FSA_LOOP_INTERVAL_TIME);
 	}
 }
 
-function fsaLoopStartMock() {
-	let counter = 0;
-	logger.debug("read fsa.json");
-	let data = JSON.parse(fs.readFileSync(WEBUI_DIR + "/mock/fsa.json"));
-	data.counter = counter;
-	logger.debug(`start fsa loop with mocked data.`);
-	if (fsaLoopInterval === null) {
-		fsaLoopInterval = setInterval(() => {
-			logger.debug(`fsa send #${counter} to ${wss_ctrl.clients.size}`);
-			data.counter = counter;
-			for (const ws_instance of wss_ctrl.clients) {
-				ws_instance.send(JSON.stringify(data));
+/**
+ * Parses FSA from text-output of fsa_view.
+ *
+ * The created JSON object holds all status info for afd_ctrl window.
+ */
+function parse_fsa(text) {
+	const fsa = {
+		"class": "fsa",
+		"data": []
+	};
+	const re_head = /===> (\S+) .(\d+). <===/;
+	let field_values = null;
+	text.split("\n").forEach((line) => {
+		if (!line.length || line[0] === " ") {
+			return;
+		}
+		if (line[0] === "-") {
+			return;
+		}
+		if (line[0] === "=") {
+			if (field_values !== null) {
+				fsa.data.push(field_values);
 			}
-			counter++;
-		}, FSA_LOOP_INTERVAL_TIME);
+			field_values = { host_status: [], jobs: [] };
+			const hlm = re_head.exec(line);
+			field_values.alias = hlm[1];  // hostname
+			field_values.ord = parseInt(hlm[2]);
+		}
+		if (line.indexOf("|") != -1) {
+			let le = line.split("|").map(x => x.trim());
+			switch (le[0]) {
+				case "Connect status":
+					le.slice(1).forEach((je, ji) => {
+						field_values.jobs[ji].connect_status = je;
+					});
+					break;
+				case "Number of files":
+					le.slice(1).forEach((je, ji) => {
+						field_values.jobs[ji].number_of_files = parseInt(je);
+					});
+					break;
+			}
+		}
+		else {
+			let le = line.split(":").map(x => x.trim());
+			if (le.length < 2) {
+				return;
+			}
+			switch (le[0]) {
+				case "Real hostname 1":
+					field_values.real1 = le[1];
+					break;
+				case "Real hostname 2":
+					field_values.real2 = le[1];
+					break;
+				case "Hostname (display)":
+					field_values.display = le[1].slice(1, -1);
+					break;
+				case "Direction":
+					field_values.direction = "";
+					if (le[1].indexOf("RETRIEVE") != -1) {
+						field_values.direction += "R";
+					}
+					if (le[1].indexOf("SEND") != -1) {
+						field_values.direction += "S";
+					}
+					break;
+				case "Debug mode":
+					if (le[1] == "OFF") {
+						field_values.debug_mode = "none";
+					}
+					else {
+						field_values.debug_mode = le[1];
+					}
+					break;
+				case "Error counter":
+					field_values.error_count = parseInt(le[1]);
+					break;
+				case "Total file counter":
+					field_values.file_count = parseInt(le[1]);
+					break;
+				case "Total file size":
+					field_values.file_size = parseInt(le[1]);
+					break;
+				case "Active transfers":
+					field_values.transfers = parseInt(le[1]);
+					break;
+				case "Allowed transfers":
+					let at = parseInt(le[1]);
+					for (let i = 0; i < at; i++) {
+						field_values.jobs.push({ "job_num": i });
+					}
+					break;
+			}
+			if (le[0].startsWith("Protocol")) {
+				field_values.protocol = le[1].split(" ").map(x => x.trim());
+				COLLECTED_PROTOCOLS[field_values.hostname] = field_values.protocol;
+			}
+			else if (le[0].startsWith("Host status")
+				|| le[0].startsWith("Special flag")) {
+				field_values.host_status = field_values.host_status.concat(le[1].split(" "));
+			}
+		}
+	});
+	if (field_values !== null) {
+		fsa.data.push(field_values);
 	}
+	return fsa;
 }
 
 /**
@@ -928,11 +1002,10 @@ function collect_host_info(host, callback) {
 
 function search_host(action, form_json) {
 	let host_list = [];
-	const proto_map = collect_protocols();
 
 	function test_protocol(host) {
 		let ok = false;
-		const pl = proto_map[host];
+		const pl = COLLECTED_PROTOCOLS[host];
 		if (pl === undefined || pl.length == 0) {
 			ok = true;
 		}
@@ -1177,7 +1250,7 @@ function int_or_str(s) {
  *
  * @return {Object} List of protocols per alias.
  */
-function collect_protocols() {
+/*function collect_protocols() {
 	const proto_list = {};
 	const re_head = /===> (\S+) .\d+. <===/;
 	const fsa = exec_cmd_sync("fsa_view");
@@ -1195,7 +1268,7 @@ function collect_protocols() {
 	}
 	return proto_list;
 }
-
+*/
 /**
  * Read HOST_CONFIG data.
  * 
@@ -1218,11 +1291,10 @@ function read_hostconfig(alias = null) {
 	//	else {
 	//		alias = aliasList[0];
 	//	}
-	const proto_map = collect_protocols();
 
 	function get_proto_classes(host) {
-		if (host in proto_map) {
-			return proto_map[host].map(v => PROTO_SCHEME[v]).join(" ");
+		if (host in COLLECTED_PROTOCOLS) {
+			return COLLECTED_PROTOCOLS[host].map(v => PROTO_SCHEME[v]).join(" ");
 		}
 		else {
 			return "";

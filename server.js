@@ -1790,6 +1790,9 @@ function view_content(response, arcfile, mode = "auto") {
 
 /**
  * Send file to REST webservice by http/post and give the response to a callback.
+
+	TODO: als Platzhalter für Dateiinhalt %S statt %s ?  
+
  */
 async function webservice_send_file(rest_url, params, dataReadStream, callback) {
 	const request = require("request");

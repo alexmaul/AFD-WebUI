@@ -2,17 +2,13 @@
 
 ## Bound URL paths
 
-/ + /ui
-: http/https -> index.html.
+`/ + /ui` : http/https -> index.html.
 
-/view
-: http/https, view file from archive.
+`/view` : http/https, view file from archive.
 
-/ctrl
-: ws/wss, afd_ctrl.
+`/ctrl` : ws/wss, afd_ctrl.
 
-/log
-: ws/wss, show_log page.
+`/log` : ws/wss, show_log page.
 
 The HTTP/HTTPS variant when loading the HTML pages will determine if the plain
 (non-encrypted) or SSL/TLS Websocket variant will be used.
@@ -24,76 +20,56 @@ via Websocket.
 
 The json-messages in general have these attributes for request and response:
 
-user
-: string:	? user profile.
+`user` : string:	? user profile.
 
-class
-: string:	<fsa|alias|afd|...>.
+`class` : string:	<fsa|alias|afd|...>.
 
-action
-: string:	depends on class.
+`action` : string:	depends on class.
 
-command
-: string:	optional, only some actions have commands,
+`command` : string:	optional, only some actions have commands,
 			eg. read|save|start|stop.
 
-alias
-: [string, ...]:	optional, all alias related actions expect a list
+`alias` : [string, ...]:	optional, all alias related actions expect a list
 					of alias names.
 
-text
-: string:	optional, if plain text is send/received, eg. the
+`text` : string:	optional, if plain text is send/received, eg. the
 			text for INFO.
 
-data
-: {}:		optional, general object for data. 
+`data` : {}:		optional, general object for data. 
 
 
 For log window the messages are different.
 
-Request:
+**Request:**
 
-class
-: 		string:	"log".
+`class` : string:	"log".
 
-context
-:	string: "system|event|transfer|transfer-debug|input|output|delete".
+`context` : string: "system|event|transfer|transfer-debug|input|output|delete".
 
-action
-:		string:	"list|info".
+`action` : string:	"list|info".
 
-filter
-: 	{}:
+`filter` : {}:
 
-	file
-	:		number:	the file number for file-organized logs.
-
-	level
-	:		string: Regex of log-level letter <I|C|W|E|O|D>.
-
-	paramSet...	{}
-	:		Object with filter parameter, the names reflect
-						classes/names in html.
+> `file` : number:	the file number for file-organized logs.
+> 
+> `level` : string: Regex of log-level letter <I|C|W|E|O|D>.
+> 
+> `paramSet...	{}` : Object with filter parameter, the names reflect
+> 					classes/names in html.
 
 
-Response:
+**Response:**
 
-class
-:		string:		"log".
+`class` : string:		"log".
 
-context
-: 	string: 	"system|event|transfer|transfer-debug|input|output|delete".
+`context` : string: 	"system|event|transfer|transfer-debug|input|output|delete".
 
-action
-:		string:		"list|info".
+`action` : string:		"list|info".
 
-append
-: 	bool:		true|false, if the lines/text should be appended to
+`append` : bool:		true|false, if the lines/text should be appended to
 						existing log lines.
 
-lines
-:		[string]:	log data.
+`lines` : [string]:	log data.
 
-data
-:		{}:			optional, object with file info details.
+`data` : {}:			optional, object with file info details.
 

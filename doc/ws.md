@@ -3,10 +3,17 @@
 ## Bound URL paths
 
 <dl>
-<dt>`/` + `/ui`</dt><dd>http/https -> index.html.</dd>
-<dt>`/view`</dt><dd>http/https, view file from archive.</dd>
-<dt>`/ctrl`</dt><dd>ws/wss, afd_ctrl.</dd>
-<dt>`/log`</dt><dd>ws/wss, show_log page.</dd>
+<dt>/ + /ui</dt>
+<dd>http/https -> index.html.</dd>
+
+<dt>/view</dt>
+<dd>http/https, view file from archive.</dd>
+
+<dt>/ctrl</dt>
+<dd>ws/wss, afd_ctrl.</dd>
+
+<dt>/log</dt>
+<dd>ws/wss, show_log page.</dd>
 </dl>
 
 The HTTP/HTTPS variant when loading the HTML pages will determine if the plain
@@ -17,58 +24,80 @@ via Websocket.
 
 ## Websocket message
 
-The json-messages in general have these attributes for request and response:
+The json-messages in general have the same set of attributes for request and response.
 
-`user` : string:	? user profile.
+<dl>
+<dt>user</dt>
+<dd>*string* : user profile.</dd>
 
-`class` : string:	<fsa|alias|afd|...>.
+class</dt>
+<dd>*string* : <fsa|alias|afd|...>.</dd>
 
-`action` : string:	depends on class.
+action</dt>
+<dd>*string* : depends on class.</dd>
 
-`command` : string:	optional, only some actions have commands,
-			eg. read|save|start|stop.
+command</dt>
+<dd>*string* : optional, only some actions have commands, eg. read|save|start|stop.</dd>
 
-`alias` : [string, ...]:	optional, all alias related actions expect a list
-					of alias names.
+alias</dt>
+<dd>*[string, ...]* : optional, all alias related actions expect a list of alias names.</dd>
 
-`text` : string:	optional, if plain text is send/received, eg. the
-			text for INFO.
+text</dt>
+<dd>*string* : optional, if plain text is send/received, eg. the
+			text for INFO.</dd>
 
-`data` : {}:		optional, general object for data. 
-
+data</dt>
+<dd>*{}* : optional, general object for data.</dd>
+</dl>
 
 For log window the messages are different.
 
-**Request:**
+### Log Request:
 
-`class` : string:	"log".
+<dl>
+<dt>class</dt>
+<dd>*string* : "log".</dd>
 
-`context` : string: "system|event|transfer|transfer-debug|input|output|delete".
+<dt>context</dt>
+<dd>*string* : "system|event|transfer|transfer-debug|input|output|delete".</dd>
 
-`action` : string:	"list|info".
+<dt>action</dt>
+<dd>*string* : "list|info".</dd>
 
-`filter` : {}:
+<dt>filter</dt>
+<dd>*{}* : </dd>
 
-> `file` : number:	the file number for file-organized logs.
-> 
-> `level` : string: Regex of log-level letter <I|C|W|E|O|D>.
-> 
-> `paramSet...	{}` : Object with filter parameter, the names reflect
-> 					classes/names in html.
+<dl>
+<dt>file</dt>
+<dd>*number* : the file number for file-organized logs.</dd>
 
+<dt>level</dt>
+<dd>*string* : Regex of log-level letter <I|C|W|E|O|D>.</dd>
 
-**Response:**
+<dt>paramSet...</dt>
+<dd>*{}* : Object with filter parameter, the names reflect classes/names in html.</dd>
+</dl>
 
-`class` : string:		"log".
+</dl>
 
-`context` : string: 	"system|event|transfer|transfer-debug|input|output|delete".
+### Log Response:
 
-`action` : string:		"list|info".
+<dl>
+<dt>class</dt>
+<dd>*string* : "log".</dd>
 
-`append` : bool:		true|false, if the lines/text should be appended to
-						existing log lines.
+<dt>context</dt>
+<dd>*string* : "system|event|transfer|transfer-debug|input|output|delete".</dd>
 
-`lines` : [string]:	log data.
+<dt>action</dt>
+<dd>*string* : "list|info".</dd>
 
-`data` : {}:			optional, object with file info details.
+<dt>append</dt>
+<dd>*bool* : true|false, if the lines/text should be appended to existing log lines.</dd>
 
+<dt>lines</dt>
+<dd>*[string]* : log data.</dd>
+
+<dt>data</dt>
+<dd>*{}* : optional, object with file info details.</dd>
+</dl>

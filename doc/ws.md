@@ -30,24 +30,23 @@ The json-messages in general have the same set of attributes for request and res
 <dt>user</dt>
 <dd><i>string</i> : user profile.</dd>
 
-class</dt>
+<dt>class</dt>
 <dd><i>string</i> : <fsa|alias|afd|...>.</dd>
 
-action</dt>
+<dt>action</dt>
 <dd><i>string</i> : depends on class.</dd>
 
-command</dt>
+<dt>command</dt>
 <dd><i>string</i> : optional, only some actions have commands, eg. read|save|start|stop.</dd>
 
-alias</dt>
-<dd><i>[string, ...]</i> : optional, all alias related actions expect a list of alias names.</dd>
+<dt>alias</dt>
+<dd><i>[ string ]</i> : optional, all alias related actions expect a list of alias names.</dd>
 
-text</dt>
-<dd><i>string</i> : optional, if plain text is send/received, eg. the
-			text for INFO.</dd>
+<dt>text</dt>
+<dd><i>string</i> : optional, if plain text is send/received, eg. the text for INFO.</dd>
 
-data</dt>
-<dd><i>{}</i> : optional, general object for data.</dd>
+<dt>data</dt>
+<dd><i>object</i> : optional, general object for data.</dd>
 </dl>
 
 For log window the messages are different.
@@ -65,7 +64,7 @@ For log window the messages are different.
 <dd><i>string</i> : "list|info".</dd>
 
 <dt>filter</dt>
-<dd><i>{}</i> : </dd>
+<dd><i>object</i> : </dd>
 
 <dl>
 <dt>file</dt>
@@ -74,8 +73,8 @@ For log window the messages are different.
 <dt>level</dt>
 <dd><i>string</i> : Regex of log-level letter <I|C|W|E|O|D>.</dd>
 
-<dt>paramSet...</dt>
-<dd><i>{}</i> : Object with filter parameter, the names reflect classes/names in html.</dd>
+<dt>paramSet</dt>
+<dd><i>object</i> : Object with filter parameter, the names reflect classes/names in html.</dd>
 </dl>
 
 </dl>
@@ -96,8 +95,8 @@ For log window the messages are different.
 <dd><i>bool</i> : true|false, if the lines/text should be appended to existing log lines.</dd>
 
 <dt>lines</dt>
-<dd><i>[string]</i> : log data.</dd>
+<dd><i>[ string ]</i> : log data.</dd>
 
 <dt>data</dt>
-<dd><i>{}</i> : optional, object with file info details.</dd>
+<dd><i>object</i> : optional, object with file info details.</dd>
 </dl>

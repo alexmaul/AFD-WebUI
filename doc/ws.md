@@ -2,13 +2,12 @@
 
 ## Bound URL paths
 
-`/ + /ui` : http/https -> index.html.
-
-`/view` : http/https, view file from archive.
-
-`/ctrl` : ws/wss, afd_ctrl.
-
-`/log` : ws/wss, show_log page.
+<dl>
+<dt>`/` + `/ui`</dt><dd>http/https -> index.html.</dd>
+<dt>`/view`</dt><dd>http/https, view file from archive.</dd>
+<dt>`/ctrl`</dt><dd>ws/wss, afd_ctrl.</dd>
+<dt>`/log`</dt><dd>ws/wss, show_log page.</dd>
+</dl>
 
 The HTTP/HTTPS variant when loading the HTML pages will determine if the plain
 (non-encrypted) or SSL/TLS Websocket variant will be used.

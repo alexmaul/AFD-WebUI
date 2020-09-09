@@ -1,5 +1,3 @@
-# AFD WebUI Server
-
 ## Bound URL paths
 
 <dl>

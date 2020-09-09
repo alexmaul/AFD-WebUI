@@ -19,7 +19,7 @@
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"jsdoc": "node_modules/.bin/jsdoc -d doc -u doc server.js"
+		"jsdoc": "node_modules/.bin/jsdoc -d doc/html -u doc server.js README.md"
 	},
 	"keywords": [],
 	"author": "DWD/amaul <alexander.maul@dwd.de>",

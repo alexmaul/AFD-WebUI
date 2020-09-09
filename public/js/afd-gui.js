@@ -1,4 +1,13 @@
 "use strict";
+/** 
+ * @file AFD WebUI Client Javascript
+ * 
+ * @projectname afd-webui
+ * @version 0.1
+ * @author amaul
+ * @copyright DWD/amaul 2020
+ * 
+ */
 
 var AFDUI = function() {
 	/*

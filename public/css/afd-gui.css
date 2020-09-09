@@ -1,3 +1,12 @@
+/**
+@file AFD WebUI Server
+
+@projectname afd-webui
+@version 0.1
+@author amaul
+@copyright DWD/amaul 2020
+*/
+
 /***** General definitions *************************************/
 
 body {
@@ -27,7 +36,6 @@ body.form-page {
 }
 
 #alias-list {
-    #height:             100%;
     width:              12em;
 }
 
@@ -60,7 +68,7 @@ body.form-page {
     font-size:          .9rem;
 }
 .info-header {
-    text-background:    beige;
+    background-color:    beige;
     text-align:         center;
 }
 .info-field {

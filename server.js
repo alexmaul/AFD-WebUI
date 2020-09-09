@@ -2,9 +2,16 @@
 "use strict";
 /* jslint node: true */
 
+/** 
+ * @file AFD WebUI Server
+ * 
+ * @projectname afd-webui
+ * @version 0.1
+ * @author amaul
+ * @copyright DWD/amaul 2020
+ * 
+ */
 /* ****************************************************************************
-	AFD WebUI Server
-	================
 
 / + /ui	: http/https -> index.html.
 
@@ -214,15 +221,15 @@ const STATUS = {
     error: 500,
 };
 
-/** Holds interval object sending fsa-status to all ws-connections. */
+/* Holds interval object sending fsa-status to all ws-connections. */
 var fsaLoopInterval = null;
-/** Interval time [ms] for FSA update. */
+/** Interval time [ms] for FSA update. [2000ms] */
 const FSA_LOOP_INTERVAL_TIME = 2000;
 
-/** Heartbeat interval time and timeout. */
+/** Heartbeat interval time and timeout. [10000ms] */
 const HEARTBEAT_INTERVAL_TIME = 10000;
 
-/**
+/*
  * Some details from AFD_CONFIG file we use in WebUI server.
  *
  * If a key can occur more than one time in AFD_CONFIG, the values are
@@ -230,13 +237,13 @@ const HEARTBEAT_INTERVAL_TIME = 10000;
  */
 const AFD_CONFIG = {};
 
-/** Holds the commands with filter/pattern for Output-Log/View. */
+/* Holds the commands with filter/pattern for Output-Log/View. */
 const VIEW_DATA = { named: {}, filter: {} };
 
-/** */
+/* */
 const COLLECTED_PROTOCOLS = {};
 
-/**
+/*
  * Read AFD_CONFIG.
  */
 fs.readFile(
@@ -385,7 +392,7 @@ const server = http_module.createServer(http_options, app);
 const wss_ctrl = new WebSocket.Server({ noServer: true, clientTracking: true });
 const wss_log = new WebSocket.Server({ noServer: true, clientTracking: true });
 
-/**
+/*
  * Handle upgrade to Websocket connection.
  * 
  * Use seperate ws-server for ctrl and log.
@@ -461,7 +468,7 @@ wss_ctrl.on("connection", function connection_ctrl(ws, req) {
     // TODO: ???
 });
 
-/**
+/*
  * 
  */
 function heartbeatStop() {
@@ -559,7 +566,9 @@ wss_log.on("connection", function connection_log(ws, req) {
     // TODO:
 });
 
-/** */
+/*
+ *
+ */
 function fsaLoopStop() {
     logger.debug("fsa loop stop");
     if (wss_ctrl.clients.size == 0) {
@@ -568,7 +577,7 @@ function fsaLoopStop() {
     }
 }
 
-/**
+/*
  * Create Interval sending status to clients.
  */
 function fsaLoopStart() {
@@ -589,7 +598,7 @@ function fsaLoopStart() {
     }
 }
 
-/**
+/*
  * Parses FSA from text-output of fsa_view.
  *
  * The created JSON object holds all status info for afd_ctrl window.
@@ -699,7 +708,7 @@ function parse_fsa(text) {
     return fsa;
 }
 
-/**
+/*
  * Dispatch to AFD controlling functions.
  *
  * @param {Object} message - received JSON message.
@@ -785,7 +794,7 @@ function action_afd(message, ws) {
     }
 }
 
-/**
+/*
  * Dispatch to alias/host related functions.
  *
  * @param {Object} message - received JSON message.
@@ -877,7 +886,7 @@ function action_alias(message, ws) {
  * Alias/host related functions.
  * ************************************************************************** */
 
-/**
+/*
  * Collect information for one host. Details are inserted in rendered html
  * template, which is send via callback.
  * 
@@ -1215,31 +1224,7 @@ function int_or_str(s) {
     return parsed;
 }
 
-/**
- * Create a map host->[protocol, ...]
- *
- * @return {Object} List of protocols per alias.
- */
-/*function collect_protocols() {
-	const proto_list = {};
-	const re_head = /===> (\S+) .\d+. <===/;
-	const fsa = exec_cmd_sync("fsa_view");
-	let hlm = null;
-	let a = null;
-	for (const line of fsa.split("\n")) {
-		if ((hlm = re_head.exec(line)) !== null) {
-			proto_list[hlm[1]] = [];
-			a = hlm[1];
-		}
-		else if (line.startsWith("Protocol")) {
-			const pl = line.split(":")[1].trim().split(" ").map(x => x.trim());
-			proto_list[a] = pl;
-		}
-	}
-	return proto_list;
-}
-*/
-/**
+/*
  * Read HOST_CONFIG data.
  * 
  * alias===null : an object representing the whole HOST_CONFIG is returned.
@@ -1427,7 +1412,7 @@ function save_hostconfig(form_json) {
  * Functions for retrieving log-data.
  ******************************************************************************/
 
-/**
+/*
  */
 function log_from_file(message, ws) {
     let file_number = message.filter.file == "all" ? "*" : message.filter.file;
@@ -1596,7 +1581,7 @@ function log_from_alda(message, ws) {
     }
 }
 
-/**
+/*
  * Log -> File Info.
  *
  * context: "input|output"
@@ -1660,7 +1645,7 @@ function view_file_info(context, filter, callback) {
     }
 }
 
-/**
+/*
  * Output-Log -> View File.
  *
  * Retrieve a file from AFD archive and apply a parser program if required.
@@ -1758,7 +1743,7 @@ function view_content(response, arcfile, mode = "auto") {
     });
 }
 
-/**
+/*
  * Send file to REST webservice by http/post and give the response to a callback.
 
 	TODO: als Platzhalter für Dateiinhalt %S statt %s ?  
@@ -1842,7 +1827,7 @@ function exec_cmd_sync_mock(cmd, with_awd, args) {
 }
 
 
-/**
+/*
  * Execute 'cmd' with arguments.
  * 
  * Callback function is called with error, stdout, stderr as parameter.
@@ -1866,7 +1851,7 @@ function exec_cmd_real(cmd, with_awd, args = [], callback) {
     );
 }
 
-/**
+/*
  * Execute 'cmd' synchronous with arguments, stdout is returned.
  */
 function exec_cmd_sync_real(cmd, with_awd, args = []) {

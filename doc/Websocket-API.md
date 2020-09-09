@@ -1,5 +1,8 @@
 ## Bound URL paths
 
+The protocol used loading the HTML pages (HTTP/HTTPS) will determine if the 
+plain, non-encrypted or SSL/TLS encrypted Websocket (ws/wss) variant is used.
+ 
 <dl>
 <dt>/ + /ui</dt>
 <dd>http/https -> index.html.</dd>
@@ -14,11 +17,8 @@
 <dd>ws/wss, show_log page.</dd>
 </dl>
 
-The HTTP/HTTPS variant when loading the HTML pages will determine if the plain
-(non-encrypted) or SSL/TLS Websocket variant will be used.
- 
 All communication between WebUI server and client is done by exchanging JSON 
-via Websocket.
+messages via Websocket.
 
 ## Websocket message
 

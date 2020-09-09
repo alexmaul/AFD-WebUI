@@ -2,6 +2,16 @@
 
 ### Prerequesites
 
+- The [NodeJS](https://nodejs.org) interpreter executable is required to run the server.
+
+- For the installation a connection to the Internet is required. To run the
+  server, you only need network connection between server and client.
+
+- If you have your own OpenSSL PEM certificate files, place them into the 
+  project sub-directory `certs/`.
+
+- Open the port you intend to use in the firewall(s) for protocols 
+  HTTP+WS or HTTPS+WSS.
 
 ### Install `afd-webui`
 
@@ -12,11 +22,12 @@ Installing the *AFD Web-UI* package works equally for all sorts of environments.
 1. Change into project directory.
 
 1. `npm install`  
-   (Installs Node modules and creates Node environment).
+   Installs Node modules and creates Node environment.
 
-1. Execute `scripts/tls.certs.sh`.  
-   This creates TLS certificate files using OpenSSL tools. You can edit it to 
-   match your organisation.
+1. `scripts/tls.certs.sh`  
+   This creates TLS certificate files using OpenSSL tools.  
+   The generated PEM files are in the projects sub-directory `certs/`.  
+   You can edit it to match your organisation.
 
 1. Create `$AFD_WORK_DIR/etc/webui.users`, or copy the sample file from the 
    project's root directory.
@@ -29,7 +40,10 @@ Installing the *AFD Web-UI* package works equally for all sorts of environments.
 The connection between *AFD Web-UI* and any installed/running *AFD* is made by
 passing the `AFD_WORK_DIR` directory when starting the *AFD Web-UI* server.
 
-All additional settings are read from the files `AFD_CONFIG` and/or 
+Each instance of *AFD Web-UI* (connected to *one* AFD instance) need its own 
+TCP port. The default is `8040`, but you can use any other free port.
+
+All additional settings are read from the files `AFD_CONFIG` and
 `webui.users`, both placed in `$AFD_WORK_DIR/etc`.
 
 ### Webserver Log-files

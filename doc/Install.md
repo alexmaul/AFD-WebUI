@@ -5,13 +5,16 @@
 - The [NodeJS](https://nodejs.org) interpreter executable is required to run the server.
 
 - For the installation a connection to the Internet is required. To run the
-  server, you only need network connection between server and client.
+  server, you only need network connection between client and server.
 
-- If you have your own OpenSSL PEM certificate files, place them into the 
-  project sub-directory `certs/`.
+- On the server side, open the port you intend to use in the firewall(s) for
+  protocols HTTP+WS or HTTPS+WSS.
 
-- Open the port you intend to use in the firewall(s) for protocols 
-  HTTP+WS or HTTPS+WSS.
+- If you have your own OpenSSL PEM certificate files,
+
+  - place them into the project sub-directory `certs/`.
+
+  - or use the parameter `--cert` when starting the *AFD Web-UI* server.
 
 ### Install `afd-webui`
 
@@ -21,12 +24,12 @@ Installing the *AFD Web-UI* package works equally for all sorts of environments.
 
 1. Change into project directory.
 
-1. `npm install`  
+1. `npm install`\
    Installs Node modules and creates Node environment.
 
-1. `scripts/tls.certs.sh`  
-   This creates TLS certificate files using OpenSSL tools.  
-   The generated PEM files are in the projects sub-directory `certs/`.  
+1. `scripts/tls-certs.sh`\
+   This creates TLS certificate files using OpenSSL tools.
+   The generated PEM files are in the projects sub-directory `certs/`.\
    You can edit it to match your organisation.
 
 1. Create `$AFD_WORK_DIR/etc/webui.users`, or copy the sample file from the 
@@ -52,41 +55,3 @@ All additional settings are read from the files `AFD_CONFIG` and
 
 > `$AFD_WORK_DIR/log/webui.log`
 
-### Run as Service
-
-First, change into project directory.
-
-Then start the NodeJS server with the *AFD Web-UI* application:
-
-	$> node server.js [command] [options]
-
-Commands:
-
-	start  Start WebUI server.
-	
-	stop   Stop WebUI server.
-
-General options:
-
-	--version:           Show version tag [boolean]
-	
-	--afd_work_dir, -w:  AFD work directory, per instance. [string]
-	
-	--verbose, -v:       [boolean] [default: false]
-	
-	--help, -h:          Show help [boolean]
-
-Options for *start*:
-
-	--port, -p: Bind server to this local port. [integer] [default: 8040]
-	
-	--pid, -P:  PID file. [string]
-	
-	--no_tls:   Do not use TLS. Start as unsecured HTTP-server.
-	            [boolean] [default: false]
-	
-	--cert:     Path to SSL/TLS certificate/keys files. [string]
-	
-Options for *stop*:
-
-	--pid, -P:  Stop server with PID in file. [string]

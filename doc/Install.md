@@ -7,6 +7,10 @@
 - For the installation a connection to the Internet is required. To run the
   server, you only need network connection between client and server.
 
+- Which TCP port the Node server should bind to?\
+  The same port will be used for all communication (http *and* ws, resp. their 
+  secure variants) between client and server.
+
 - On the server side, open the port you intend to use in the firewall(s) for
   protocols HTTP+WS or HTTPS+WSS.
 
@@ -28,7 +32,7 @@ Installing the *AFD Web-UI* package works equally for all sorts of environments.
    Installs Node modules and creates Node environment.
 
 1. `scripts/tls-certs.sh`\
-   This creates TLS certificate files using OpenSSL tools.
+   *Optional* -- This creates TLS certificate files using OpenSSL tools.
    The generated PEM files are in the projects sub-directory `certs/`.\
    You can edit it to match your organisation.
 

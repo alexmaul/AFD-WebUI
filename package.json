@@ -1,0 +1,31 @@
+{
+	"name": "afd-webui",
+	"version": "0.1.0",
+	"description": "AFD Web/Browser-based User Interface",
+	"main": "./server.js",
+	"dependencies": {
+		"ejs": "^3.1.3",
+		"express": "^4.17.1",
+		"express-basic-auth": "^1.2.0",
+		"express-session": "^1.17.1",
+		"file-type": "^14.6.2",
+		"request": "^2.88.2",
+		"winston": "^3.3.3",
+		"ws": "^7.3.1",
+		"yargs": "^15.4.0"
+	},
+	"devDependencies": {
+		"jsdoc": "^3.6.5"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"jsdoc": "node_modules/.bin/jsdoc -d doc/html -u doc server.js README.md"
+	},
+	"keywords": [],
+	"author": "DWD/amaul <alexander.maul@dwd.de>",
+	"license": "GPL-2.0-or-later",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alexmaul/afd-webui.git"
+	}
+}

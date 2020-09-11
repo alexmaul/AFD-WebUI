@@ -1,0 +1,11 @@
+<div class="info-box" id="fileInfoBox_<%= fileInfoBoxId %>">
+	<h5 class="info-header"><%= filename %></h5>
+	<textarea class="info-area"
+		id="fileInfoArea_<%= fileInfoBoxId %>"><%= info_text %></textarea>
+	<div style="width: 100%; text-align: center;">
+		<button type="button" class="btn btn-primary button-action"
+			onClick="javascript:AFDLOG.closeFileInfo('<%= fileInfoBoxId %>');">
+			Close</button>
+	</div>
+	<hr style="border-width: 3px;" />
+</div>

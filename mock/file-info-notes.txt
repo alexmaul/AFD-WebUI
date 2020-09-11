@@ -1,0 +1,81 @@
+
+OUTPUT / NO ARCHIVE
+
+DIR_CONFIG : /drbd/amda/etc/DIR_CONFIG
+Local name : 10724-20200731082000.UDA3-108386.bin
+Remote name: //drbd/www/products/amda/bufr/10724/08/10724-20200731082000.UDA3-108386.bin
+File size  : 431 Bytes
+Output time: Fri Jul 31 08:22:00 2020
+Trans time : 0.00 sec
+Directory  : /ssd/afdftp/tmp/ti15_bufr
+Dir-Alias  : 26d4fdad
+Dir-ID     : 26d4fdad
+DIR-options: delete unknown files 0
+             delete queued files 3
+             max files 1000
+             time * * * * * 
+Filter     : *
+Recipient  : file://local//drbd/www/products/amda/bufr
+FD-options : trans_rename testamda
+             create target dir 775
+             lock OFF
+Priority   : 7
+Job-ID     : 7dbb109c
+
+
+OUTPUT / ARCHIVED
+
+DIR_CONFIG : /drbd/amda/etc/DIR_CONFIG
+Local name : Z__C_EDZW_INTERN,uda_ti15_2007310822-afd--0ed8.bin
+File size  : 77600 Bytes
+Output time: Fri Jul 31 08:22:00 2020
+Trans time : 0.00 sec
+Directory  : /ssd/afdftp/tmp/ti15_bufr
+Dir-Alias  : 26d4fdad
+Dir-ID     : 26d4fdad
+DIR-options: delete unknown files 0
+             delete queued files 3
+             max files 1000
+             time * * * * * 
+Filter     : *
+Recipient  : file://afdftp@local/intern/amda/ti15_bufr
+AMG-options: assemble WMO Z__C_EDZW_INTERN,uda_ti15_%ty%tm%td%tH%tM-afd--%n.bin
+FD-options : archive 1
+             chmod 666
+Priority   : 9
+Job-ID     : fe90fcf1
+Archive dir: 9300/local/afdftp/0/5f2525b0_fe90fcf1
+Unique name: 5f23d4a8_4405_0
+
+
+INPUT-LOG
+
+File name   : 10129-20200731090000.UDA3-11220.bin
+File size   : 430 bytes
+Input time  : Fri Jul 31 09:02:00 2020
+Unique-ID   : 5f23de08_470b
+Directory   : /ssd/afdftp/tmp/ti15_bufr
+Dir-Alias   : 26d4fdad
+Dir-ID      : 26d4fdad
+DIR-options : delete unknown files 0
+              delete queued files 3
+              max files 1000
+              time * * * * * 
+#################################################################################
+Filter      : *
+Recipient   : file://afdftp@local/intern/amda/ti15_bufr
+AMG-options : assemble WMO Z__C_EDZW_INTERN,uda_ti15_%ty%tm%td%tH%tM-afd--%n.bin
+FD-options  : archive 1
+              chmod 666
+Priority    : 9
+Job-ID      : fe90fcf1
+DIR_CONFIG  : /drbd/amda/etc/DIR_CONFIG
+=================================================================================
+Filter      : *
+Recipient   : file://local//drbd/www/products/amda/bufr
+FD-options  : trans_rename testamda
+              create target dir 775
+              lock OFF
+Priority    : 7
+Job-ID      : 7dbb109c
+DIR_CONFIG  : /drbd/amda/etc/DIR_CONFIG

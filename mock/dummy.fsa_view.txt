@@ -1,0 +1,71 @@
+    Number of hosts: 9   FSA ID: 230  Struct Version: 3  Pagesize: 4096
+    First errors offline: 0
+
+=============================> wettinfo (8) <=============================
+Host alias CRC       : 7c4f058b
+Real hostname 1      : oflks211
+Real hostname 2      : oflks215
+Hostname (display)   : >wettinfo1<
+Host toggle          : HOST_ONE
+Auto toggle          : ON
+Original toggle      : NONE
+Toggle position      : 8
+Host toggle string   : {15}
+Protocol(   80000001): FTP active 
+Direction            : RETRIEVE 
+Socket send buffer   : Not set
+Socket rcv buffer    : Not set
+Keep connected       : Not set
+Proxy name           : NONE
+Debug mode           : OFF
+Dupcheck timeout     : Disabled
+Host status (      0): NORMAL_STATUS
+Transfer timeout     : 120
+File size offset     : -1
+Successful retries   : 0
+MaxSuccessful ret.   : 10
+Special flag ( 64)   : HOST_IN_DIR_CONFIG
+Error counter        : 0
+Total errors         : 3
+Max. errors          : 10
+Error history        : 000 -> Transfer success
+                       000 -> Transfer success
+                       000 -> Transfer success
+                       000 -> Transfer success
+                       000 -> Transfer success
+Retry interval       : 300
+Transfer block size  : 4096
+TTL                  : 0
+Time of last retry   : Mon May 11 13:10:12 2020
+Last connection      : Tue Jul  7 06:24:00 2020
+First error time     : Not set.
+Start event handle   : Not set.
+End event handle     : Not set.
+Warn time            : Not set.
+Total file counter   : 0
+Total file size      : 0
+File counter done    : 232
+Bytes send           : 51036
+Connections          : 18
+MC NACK counter      : 0
+Jobs queued          : 0
+Active transfers     : 0
+Allowed transfers    : 2
+Rate limit           : 0
+Rate limit per proc  : 0
+MC Rate limit        : 0
+MC Rate limit/proc   : 0
+                    | Job 0    | Job 1    
+--------------------+----------+----------
+PID                 |       -1 |       -1 
+Connect status      |DISCONNECT |DISCONNECT 
+Number of files     |        0 |        0 
+No. of files done   |        0 |        0 
+File size           |        0 |        0 
+File size done      |        0 |        0 
+Bytes send          |    46636 |     4400 
+File name in use    |          |          
+File size in use    |        0 |        0 
+Filesize in use done|        0 |        0 
+Unique name         |          |          
+Job ID              |        0 |        0 

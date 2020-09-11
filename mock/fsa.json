@@ -1,0 +1,143 @@
+{
+	"class": "fsa",
+	"data": [
+		{
+			"ord": 0,
+			"alias": "a-2006-226",
+			"real1": "dwd.de",
+			"real2": "",
+			"display": "a-2006-226",
+			"direction": "S",
+			"debug_mode": "none",
+			"host_status": [
+				"HOST_ERROR_OFFLINE_STATIC",
+				"NORMAL_STATUS",
+				"HOST_IN_DIR_CONFIG",
+				0
+			],
+			"error_count": 0,
+			"file_count": 0,
+			"file_size": 0,
+			"transfers": 0,
+			"jobs": [
+				{
+					"job_num": 0,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 1,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 2,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 3,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 4,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				}
+			]
+		},
+		{
+			"ord": 1,
+			"alias": "a-2008-228",
+			"real1": "dwd.de",
+			"real2": "",
+			"display": "a-2008-228",
+			"direction": "S",
+			"debug_mode": "none",
+			"host_status": [
+				"HOST_ERROR_OFFLINE_STATIC",
+				"NORMAL_STATUS",
+				"HOST_IN_DIR_CONFIG",
+				0
+			],
+			"error_count": 0,
+			"file_count": 0,
+			"file_size": 0,
+			"transfers": 0,
+			"jobs": [
+				{
+					"job_num": 0,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 1,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 2,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 3,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 4,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				}
+			]
+		},
+		{
+			"ord": 2,
+			"alias": "a-2015-244",
+			"real1": "maulix.dwd.de",
+			"real2": "",
+			"display": "a-2015-244",
+			"direction": "S",
+			"debug_mode": "none",
+			"host_status": [
+				"HOST_ERROR_OFFLINE_STATIC",
+				"NORMAL_STATUS",
+				"HOST_IN_DIR_CONFIG",
+				0
+			],
+			"error_count": 0,
+			"file_count": 0,
+			"file_size": 0,
+			"transfers": 0,
+			"jobs": [
+				{
+					"job_num": 0,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 1,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 2,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 3,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				},
+				{
+					"job_num": 4,
+					"connect_status": "DISCONNECT",
+					"number_of_files": 0
+				}
+			]
+		}
+	]
+}

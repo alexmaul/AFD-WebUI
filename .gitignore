@@ -5,8 +5,7 @@
 /test*
 /*.bck
 /*.zip
-/sync2httpd
 /*.log
-/*.h
 /certs/
+/lib/
 /node_modules/

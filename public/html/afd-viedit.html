@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--
+@file AFD WebUI Server
+
+@projectname afd-webui
+@version 0.1
+@author amaul
+@copyright DWD/amaul 2020
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible"
+    content="IE=EmulateIE7; IE=EmulateIE9">
+<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Cache-control" content="no-cache">
+<link rel="stylesheet" type="text/css"
+    href="/ui/css/bootstrap.min.css">
+<script type="application/javascript"
+    src="/ui/js/jquery-3.4.0.min.js"></script>
+<script type="application/javascript"
+    src="/ui/js/bootstrap.bundle.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/ui/css/codemirror.css">
+<script type="application/javascript" src="/ui/js/codemirror.js"></script>
+<script type="application/javascript" src="/ui/js/vim.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/ui/css/afd-gui.css">
+<script type="application/javascript" src="/ui/js/afd-gui.js"></script>
+<script type="application/javascript">
+    
+    (function() {
+        $(document).ready(function() {
+            if (!String.prototype.hasOwnProperty("endsWith")) {
+                console.log("IE<12: mock-up endsWith()");
+                String.prototype.endsWith = function(suffix) {
+                    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+                };
+            }
+            AFDUI.updateUrlGlobals();
+            /*
+             * Set interval-handler to regularly load data and update display.
+             */
+            AFDEDIT.wsConnectionOpen();
+            $(document).on("close", function(event) {
+                AFDEDIT.wsConnctionClose();
+            });
+
+    CodeMirror.commands.save = function(){ alert("Saving"); };
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+      lineNumbers: true,
+      mode: "text/x-csrc",
+      keyMap: "vim",
+      matchBrackets: true,
+      showCursorWhenSelecting: true
+    });
+    var commandDisplay = document.getElementById('command-display');
+    var keys = '';
+    CodeMirror.on(editor, 'vim-keypress', function(key) {
+      keys = keys + key;
+      commandDisplay.innerText = keys;
+    });
+    CodeMirror.on(editor, 'vim-command-done', function(e) {
+      keys = '';
+      commandDisplay.innerHTML = keys;
+    });
+    var vimMode = document.getElementById('vim-mode');
+    CodeMirror.on(editor, 'vim-mode-change', function(e) {
+      vimMode.innerText = JSON.stringify(e);
+    });
+      
+        });
+    })();
+
+</script><title>AFD Config Editor</title>
+</head>
+<body class="form-page">
+<h3 align="center">AFD Config Editor</h3>
+<form><textarea id="editor" name="editor">
+</textarea></form>
+<div style="font-size: 13px; width: 300px; height: 30px;">Mode/buffer: <span id="vim-mode"></span> <span id="command-display"></span></div>
+
+</body>
+</html>

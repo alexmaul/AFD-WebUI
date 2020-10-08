@@ -1423,25 +1423,25 @@ function save_hostconfig(form_json) {
 function log_from_file(message, ws) {
 	let file_number = message.filter.file == "all" ? "*" : message.filter.file;
 	// TODO: statt exec: datei selbst filtern und ausgabe als tr/td aufbereiten.
-	let append = false;
+	const data = {
+		class: "log",
+		context: message.context,
+		action: "list",
+		append: false,
+		text: ""
+	};
 	exec_cmd("grep", [
 		"-shP",
 		"'<(" + message.filter.level + ")>'",
 		path.join(AFD_WORK_DIR, "log", AFDLOG_FILES[message.context] + file_number)
 	],
-		{ with_awd: false, appendable: true },
+		{ with_awd: false, appendable: true, limit: 5 },
 		(exitcode, stdout, _) => {
 			if (!exitcode) {
-				const data = {
-					class: "log",
-					context: message.context,
-					action: "list",
-					append: append,
-					text: stdout, // lines: stdout.split("\n"),
-				};
+				data.text = stdout;
 				ws.send(JSON.stringify(data));
 			}
-			append = true;
+			data.append = true;
 		}
 	);
 }
@@ -1534,56 +1534,64 @@ function log_from_alda(message, ws) {
 		context: message.context,
 		action: "list",
 		append: false,
-		status: null,
 		lines: [],
 	};
 	if (message.context == "output") {
-		exec_cmd("alda", cmd_par, { with_awd: true, appendable: true }, (exitcode, stdout, stderr) => {
-			if (stdout !== null) {
-				/* Parse each line, and set archive flag. */
-				let new_data = [];
-				for (const data_line of stdout.split("\n")) {
-					if (!data_line) {
-						continue;
-					}
-					let parts = data_line.split("|");
-					if (parts[1][0] !== "/") {
-						try {
-							fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
-							parts[parts.length - 2] = "Y";
+		exec_cmd(
+			"alda",
+			cmd_par,
+			{ with_awd: true, appendable: true, limit: 3 },
+			(exitcode, stdout, stderr) => {
+				if (stdout !== null) {
+					/* Parse each line, and set archive flag. */
+					let new_data = [];
+					for (const data_line of stdout.split("\n")) {
+						if (!data_line) {
+							continue;
 						}
-						catch (_) {
+						let parts = data_line.split("|");
+						if (parts[1][0] !== "/") {
+							try {
+								fs.accessSync(path.join(AFD_WORK_DIR, "archive", parts[1]));
+								parts[parts.length - 2] = "Y";
+							}
+							catch (_) {
+								parts[1] = "";
+								parts[parts.length - 2] = "D";
+							}
+						}
+						else {
 							parts[1] = "";
-							parts[parts.length - 2] = "D";
+							parts[parts.length - 2] = "N";
+						}
+						if (!archived_only || parts[parts.length - 2] == "Y") {
+							new_data.push(parts.join(""));
 						}
 					}
-					else {
-						parts[1] = "";
-						parts[parts.length - 2] = "N";
-					}
-					if (!archived_only || parts[parts.length - 2] == "Y") {
-						new_data.push(parts.join(""));
-					}
+					data.lines = new_data;
 				}
-				data.lines = new_data;
-			}
-			else {
-				data.lines = [];
-			}
-			if (exitcode === 0) {
-
-			}
-			else if (exitcode !== null) {
-				data.errno = exitcode;
-				data.error = stderr;
-			}
-			ws.send(JSON.stringify(data));
-			data.errno = null;
-			data.append = true;
-		});
+				else {
+					data.lines = [];
+				}
+				if (exitcode === 0) {
+					data.errno = exitcode;
+				}
+				else if (exitcode !== null) {
+					data.errno = exitcode;
+					data.error = stderr;
+				}
+				else {
+					data.errno = null;
+				}
+				ws.send(JSON.stringify(data));
+				data.append = true;
+			});
 	}
 	else {
-		exec_cmd("alda", cmd_par, { with_awd: true, appendable: true },
+		exec_cmd(
+			"alda",
+			cmd_par,
+			{ with_awd: true, appendable: true, limit: 3 },
 			(exitcode, stdout, stderr) => {
 				if (stdout !== null) {
 					data.lines = stdout.split("\n");
@@ -1592,14 +1600,16 @@ function log_from_alda(message, ws) {
 					data.lines = [];
 				}
 				if (exitcode === 0) {
-
+					data.errno = exitcode;
 				}
 				else if (exitcode !== null) {
 					data.errno = exitcode;
 					data.error = stderr;
 				}
+				else {
+					data.errno = null;
+				}
 				ws.send(JSON.stringify(data));
-				data.errno = null;
 				data.append = true;
 			});
 	}
@@ -1841,13 +1851,35 @@ function exec_cmd_mock(cmd, args = [], opts = { with_awd: true, appendable: true
  * @param {string} stderr - sub-process stderr.
  *
  * Options:
- * - with_awd : prepends option list with "-w $AFD_WORK_DIR"
- * - appendable : 
+ * - with_awd : prepends option list with "-w $AFD_WORK_DIR".
+ * - appendable : true= exec callback with junks from stdout, false= collect all stdout.
+ * - limit : stop/kill sub-process if stdout>limit*MByte.
  */
-function exec_cmd_real(cmd, args = [], opts = { with_awd: true, appendable: true }, callback) {
+function exec_cmd_real(
+	cmd,
+	args = [],
+	opts = { with_awd: true, appendable: true, limit: 1 },
+	callback
+) {
 	let largs = opts.with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+	logger.debug(JSON.stringify(opts));
 	logger.debug(`exec_cmd prepare command: ${cmd} ${largs}`);
+	if (opts.limit == null) {
+		opts.limit = 1;
+	}
+	if (opts.limit > 10) {
+		opts.limit = 10;
+	}
 	const spawned_process = spawn(cmd, largs, { shell: true });
+
+	function test_n_kill(sz) {
+		if (sz > opts.limit * 1024 * 1024 && !spawned_process.killed) {
+			logger.warn(`stdout from '${cmd}' too large (> ${opts.limit} MB), killing spawn.`);
+			callback(STATUS.payload_too_large, null, "Too much data! Reduce with filter.");
+			spawned_process.killed = spawned_process.kill();
+		}
+	}
+
 	if (opts.appendable) {
 		let next_out_buf = "";
 		let next_err_buf = "";
@@ -1860,11 +1892,7 @@ function exec_cmd_real(cmd, args = [], opts = { with_awd: true, appendable: true
 			data_sum += data_buf.length;
 			next_out_buf = data_str.substring(last_cr + 1);
 			callback(null, data_buf, null);
-			if (data_sum > 10 * 1024 * 1024 && !spawned_process.killed) {
-				logger.warn("Stdout from " + cmd + " too large, killing spawn.");
-				callback(STATUS.payload_too_large, null, "Data too large! Reduce with filter.");
-				spawned_process.killed = spawned_process.kill();
-			}
+			test_n_kill(data_sum);
 		});
 		spawned_process.stderr.on("data", (data) => {
 			const data_str = data.toString();
@@ -1892,12 +1920,17 @@ function exec_cmd_real(cmd, args = [], opts = { with_awd: true, appendable: true
 		let buf_err = "";
 		spawned_process.stdout.on("data", (data) => {
 			buf_out += data.toString();
+			test_n_kill(buf_out.length);
 		});
 		spawned_process.stderr.on("data", (data) => {
 			buf_err += data.toString();
 		});
-		spawned_process.on("close", (code) => {
+		spawned_process.on("close", (code, signal) => {
+			if (signal) {
+				logger.debug(`Caught signal ${signal} for spawn '${cmd}'`)
+			}
 			if (code !== 0) {
+				logger.debug(`Exitcode ${code} for spawn '${cmd}'`);
 				callback(code, null, buf_err);
 			}
 			else {

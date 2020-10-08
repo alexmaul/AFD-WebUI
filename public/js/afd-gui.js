@@ -1134,14 +1134,19 @@ var AFDLOG = function() {
 					switch (message.action) {
 						case "list":
 							const context = $("#" + message.context + "-area");
-							if (message.append) {
-								// TODO append or replace lines.
+							if (message.append === false) {
+								context.html("");
 							}
-							if ("lines" in message) {
-								context.html(message.lines);
+							if (message.errno != null && message.errno != 0) {
+								alert(message.error);
+								break;
 							}
-							else {
-								context.html(message.text);
+							if ("lines" in message && message.lines !== null) {
+								context.append(message.lines);
+							}
+							else if (message.text !== null) {
+								const foo = context.val() + message.text;
+								context.html(foo);
 							}
 							context.find("tr").on("click", function(event) {
 								$(this).toggleClass("selected");

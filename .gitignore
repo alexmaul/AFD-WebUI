@@ -5,6 +5,8 @@
 /test*
 /*.bck
 /*.zip
+/*.tgz
+/*.tar.gz
 /*.log
 /certs/
 /lib/

@@ -748,9 +748,20 @@ function action_afd(message, ws) {
 			}
 			break;
 		case "dc":
-			if (message.command == "update") {
-				cmd = "udc";
-				cmd_opt = "";
+			switch (message.command) {
+				case "update":
+					cmd = "udc";
+					cmd_opt = "";
+					break;
+				case "list":
+					list_editable_files(ws, message);
+					break;
+				case "read":
+					read_editable_file(ws, message);
+					break;
+				case "save":
+					save_editable_file(ws, message);
+					break;
 			}
 			break;
 		case "hc":
@@ -1318,7 +1329,9 @@ function read_hostconfig(alias = null) {
 	return { class: "afd", action: "hc", alias: [alias], order: hc_order, data: hc_data };
 }
 
-
+/*
+ * Save HOST_CONFIG.
+ */
 function save_hostconfig(form_json) {
 	const buffer = new ArrayBuffer(4);
 	const abview = new DataView(buffer);
@@ -1413,6 +1426,53 @@ function save_hostconfig(form_json) {
 
 }
 
+/* 
+ * 
+ */
+function list_editable_files(ws, message) {
+	const data = {
+		class: "afd",
+		action: "dc",
+		context: message.context,
+		command: "list",
+		filename: [],
+	};
+	fs.readdir(
+		path.join(AFD_WORK_DIR, "etc"),
+		(err, files) => {
+			data.filename = files;
+			ws.send(JSON.stringify(data));
+		}
+	);
+}
+
+/*
+ *
+ */
+function read_editable_file(ws, message) {
+	const data = {
+		class: "afd",
+		action: "dc",
+		command: "read",
+		context: message.context,
+		filename: message.filename,
+	};
+	fs.readFile(
+		path.join(AFD_WORK_DIR, "etc", message.filename),
+		{ encoding: "latin1" },
+		(err, content) => {
+			data.text = content;
+			ws.send(JSON.stringify(data));
+		}
+	);
+}
+
+/*
+ *
+ */
+function save_editable_file(ws, message) {
+
+}
 
 /*******************************************************************************
  * Functions for retrieving log-data.

@@ -1042,6 +1042,88 @@ var AFDEDIT = function() {
 			});
 		},
 
+		/*
+		 * Request file list.
+		 */
+		listFiles: function(context) {
+			console.debug("readFilesList " + context);
+			const message = {
+				class: "afd",
+				action: "dc",
+				command: "list",
+				context: context
+			};
+			AFDEDIT.ws.send(JSON.stringify(message));
+		},
+
+		/*
+		 * Update list of available/editable files.
+		 */
+		updateFilesList: function(message) {
+			console.debug("updateFilesList " + message.context);
+			let data = "";
+			for (let i = 0; i < message.filename.length; i++) {
+				data = data + "<option>" + message.filename[i] + "</option>";
+			}
+			$("#" + message.context + "-files").html(data);
+		},
+
+		/*
+		 * Send filename for reading this file.
+		 */
+		readFile: function(context, reload) {
+			console.debug("loadFile " + context);
+			let filename;
+			if (reload === true) {
+				filename = $("#" + context + "-filename")[0].value;
+			}
+			else {
+				filename = $("#" + context + "-files")[0].selectedOptions[0].value;
+				$("#" + context + "-filename")[0].value = filename;
+			}
+			if (filename === null || filename === "") {
+				alert("Select one file first!");
+				return;
+			}
+			const message = {
+				class: "afd",
+				action: "dc",
+				command: "read",
+				context: context,
+				filename: filename,
+			};
+			AFDEDIT.ws.send(JSON.stringify(message));
+		},
+
+		/*
+		 * Update textarea with received file content.
+		 */
+		updateFileContent: function(message) {
+			console.debug("updateFileContent " + message.context);
+			$("#" + message.context + "-area")[0].value = message.text;
+		},
+
+		/*
+		 * Send filename and textarea content for saving.
+		 */
+		saveFile: function(context) {
+			console.debug("saveFile " + context);
+			const filename = $("#" + context + "-filename")[0].value;
+			const text = $("#" + context + "-area")[0].value;
+			const message = {
+				class: "afd",
+				action: "dc",
+				command: "save",
+				context: context,
+				filename: filename,
+				text: text
+			};
+			AFDEDIT.ws.send(JSON.stringify(message));
+		},
+
+		/*
+		 * Open WS connection to AFD and add event-listener.
+		 */
 		wsConnectionOpen: function() {
 			AFDEDIT.ws = new WebSocket(
 				AFDUI.urlWsProto + "//" + AFDUI.urlBase + "/ctrl",
@@ -1065,8 +1147,25 @@ var AFDEDIT = function() {
 						 */
 						AFDEDIT.readHostconfig(null);
 					}
+				}
+				else if (window.location.pathname.endsWith("afd-viedit.html")) {
+					/*
+					 * Document-ready actions for general Config-Editor.
+					 */
+					AFDEDIT.listFiles('edit_general');
+					if (window.location.search != "") {
+						/*
+						 * In case there"s "?<file>" in URL, load this file ...
+						 */
+						let al = window.location.search.substring(1).split(",");
+						AFDEDIT.readFile(al[0]);
+					} else {
+						/*
+						 * ... otherwise leave textarea empty.
+						 */
+					}
 				} else {
-					alert("Why is there no DIR_CONFIG editor???");
+					alert("Which editor are you missing?");
 				}
 			});
 			AFDEDIT.ws.addEventListener("close", function() {
@@ -1080,19 +1179,36 @@ var AFDEDIT = function() {
 				const message = JSON.parse(event.data);
 				console.debug(message);
 				/* evaluate incoming message */
-				if (message.class == "afd" && message.action == "hc") {
-					AFDEDIT.changeHostconfigAliasList(message.order, message.alias);
-					if (message.alias != null && message.alias != "") {
-						AFDEDIT.changeHostconfigFormValues(message.data, message.alias);
-					} else {
-						AFDEDIT.changeHostconfigFormValues(message.data, message.order[0]);
+				if (message.class == "afd") {
+					if (message.action == "hc") {
+						AFDEDIT.changeHostconfigAliasList(message.order, message.alias);
+						if (message.alias != null && message.alias != "") {
+							AFDEDIT.changeHostconfigFormValues(message.data, message.alias);
+						} else {
+							AFDEDIT.changeHostconfigFormValues(message.data, message.order[0]);
+						}
+					}
+					else if (message.action == "dc") {
+						switch (message.command) {
+							case "list":
+								AFDEDIT.updateFilesList(message);
+								break;
+							case "read":
+								AFDEDIT.updateFileContent(message);
+								break;
+							case "save":
+								if (message.error) {
+									alert(message.error);
+								}
+								break;
+						}
 					}
 				}
 			});
 		},
 
 		/**
-         * 
+         * When WS connection is closed by server -> alert.
          */
 		wsConnctionClose: function() {
 			console.info("AFD closed ws connection.");

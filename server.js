@@ -1483,7 +1483,21 @@ function read_editable_file(ws, message) {
  *
  */
 function save_editable_file(ws, message) {
-
+	try {
+		const fn = path.join(AFD_WORK_DIR, "etc", message.filename);
+		fs.writeFile(fn, message.text, { encoding: "utf-8" }, () => { });
+	}
+	catch (e) {
+		logger.error(e);
+		ws.send(JSON.stringify({
+			class: message.class,
+			command: message.command,
+			action: message.action,
+			context: message.context,
+			errno: STATUS.error,
+			error: `${e.name}: ${e.message}`
+		}));
+	}
 }
 
 /*******************************************************************************

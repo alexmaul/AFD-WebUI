@@ -47,6 +47,7 @@ action: "list|info", append: bool, lines: [ "" ], data: {} }
 const process = require("process");
 const yargs = require("yargs");
 const fs = require("fs");
+const glob = require("glob");
 const path = require("path");
 const WebSocket = require("ws");
 const url = require('url');
@@ -1437,10 +1438,20 @@ function list_editable_files(ws, message) {
 		command: "list",
 		filename: [],
 	};
-	console.log(AFD_CONFIG);
-	fs.readdir(
-		path.join(AFD_WORK_DIR, "etc"),
+	let fcol = ["group.list"];
+	if ("RENAME_RULE_NAME" in AFD_CONFIG) {
+		fcol = fcol.concat(AFD_CONFIG.RENAME_RULE_NAME);
+	}
+	else {
+		fcol.push("rename.rule");
+	}
+	fcol = fcol.concat(AFD_CONFIG.DIR_CONFIG_NAME);
+	glob("{" + fcol.join(",") + "}",
+		{ cwd: path.join(AFD_WORK_DIR, "etc") },
 		(err, files) => {
+			if (err) {
+				logger.warn(err);
+			}
 			data.filename = files;
 			ws.send(JSON.stringify(data));
 		}

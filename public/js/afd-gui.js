@@ -41,6 +41,9 @@ var AFDUI = function() {
 		/** urlPathEdit. */
 		urlPathHcEdit: "/ui/html/afd-hcedit.html",
 
+		/** urlPathEdit. */
+		urlPathViEdit: "/ui/html/afd-viedit.html",
+
 		/** Interval [msec] for heartbeat and re-connect delay. */
 		heartbeatInterval: 10000,
 
@@ -251,6 +254,9 @@ var AFDCTRL = function() {
 				case "Edit HOST_CONFIG":
 					window.open(AFDUI.urlPathHcEdit
 						+ AFDCTRL.aliasCommaList(Object.keys(this.markedRows), true));
+					break;
+				case "Edit DC+rename+group":
+					window.open(AFDUI.urlPathViEdit);
 					break;
 				case "Startup AFD":
 					AFDCTRL.wsCallAfdCmd("afd", "start");

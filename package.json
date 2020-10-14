@@ -1,6 +1,6 @@
 {
 	"name": "afd-webui",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "AFD Web/Browser-based User Interface",
 	"main": "./server.js",
 	"dependencies": {

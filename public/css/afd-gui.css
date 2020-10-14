@@ -75,6 +75,10 @@ body.form-page {
 	background-color: white;
 }
 
+#edit_general .select-file {
+	width: 20em;
+}
+
 /*** Modal select ***/
 .modal-body div.row {
 	padding-bottom: 20px;

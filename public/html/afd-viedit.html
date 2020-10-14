@@ -24,17 +24,6 @@
 <link rel="stylesheet" type="text/css" href="/ui/css/afd-gui.css">
 <script type="application/javascript" src="/ui/js/afd-gui.js"></script>
 <script type="application/javascript">
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
     (function() {
         $(document).ready(function() {
             if (!String.prototype.hasOwnProperty("endsWith")) {
@@ -54,17 +43,6 @@
 			$(".lined-editor").linedtextarea();
         });
     })();
-
-
-
-
-
-
-
-
-
-
-
 </script>
 <title>AFD Config Editor</title>
 </head>
@@ -74,9 +52,9 @@
     <form>
         <div class="container-fluid" id="edit_general">
             <div class="row">
-                <div class="col-2 form-row-pad" style="text-align: center;">
+                <div class="col-3 form-row-pad" style="text-align: center;">
                     <button type="button" class="btn btn-secondary button-action"
-                        onClick="javascript:AFDEDIT.readFilesList('edit_general');"
+                        onClick="javascript:AFDEDIT.listFiles('edit_general');"
                     >File List Refresh</button>
                 </div>
                 <div class="col">
@@ -99,13 +77,12 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-2 form-row-pad">
+                <div class="col-3 form-row-pad">
                     <!-- alias-list -->
-                    <select class="custom-select filter" id="edit_general-files" size="30"></select>
+                    <select class="custom-select filter select-file" id="edit_general-files" size="30"></select>
                 </div>
                 <div class="col">
-                    <textarea id="edit_general-area" class="lined-editor">
-        					</textarea>
+                    <textarea id="edit_general-area" class="lined-editor"></textarea>
                 </div>
             </div>
         </div>

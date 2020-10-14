@@ -1437,6 +1437,7 @@ function list_editable_files(ws, message) {
 		command: "list",
 		filename: [],
 	};
+	console.log(AFD_CONFIG);
 	fs.readdir(
 		path.join(AFD_WORK_DIR, "etc"),
 		(err, files) => {
@@ -1495,7 +1496,7 @@ function log_from_file(message, ws) {
 		"'<(" + message.filter.level + ")>'",
 		path.join(AFD_WORK_DIR, "log", AFDLOG_FILES[message.context] + file_number)
 	],
-		{ with_awd: false, appendable: true, limit: 5 },
+		{ with_awd: false, appendable: true, total_size_limit: 5 },
 		(exitcode, stdout, _) => {
 			if (!exitcode) {
 				data.text = stdout;
@@ -1600,7 +1601,7 @@ function log_from_alda(message, ws) {
 		exec_cmd(
 			"alda",
 			cmd_par,
-			{ with_awd: true, appendable: true, limit: 3 },
+			{ with_awd: true, appendable: true, total_size_limit: 3 },
 			(exitcode, stdout, stderr) => {
 				if (stdout !== null) {
 					/* Parse each line, and set archive flag. */
@@ -1651,7 +1652,7 @@ function log_from_alda(message, ws) {
 		exec_cmd(
 			"alda",
 			cmd_par,
-			{ with_awd: true, appendable: true, limit: 3 },
+			{ with_awd: true, appendable: true, total_size_limit: 3 },
 			(exitcode, stdout, stderr) => {
 				if (stdout !== null) {
 					data.lines = stdout.split("\n");
@@ -1876,7 +1877,7 @@ function webservice_send_file(rest_url, params, dataReadStream, callback) {
  * Execute command-line programs.
  ******************************************************************************/
 
-function exec_cmd(cmd, args = [], opts = { with_awd: true, appendable: true }, callback) {
+function exec_cmd(cmd, args = [], opts = {}, callback) {
 	try {
 		if (MOCK) {
 			exec_cmd_mock(cmd, args, opts, callback);
@@ -1886,12 +1887,12 @@ function exec_cmd(cmd, args = [], opts = { with_awd: true, appendable: true }, c
 	}
 	catch (e) {
 		logger.error("exec_cmd");
-		logger.error(`${cmd}, ${with_awd}, ${args}`);
+		logger.error(`${cmd}, ${opts}, ${args}`);
 		logger.error(e);
 	}
 }
 
-function exec_cmd_mock(cmd, args = [], opts = { with_awd: true, appendable: true }, callback) {
+function exec_cmd_mock(cmd, args = [], opts = {}, callback) {
 	logger.debug(`Mock command: ${cmd} ${args}`);
 	const mock_text = fs.readFileSync("mock/dummy." + cmd + ".txt", { encoding: "utf8" });
 	callback(appendable, undefined, mock_text, undefined);
@@ -1913,34 +1914,35 @@ function exec_cmd_mock(cmd, args = [], opts = { with_awd: true, appendable: true
  * Options:
  * - with_awd : prepends option list with "-w $AFD_WORK_DIR".
  * - appendable : true= exec callback with junks from stdout, false= collect all stdout.
- * - limit : stop/kill sub-process if stdout>limit*MByte.
+ * - total_size_limit : stop/kill sub-process if stdout>limit*MByte.
  */
 function exec_cmd_real(
 	cmd,
 	args = [],
-	opts = { with_awd: true, appendable: true, limit: 1 },
+	opts = {},
 	callback
 ) {
-	let largs = opts.with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
+	let { with_awd = true, appendable = true, total_size_limit = 1 } = opts;
+	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
 	logger.debug(JSON.stringify(opts));
 	logger.debug(`exec_cmd prepare command: ${cmd} ${largs}`);
-	if (opts.limit == null) {
-		opts.limit = 1;
+	if (total_size_limit == null) {
+		total_size_limit = 1;
 	}
-	if (opts.limit > 10) {
-		opts.limit = 10;
+	if (total_size_limit > 10) {
+		total_size_limit = 10;
 	}
 	const spawned_process = spawn(cmd, largs, { shell: true });
 
 	function test_n_kill(sz) {
-		if (sz > opts.limit * 1024 * 1024 && !spawned_process.killed) {
+		if (sz > total_size_limit * 1024 * 1024 && !spawned_process.killed) {
 			logger.warn(`stdout from '${cmd}' too large (> ${opts.limit} MB), killing spawn.`);
 			callback(STATUS.payload_too_large, null, "Too much data! Reduce with filter.");
 			spawned_process.killed = spawned_process.kill();
 		}
 	}
 
-	if (opts.appendable) {
+	if (appendable) {
 		let next_out_buf = "";
 		let next_err_buf = "";
 		let data_buf;

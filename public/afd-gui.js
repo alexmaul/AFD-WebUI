@@ -1232,6 +1232,9 @@ var AFDLOG = function() {
 		/** selectedLogAreaLines. */
 		selectedLogAreaLines: {},
 
+		/** Timout handler for updating log-line-click-handler. */
+		trclick_event_updater: null,
+
 		wsConnectionOpen: function() {
 			AFDLOG.ws = new WebSocket(
 				AFDUI.urlWsProto + "//" + AFDUI.urlBase + "/log",
@@ -1250,7 +1253,6 @@ var AFDLOG = function() {
 			AFDLOG.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
 				console.debug(message);
-				let trclick_event_updater = null;
 				/* evaluate incoming message */
 				if (message.class == "log") {
 					switch (message.action) {
@@ -1270,15 +1272,15 @@ var AFDLOG = function() {
 								const foo = context.val() + message.text;
 								context.html(foo);
 							}
-							if (trclick_event_updater === null) {
-								trclick_event_updater = setTimeout(function() {
+							if (AFDLOG.trclick_event_updater === null) {
+								AFDLOG.trclick_event_updater = setTimeout(function() {
 									console.debug("Tr: (re)set click event handler.");
 									const c = context.find("tr");
 									c.off("click");
 									c.on("click", function(event) {
 										$(this).toggleClass("selected");
 									});
-									trclick_event_updater = null;
+									AFDLOG.trclick_event_updater = null;
 								}, 2000);
 							}
 							$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);

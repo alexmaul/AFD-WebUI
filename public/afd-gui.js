@@ -36,13 +36,13 @@ var AFDUI = function() {
 		urlBase: "localhost:8040",
 
 		/** urlPathLog. */
-		urlPathLog: "/ui/html/afd-log.html",
+		urlPathLog: "/ui/afd-log.html",
 
 		/** urlPathEdit. */
-		urlPathHcEdit: "/ui/html/afd-hcedit.html",
+		urlPathHcEdit: "/ui/afd-hcedit.html",
 
 		/** urlPathEdit. */
-		urlPathViEdit: "/ui/html/afd-viedit.html",
+		urlPathViEdit: "/ui/afd-viedit.html",
 
 		/** Interval [msec] for heartbeat and re-connect delay. */
 		heartbeatInterval: 10000,

@@ -2,7 +2,6 @@
 /** 
  * @file AFD WebUI Client - Part of AFD, an automatic file distribution program.
  * @projectname afd-webui
- * @version 0.1
  * @copyright (c) 2020 Alexander Maul
  * @author Alexander Maul <alexander.maul@dwd.de>
  * @license GPL-2.0-or-later -- 
@@ -1251,6 +1250,7 @@ var AFDLOG = function() {
 			AFDLOG.ws.addEventListener("message", function(event) {
 				const message = JSON.parse(event.data);
 				console.debug(message);
+				let trclick_event_updater = null;
 				/* evaluate incoming message */
 				if (message.class == "log") {
 					switch (message.action) {
@@ -1270,11 +1270,18 @@ var AFDLOG = function() {
 								const foo = context.val() + message.text;
 								context.html(foo);
 							}
-							context.find("tr").on("click", function(event) {
-								$(this).toggleClass("selected");
-							});
+							if (trclick_event_updater === null) {
+								trclick_event_updater = setTimeout(function() {
+									console.debug("Tr: (re)set click event handler.");
+									const c = context.find("tr");
+									c.off("click");
+									c.on("click", function(event) {
+										$(this).toggleClass("selected");
+									});
+									trclick_event_updater = null;
+								}, 2000);
+							}
 							$("." + message.context + "-area-scroll").scrollTop($(this)[0].scrollHeight);
-							/* TODO progress-swirl? */
 							$("#" + message.context + " *").css({
 								"cursor": "auto"
 							});

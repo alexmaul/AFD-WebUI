@@ -14,8 +14,12 @@ AFD source: [https://github.com/holger24/AFD](https://github.com/holger24/AFD).
 
 As it is common for web-applications, there is a server-part and a client-part.
 
-The server-side is a ECMAscript application for *NodeJS*, the client runs on 
+The server-side is an ECMAscript application for *NodeJS*, the client runs on 
 HTML5+CSS+Javascript.
+
+## Requires
+
+The [NodeJS](https://nodejs.org) interpreter executable.
 
 ## Tutorials
 

@@ -1949,7 +1949,6 @@ function exec_cmd_real(
 ) {
 	let { with_awd = true, appendable = true, total_size_limit = 1 } = opts;
 	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
-	logger.debug(JSON.stringify(opts));
 	logger.debug(`exec_cmd prepare command: ${cmd} ${largs}`);
 	if (total_size_limit == null) {
 		total_size_limit = 1;
@@ -1992,9 +1991,7 @@ function exec_cmd_real(
 			if (signal) {
 				logger.debug(`Caught signal ${signal} for spawn '${cmd}'`)
 			}
-			if (code) {
-				logger.debug(`Exitcode ${code} for spawn '${cmd}'`);
-			}
+			logger.debug(`Exitcode ${code} for spawn '${cmd}'`);
 			callback(
 				code,
 				next_out_buf == "" ? null : next_out_buf,
@@ -2016,8 +2013,8 @@ function exec_cmd_real(
 			if (signal) {
 				logger.debug(`Caught signal ${signal} for spawn '${cmd}'`)
 			}
+			logger.debug(`Exitcode ${code} for spawn '${cmd}'`);
 			if (code !== 0) {
-				logger.debug(`Exitcode ${code} for spawn '${cmd}'`);
 				callback(code, null, buf_err);
 			}
 			else {

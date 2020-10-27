@@ -127,6 +127,7 @@ const WEBUI_DIR = __dirname; // path.dirname(process.argv[1]);
 const AFD_WORK_DIR = argv.afd_work_dir;
 const WEBUI_PID = "webui.pid";
 const WEBUI_LOG = "webui.log";
+const WEBUI_USERS = "webui.users";
 
 /* ****************************************************************************
  * Setup logging.
@@ -332,7 +333,7 @@ var templates = {};
 	app.use(basicAuth({
 		users: JSON.parse(
 			fs.readFileSync(
-				path.join(AFD_WORK_DIR, "etc", "webui.users"),
+				path.join(AFD_WORK_DIR, "etc", WEBUI_USERS),
 				{ encoding: "latin1" }
 			)),
 		challenge: true,

@@ -860,17 +860,18 @@ function action_alias(message, ws) {
 			break;
 		case "config":
 			for (const alias of message.alias) {
+				logger.debug(`call get_dc_data for alias ${message.alias}`);
 				exec_cmd("get_dc_data",
 					["-h", alias],
 					{ with_awd: true, appendable: false },
-					(exitcode, dc_data, stderr) => {
-						logger.debug(`EXEC-> ${error}, ${dc_data}, ${stderr}`);
-						if (!exitcode) {
+					(exitcode, stdout, stderr) => {
+						logger.debug(`EXEC-> ${exitcode}, ${stdout}, ${stderr}`);
+						if (exitcode === 0) {
 							const msg = {
 								class: "alias",
 								action: "config",
 								alias: alias,
-								text: dc_data
+								text: stdout
 							};
 							ws.send(JSON.stringify(msg));
 						}
@@ -1950,7 +1951,7 @@ function exec_cmd_real(
 ) {
 	let { with_awd = true, appendable = true, total_size_limit = 1 } = opts;
 	let largs = with_awd ? ["-w", AFD_WORK_DIR].concat(args) : args;
-	logger.debug(`exec_cmd prepare command: ${cmd} ${largs}`);
+	logger.debug(`exec_cmd prepare command (appnd=${appendable}): ${cmd} ${largs}`);
 	if (total_size_limit == null) {
 		total_size_limit = 1;
 	}

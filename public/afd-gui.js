@@ -307,6 +307,7 @@ var AFDCTRL = function() {
 			AFDCTRL.ws.addEventListener("ping", AFDCTRL.wsConnectionHeartbeat
 			);
 			AFDCTRL.ws.addEventListener("error", function(event) {
+				console.warn(event);
 			});
 			AFDCTRL.ws.addEventListener("message", function(event) {
 				AFDCTRL.wsConnectionHeartbeat();

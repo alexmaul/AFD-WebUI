@@ -233,12 +233,12 @@ tr.tab-row * {
 tr.tab-row-mark * {
 	border-width: 1px;
 	border-style: solid;
-	border-color: black;
+	border-color: grey;
 }
 
 .marked {
 	color: white;
-	background: black;
+	background: grey;
 }
 
 td.alias {
@@ -260,7 +260,7 @@ td.status-led {
 	width: 5ex;
 	text-align: right;
 	color: white;
-	background: black;
+	background: grey;
 }
 
 .debug {

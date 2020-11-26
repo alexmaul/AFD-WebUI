@@ -610,7 +610,7 @@ function fsaLoopStart() {
 					}
 					else if (exitcode) {
 						logger.error(stderr);
-						throw error;
+						throw Error("Without fsa_view there's no point!");
 					}
 				});
 		}, FSA_LOOP_INTERVAL_TIME);
